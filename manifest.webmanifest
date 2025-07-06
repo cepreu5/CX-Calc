@@ -1,20 +1,20 @@
 {
-  "name": "CX_Calc",
-  "short_name": "CX_Calc",
+  "name": "CX-Calc",
+  "short_name": "CX-Calc",
   "start_url": "/CX-Calc/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4285f4",
+  "background_color": "#BFB8B4",
+  "theme_color": "#BFB8B4",
   "orientation": "portrait",
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "Calc192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "Calc512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

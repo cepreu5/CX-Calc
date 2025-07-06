@@ -1,36 +1,600 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bg">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#000000">
-  <link rel="manifest" href="manifest.webmanifest">
-  <title>Fullscreen Demo App</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #f0f0f0;
-    }
-    button {
-      font-size: 1.2em;
-      padding: 1em 2em;
-      margin-top: 1em;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#BFB8B4">
+    <link rel="manifest" href="manifest.webmanifest">
+    <title>CX-Calc</title>
+   	<link rel="shortcut icon" type="image/png" href="CalcFav.png" />
+	  <link rel="stylesheet" href="style.css" />
+
+    <style>
+        /* button {
+          font-size: 1.2em;
+          padding: 1em 2em;
+          margin-top: 1em;
+        } */
+    </style>
 </head>
 <body>
+    <div id="statusArea1" class="statusArea"></div>
+    <div id="statusArea2" class="statusArea"></div>
+    <div id="statusArea3" class="statusArea"></div>
 
-  <h1>Това е просто демонстрация</h1>
+    <div class="calculator-container" id="calculatorContainer">     
+        <img src="CalculatorM.png" ID="calculator" class="calculator-img" alt="Калкулатор">
+        <div id="levInput" class="calculator-display-lv" contenteditable="false"></div>
+        <div id="eurInput" class="calculator-display" contenteditable="false"></div>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>История на изчисленията</h2>
+            </div>
+            <ul id="historyList">
+            </ul>
+            <div class="modal-footer" style="margin-top: 15px; display: flex; gap: 10px;">
+                <button id="clearHistoryButton" class="action-button secondary" style="flex-grow: 1;">Изчисти историята</button>
+                <button id="closeHistoryModalButton" class="action-button" style="flex-grow: 1;">Затвори</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Настройки</h2>
+            </div>
+            <div class="modal-header">
+                <h2>Курс BGN/EUR: 1.95583</h2>
+            </div>
+            <div class="settings-grid">
+                <div class="settings-section">
+                    <div class="layout-settings-grid">
+                        <!-- Keys -->
+                        <label>Клавиатура:</label>
+                        <input type="number" id="keysX" data-key="Keys" data-prop="x">
+                        <input type="number" id="keysY" data-key="Keys" data-prop="y">
+
+                        <!-- KeySize -->
+                        <label>Размер на клавиш:</label>
+                        <input type="number" id="keysizeX" data-key="KeySize" data-prop="x">
+                        <input type="number" id="keysizeY" data-key="KeySize" data-prop="y">
+
+                        <!-- KbdGaps -->
+                        <label>Между клавишите:</label>
+                        <input type="number" id="kbdgapsX" data-key="KbdGaps" data-prop="x">
+                        <input type="number" id="kbdgapsY" data-key="KbdGaps" data-prop="y">
+
+                        <!-- Display (EUR) -->
+                        <label>Дисплей: Евро</label>
+                        <input type="number" id="displayX" data-key="Display" data-prop="x">
+                        <input type="number" id="displayY" data-key="Display" data-prop="y">
+
+                        <!-- Displaylv (BGN) -->
+                        <label>Дисплей: Лев</label>
+                        <input type="number" id="displaylvX" data-key="Displaylv" data-prop="x">
+                        <input type="number" id="displaylvY" data-key="Displaylv" data-prop="y">
+
+                        <!-- DisplaySize -->
+                        <label>Размер на дисплей:</label>
+                        <input type="number" id="displaysizeX" data-key="DisplaySize" data-prop="x">
+                        <input type="number" id="displaysizeY" data-key="DisplaySize" data-prop="y">
+
+                        <!-- Status -->
+                        <label>М статуси:</label>
+                        <input type="number" id="statusX" data-key="Status" data-prop="x">
+                        <input type="number" id="statusY" data-key="Status" data-prop="y">
+
+                        <!-- StatusSize -->
+                        <label>Размер на статус:</label>
+                        <input type="number" id="statussizeX" data-key="StatusSize" data-prop="x">
+                        <input type="number" id="statussizeY" data-key="StatusSize" data-prop="y">
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button id="saveSettings" class="action-button" style="margin-right: 20px;">Запис</button>
+                <button id="ovBtnSettings" class="action-button" style="margin-right: 20px;" 
+                    onclick="if (!ovFlag) {placeKeys(keys, displayCoords); ovFlag = true;} else {noOverlay(); ovFlag = false;} settingsModal.style.display = 'none';">
+                    Оверлей</button>
+                <button id="closeSettingsModalButton" class="action-button secondary">Затвори</button>
+            </div>
+        </div>
+    </div>
+
+    <!--h1>Това е просто демонстрация</h1>
   <button id="fullscreen-btn" onclick="goFullscreen()">На цял екран</button>
-  <button id="exit-fullscreen-btn" onclick="exitFullscreen()" style="display:none;">Нормален екран</button>
+  <button id="exit-fullscreen-btn" onclick="exitFullscreen()" style="display:none;">Нормален екран</button-->
   <button id="install" style="display:none;">Инсталирай</button>
 
+<script src="status-2.js"></script>
+<script src="calc.js"></script>
+<script src="history.js"></script>
+<script src="fontcalc.js"></script>
+<script>
+    const rows = 5;
+    const cols = 4;
+    const container = document.querySelector('.calculator-container');
+    const display = document.querySelector('.calculator-display');
+    const displaylv = document.querySelector('.calculator-display-lv');
+    var calculator = null; // Изображението на калкулатора
+    const EXCHANGE_RATE = 1.95583;
+
+    var screenWidth = window.innerWidth;
+    var imageWidth, imageHeight, aspectRatioW, aspectRatioH;
+    var imageWidthO, imageHeightO;
+    var userInput = "";
+    var ovFlag = false, fullscrFlag = false; // Флаг за оверлей и пълен екран
+    var keys = [];
+    var Mem = []; // Място за съхранение на паметта
+    var levMode = true; // Начален режим - лв.
+    var MainPoints = {};
+
+    const MAX_HISTORY_ITEMS = 30;
+    const historyButton = document.getElementById('historyButton');
+    const recallButton = document.getElementById('recallButton');
+    //const hModalOverlay = document.getElementById('hisModalOverlay');
+    const settingsModal = document.getElementById('settingsModal');
+    const historyList = document.getElementById('historyList');
+    const clearHistoryButton = document.getElementById('clearHistoryButton');
+    const closeHistoryModalButton = document.getElementById('closeHistoryModalButton');
+
+    var MainPointsO = {
+        Keys:   { x: 43, y: 235 },
+        KeySize:{ x: 84, y: 70 },
+        KbdGaps:{ x: 13, y: 13 },
+        Display:{ x: 102, y: 47 },
+        Displaylv:{ x: 102, y: 127 },
+        DisplaySize:{ x: 310, y: 57 },
+        Status: { x: -10, y: 185 },
+        StatusSize: { x: 45, y: 15 }
+    };
+
+    let recallIndex = -1; // -1 means no recall started, 0 is the last item
+
+    // New function to populate layout settings
+    function populateLayoutSettings() {
+      for (const key in MainPointsO) {
+        if (MainPointsO.hasOwnProperty(key)) {
+          const obj = MainPointsO[key];
+          if (typeof obj === 'object' && obj !== null) {
+            for (const prop in obj) {
+                if (obj.hasOwnProperty(prop)) {
+                    // Construct the ID based on the naming convention (e.g., keysX, displayY)
+                    const inputId = key.toLowerCase() + prop.toUpperCase();
+                    const inputElement = document.getElementById(inputId);
+                    if (inputElement) {
+                        inputElement.value = obj[prop];
+                    } else {
+                        console.warn(`Input element with ID '${inputId}' not found for MainPointsO.${key}.${prop}`);
+                    }
+                }
+            }
+          }
+        }
+      }
+    }
+
+    // New function to save layout settings
+    function saveLayoutSettings() {
+        for (const key in MainPointsO) {
+            if (MainPointsO.hasOwnProperty(key)) {
+                const obj = MainPointsO[key];
+                if (typeof obj === 'object' && obj !== null) {
+                    for (const prop in obj) {
+                        if (obj.hasOwnProperty(prop)) {
+                            const inputId = key.toLowerCase() + prop.toUpperCase();
+                            const inputElement = document.getElementById(inputId);
+                            if (inputElement && !isNaN(parseFloat(inputElement.value))) {
+                                obj[prop] = parseFloat(inputElement.value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        localStorage.setItem('MainPointsO', JSON.stringify(MainPointsO)); // Save to localStorage
+        console.log("MainPointsO updated and saved:", MainPointsO);
+        // Re-calculate and position elements
+        const layout = calcNewCoordinates();
+        keys = layout.keys;
+        displayCoords = layout.displayCoords;
+        resizeFont();
+    }
+
+    function getImageSize() {
+        if (calculator) {
+            //console.log("Извлечен път:", calculator.src); // Проверка в конзолата
+            imageWidthO = calculator.naturalWidth;
+            imageHeightO = calculator.naturalHeight;
+            console.log("Оригинален размер (1:1) на изображението: W:", imageWidthO, " x H:", imageHeightO);
+        } else {
+            console.log("Изображението не е намерено!");
+        }
+    }
+
+    function getImageVisualSize() {
+        let containerWidth = document.body.clientWidth;
+        let containerHeight = document.body.clientHeight;
+        if (!calculator) {
+            console.error("Грешка: Не е намерено изображението.");
+            return;
+        }
+        let aspectRatio = calculator.naturalWidth / calculator.naturalHeight;
+        if (calculator.style.objectFit === "cover") {
+            imageWidth = containerWidth;
+            imageHeight = containerHeight;
+        } else if (calculator.style.objectFit === "contain") {
+            if (containerWidth / containerHeight > aspectRatio) {
+                imageHeight = containerHeight;
+                imageWidth = Math.round(containerHeight * aspectRatio);
+                console.log("(contain) - Изображението е по-широко от контейнера, използваме височината на контейнера.");
+            } else {
+                imageWidth = containerWidth;
+                imageHeight = Math.round(containerWidth / aspectRatio);
+                console.log("(contain) - Изображението е по-високо от контейнера, използваме ширината на контейнера.");
+            }
+        } else {
+            imageWidth = calculator.width;
+            imageHeight = calculator.height;
+            console.log("(no contain) - Използваме зададените размери на изображението.");
+        }
+        console.log("Визуален размер на изображението: W:", imageWidth, " x H:", imageHeight);
+        // Заменяме window.innerWidth с containerWidth
+        aspectRatioW = imageWidth / imageWidthO; // aspectRatioW е съотношението на ширината на изображението към оригиналната ширина
+        aspectRatioH = imageHeight / imageHeightO; // aspectRatioH е съотношението на височината на изображението към оригиналната височина
+        // padding на изображението в canvas, предполага се равен двустранно
+        //StartingPoint.x = ConstX * aspectRatioW + (containerWidth - imageWidth) / 2;
+        //StartingPoint.y = ConstY * aspectRatioH + (containerHeight - imageHeight); // (imageHeight / calculator.naturalHeight)
+        //console.log("StartingPoint.x = ", StartingPoint.x, "  StartingPoint.y = ", StartingPoint.y);
+        console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
+    }
+
+    function getKeyValue(row, col) {
+        const keyMap = [
+            ["C", "€", "L", "B"],
+            ["7", "8", "9", "*"],
+            ["4", "5", "6", "/"],
+            ["1", "2", "3", "-"],
+            ["0", ",", "=", "+"]
+        ];
+        return keyMap[row][col];
+    }
+
+    function formatNumber(num) {
+        if (isNaN(num)) return '';
+        // .toFixed(2) correctly rounds to 2 decimal places and ensures two decimal digits.
+        // Example: 123 -> "123.00", 123.4 -> "123.40", 123.456 -> "123.46"
+        return num.toFixed(2).replace('.', ',');
+    }
+
+    function parseNumber(str) {
+        if (!str) return NaN;
+        return parseFloat(str.replace(',', '.'));
+    }
+
+    function convertFromLevToEur(levStr) {
+        levStr = levStr.replace(/\s+/g, ''); // Премахваме интервалите
+        let levValue = parseNumber(levStr);
+        if (isNaN(levValue)) {
+            return ''; // Изчистваме целевото поле, ако изходното е невалидно
+        } else {
+            let eurValue = levValue / EXCHANGE_RATE;
+            addHistoryEntry(levValue, eurValue);
+            recallIndex = -1; // Reset recall index on new calculation
+            adjustFontSize(levInput); // Адаптираме шрифта на изходното поле
+            adjustFontSize(eurInput); // Адаптираме шрифта на целевото поле
+            return formatNumber(eurValue);
+        }
+    }
+
+    function convertFromEurToLev(eurStr) {
+        eurStr = eurStr.replace(/\s+/g, ''); // Премахваме интервалите
+        let eurValue = parseNumber(eurStr);
+        if (isNaN(eurValue)) {
+            return ''; // Изчистваме целевото поле, ако изходното е невалидно
+        } else {
+            let levValue = eurValue * EXCHANGE_RATE;
+            addHistoryEntry(levValue, eurValue);
+            recallIndex = -1; // Reset recall index on new calculation
+            adjustFontSize(levInput); // Адаптираме шрифта на изходното поле
+            adjustFontSize(eurInput); // Адаптираме шрифта на целевото поле
+            return formatNumber(levValue);
+        }
+    }
+
+    function groupByThree(str, dec) { // dec - дали да се добави десетична част
+        if (str == null || str == "") return ""; // Ако входът е празен
+        str = formatNumber(parseNumber(str)); // Форматираме числото
+        let cleanedStr = str.replace(/\s+/g, ""); // Премахваме интервалите
+        let parts = cleanedStr.split(","); // Разделяме цялата и десетичната част
+        let wholePart = parts[0]; // Цялата част от числото
+        if (wholePart == "") wholePart = "0"; // Ако няма цяла част, връщаме празен низ
+        let decimalPart = parts.length > 1 ? "," + parts[1] : ""; // Десетичната част (ако я има)
+        let result = [];
+        for (let i = wholePart.length; i > 0; i -= 3) {
+            let start = Math.max(i - 3, 0);
+            result.unshift(wholePart.slice(start, i)); // Запазваме правилния ред
+        }
+        if (dec) if (decimalPart == "" || decimalPart == ",") decimalPart = ",00"
+        else if (decimalPart.length == 2) decimalPart += "0"; // Ако има само една цифра след запетаята, добавяме нула
+        return result.join(" ") + decimalPart; // Свързваме групите и добавяме десетичната част
+    }
+
+    function appendNumber(value) {
+        const display = document.getElementById('eurInput'); // Това вече е div
+        const displaylv = document.getElementById('levInput');
+        if (value === "€") { 
+            historyOpen();
+            return;
+        }
+        if (value === "L") {
+            value = "";
+            clearCurrentSessionHistory();
+            inputSessionId = Date.now(); // нова сесия
+            levMode = !levMode;
+            const newActiveValue = levMode
+                ? displaylv.textContent
+                : display.textContent; // Променено за div
+            userInput = newActiveValue
+                .replace(/\s/g, '') // премахване на интервали
+                .replace(/,/g, '.'); // нормализиране на десетичния разделител
+            console.log("Променен режим - userInput:", userInput);
+            // return; // по желание: спирай тук, ако не искаш допълнителна обработка след превключване
+        }
+        if (value === "C") {
+            display.textContent = ""; // Променено за div
+            displaylv.textContent = "";
+            userInput = "";
+        } else if (value === "B") {
+            userInput = userInput.slice(0, -1);
+        } else if (value === "=") {
+            clearCurrentSessionHistory();
+            inputSessionId = Date.now(); // нова сесия        
+            if (!/[+\-*/]$/.test(userInput) && userInput.length > 0) {
+                try {
+                    let formattedInput = userInput.replace(/,/g, '.');
+                    let result = eval(formattedInput);
+                    result = parseFloat(result).toFixed(2);
+                    userInput = result.toString().replace(/\./g, ',');
+                } catch (error) {
+                    console.error("Грешка в изчисленията", error);
+                }
+            }
+        } else {
+            // Ограничение до два знака след запетаята само за текущото число
+            const lastOperatorIndex = Math.max(
+                userInput.lastIndexOf('+'),
+                userInput.lastIndexOf('-'),
+                userInput.lastIndexOf('*'),
+                userInput.lastIndexOf('/')
+            );
+            const currentNumber = lastOperatorIndex === -1 
+                ? userInput 
+                : userInput.slice(lastOperatorIndex + 1);
+            // Не допускаме повече от една запетая в текущото число
+            if (value === "," && currentNumber.includes(',')) return;
+            // Ограничение за два знака след запетаята само за текущото число
+            if ((/\d/.test(value) || value === ",") && currentNumber.includes(',')) {
+                const decimalPart = currentNumber.split(',')[1] || "";
+                if (decimalPart.length >= 2) return;
+            }
+            // Не допускаме аритметични знаци в началото на израза или след друг оператор
+            if (/[+\-*/]/.test(value) && (userInput.length === 0 || /[+\-*/]$/.test(userInput))) return;
+            // Проверка за автоматично изчисление при въвеждане на втори оператор
+            let match = userInput.match(/([\d,]+[+\-*/])([\d,]+)/);
+            if (match && /[+\-*/]/.test(value)) {
+                try {
+                    let formattedInput = match[0].replace(/,/g, '.');
+                    let result = eval(formattedInput);
+                    userInput = parseFloat(result).toFixed(2).replace(/\./g, ',') + value;
+                } catch (error) {
+                    console.error("Грешка в изчисленията", error);
+                }
+            } else {
+                userInput += value;
+            }
+        }
+        const formattedUserInput = userInput
+        .replace(/\*/g, "×")
+        .replace(/\//g, "÷");
+
+        if (levMode) {
+            displaylv.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
+            display.style.backgroundColor = "rgba(201, 255, 5, 0)";
+            displaylv.textContent = /[+\-*/]/.test(userInput) // levInput остава input
+                ? formattedUserInput
+                : groupByThree(userInput, false);
+            display.textContent = /[+\-*/]/.test(userInput) // Променено за div
+                ? convertFromLevToEur(userInput, true)
+                : groupByThree(convertFromLevToEur(userInput, true));
+        } else {
+            display.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
+            displaylv.style.backgroundColor = "rgba(201, 255, 5, 0)";
+            display.textContent = /[+\-*/]/.test(userInput) // Променено за div
+                ? formattedUserInput
+                : groupByThree(userInput, false);
+            displaylv.textContent = /[+\-*/]/.test(userInput)
+                ? convertFromEurToLev(userInput, true)
+                : groupByThree(convertFromEurToLev(userInput, true));
+        }
+       console.log("userInput = ", userInput);
+    }
+
+    function getKeyColumnIndex(key) {
+    const rect = calculator.getBoundingClientRect();
+    // const scaleX = rect.width / imageWidthO;
+    const colWidth = MainPoints.KeySize.x + MainPoints.KbdGaps.x;
+    const relativeX = (key.x - rect.left - MainPoints.Keys.x) / colWidth;
+    return Math.round(relativeX+1); // Връща 1, 2, 3 или 4
+    }
+
+    document.addEventListener("click", function(event) {
+        const rect = calculator.getBoundingClientRect();
+        const scaleX = rect.width / imageWidthO;
+        const scaleY = rect.height / imageHeightO;
+        const keyWidth = MainPointsO.KeySize.x * scaleX;
+        const keyHeight = MainPointsO.KeySize.y * scaleY;
+        keys.forEach(key => {
+            const withinX = event.clientX >= key.x && event.clientX <= key.x + keyWidth;
+            const withinY = event.clientY >= key.y && event.clientY <= key.y + keyHeight;
+            if (withinX && withinY) {
+                if (event.ctrlKey && key.value === '€') {
+                    if (ovFlag) {noOverlay(); ovFlag = false;}
+                    settingsModal.style.display = 'flex';
+                    populateLayoutSettings();
+                } else if (event.ctrlKey && isMemoryKey(key.value)) {
+                    const col = getKeyColumnIndex(key);
+                    executeMemoryAction(key.value, col);
+                    console.log("Натиснато:", key.value, "→ Колона:", col);
+                } else {
+                    appendNumber(key.value);
+                }
+            }
+        });
+        // Проверка за кликове върху статус зоните (само за слотове 1, 2, 3)
+        for (let i = 1; i <= 3; i++) {
+            const statusEl = document.getElementById(`statusArea${i}`);
+            if (statusEl && getComputedStyle(statusEl).opacity > 0) {
+                const statusRect = statusEl.getBoundingClientRect();
+                if (event.clientX >= statusRect.left && event.clientX <= statusRect.right &&
+                    event.clientY >= statusRect.top && event.clientY <= statusRect.bottom)  {
+                    if (event.ctrlKey) {
+                    memoryShow(i);
+                    console.log(`Ctrl+Клик върху статус зона ${i} за показване на памет.`);
+                    } else {
+                    memoryRecall(i);
+                    console.log(`Кликнато върху видима статус зона ${i} за извикване на памет.`);
+                    }// Извикваме паметта за съответния слот
+                    break; // Прекратяваме цикъла, ако е обработен клик
+                }
+            }
+        }
+    });
+
+    // 🧩 Улавя десен клик или дълъг тап (контекстно меню)
+    document.addEventListener("contextmenu", function(event) {
+        event.preventDefault(); // предотвратява появата на браузър менюто
+        const rect = calculator.getBoundingClientRect();
+        const scaleX = rect.width / imageWidthO;
+        const scaleY = rect.height / imageHeightO;
+        const keyWidth = MainPointsO.KeySize.x * scaleX;
+        const keyHeight = MainPointsO.KeySize.y * scaleY;
+        keys.forEach(key => {
+            if (event.clientX >= key.x && event.clientX <= key.x + keyWidth &&
+                event.clientY >= key.y && event.clientY <= key.y + keyHeight) {
+                // 👉 Добавяме условието от клавиатурния шорткът
+                if (key.value === '+') {
+                    if (!fullscrFlag) goFullscreen()
+                    else exitFullscreen();
+                    fullscrFlag = !fullscrFlag; //@@
+                } else if (key.value === '€') {
+                    if (ovFlag) {noOverlay(); ovFlag = false;}
+                    settingsModal.style.display = 'flex';
+                    populateLayoutSettings();
+                } else if (isMemoryKey(key.value)) {
+                    const col = getKeyColumnIndex(key);
+                    executeMemoryAction(key.value, col);
+                }
+            }
+        });
+        // Проверка за кликове върху статус зоните (само за слотове 1, 2, 3)
+        for (let i = 1; i <= 3; i++) {
+            const statusEl = document.getElementById(`statusArea${i}`);
+            if (statusEl && getComputedStyle(statusEl).opacity > 0) {
+                const statusRect = statusEl.getBoundingClientRect();
+                if (event.clientX >= statusRect.left && event.clientX <= statusRect.right &&
+                    event.clientY >= statusRect.top && event.clientY <= statusRect.bottom) {
+                    memoryShow(i); // Извикваме паметта за съответния слот
+                    console.log(`Задържано върху статус зона ${i} за извикване на памет.`);
+                    break; // Прекратяваме цикъла, ако е обработен клик
+                }
+            }
+        }
+    });
+
+    document.getElementById('saveSettings').addEventListener('click', function() {
+        saveLayoutSettings();
+        settingsModal.style.display = 'none'; // Close modal after saving
+    });
+
+    document.getElementById('closeSettingsModalButton').addEventListener('click', function() {
+        settingsModal.style.display = 'none'; // Close modal without saving
+    });
+
+    window.addEventListener("load", async function () {
+        try {
+            calculator = document.querySelector(".calculator-img");
+            // Load saved MainPointsO from localStorage
+            const savedMainPointsO = localStorage.getItem('MainPointsO');
+            if (savedMainPointsO) {
+                MainPointsO = JSON.parse(savedMainPointsO);
+                console.log("Loaded MainPointsO from localStorage:", MainPointsO);
+            } else {
+                console.log("No saved MainPointsO found in localStorage.");
+            }
+
+            // Основни изчисления
+            getImageSize();
+            getImageVisualSize();
+            scaleMainPoints(aspectRatioW, aspectRatioH);
+            const layout = calcNewCoordinates(); //@@ calculator, imageWidthO, imageHeightO
+            keys = layout.keys; // This needs to be updated after MainPointsO is potentially loaded
+            displayCoords = layout.displayCoords;
+            displayCoords = layout.displayCoords;
+            resizeFont();
+            appendNumber("C");
+        } catch (err) {
+            console.warn("⚠️ Грешка при инициализация:", err);
+        }
+        // Визуален ефект
+        const img = document.querySelector(".calculator-img");
+        if (img) {
+            img.classList.add("glow");
+            img.addEventListener("animationend", () => {
+                img.classList.remove("glow");
+            }, { once: true });
+            // Populate layout settings fields when the page loads (after MainPointsO is set)
+            populateLayoutSettings();
+            const settingsButton = document.getElementById('settingsButton'); // Assuming this button exists
+            if (settingsButton) {
+                settingsButton.addEventListener('click', populateLayoutSettings); // Populate when modal is opened
+            }
+        }
+        // Показване на интерфейса
+        document.body.classList.add("ready");
+    });
+
+    // Следене на преоразмеряването на прозореца
+    window.addEventListener("resize", function (e) {
+        getImageVisualSize();
+        scaleMainPoints(aspectRatioW, aspectRatioH);
+        // imageWidth = document.body.clientWidth;
+        // imageHeight = document.body.clientHeight;
+        // keys = getKeyCoordinates(imageWidth, imageHeight);
+        const layout = calcNewCoordinates(); //@@ calculator, imageWidthO, imageHeightO
+        keys = layout.keys;
+        displayCoords = layout.displayCoords;
+        resizeFont();
+    })
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Затваряне на модал с ESC клавиш
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                historyModal.style.display = 'none';
+                settingsModal.style.display = 'none';
+            }
+        });
+        loadHistory();
+        // Initial font size adjustment for both fields based on their (potentially empty) content
+        adjustFontSize(levInput);
+        adjustFontSize(eurInput);
+    });
+</script>
   <script>
     function goFullscreen() {
       const el = document.documentElement;
@@ -54,9 +618,9 @@
     }
 
     // Показване/скриване на бутоните според режима
-    document.addEventListener('fullscreenchange', toggleFullscreenButtons);
-    document.addEventListener('webkitfullscreenchange', toggleFullscreenButtons);
-    document.addEventListener('msfullscreenchange', toggleFullscreenButtons);
+    //document.addEventListener('fullscreenchange', toggleFullscreenButtons);
+    //document.addEventListener('webkitfullscreenchange', toggleFullscreenButtons);
+    //document.addEventListener('msfullscreenchange', toggleFullscreenButtons);
 
     function toggleFullscreenButtons() {
       const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
