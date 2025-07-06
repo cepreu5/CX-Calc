@@ -1,6 +1,6 @@
 {
-  "name": "Fullscreen Demo App",
-  "short_name": "FullscreenApp",
+  "name": "CX_Calc",
+  "short_name": "CX_Calc",
   "start_url": "/CX-Calc/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
