@@ -18,7 +18,7 @@
     </style>
 </head>
 <body>
-    <button id="install" style="position:fixed; top:10px; left:10px; z-index:1000; display:inline-block;">Инсталирай</button>
+    <button id="install" style="position:fixed; top:0px; width: 100%; z-index:1000; display:none;">Инсталиране</button>
 
     <div id="statusArea1" class="statusArea"></div>
     <div id="statusArea2" class="statusArea"></div>
@@ -594,6 +594,15 @@
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput);
         adjustFontSize(eurInput);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const installBtn = document.getElementById('install');
+      // Проверка за инсталирано PWA
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (isStandalone) {
+        installBtn.style.display = 'none';
+      }
     });
 
     function goFullscreen() {
