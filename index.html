@@ -18,6 +18,8 @@
     </style>
 </head>
 <body>
+    <button id="install" style="position:fixed; top:10px; left:10px; z-index:1000; display:inline-block;">Инсталирай</button>
+
     <div id="statusArea1" class="statusArea"></div>
     <div id="statusArea2" class="statusArea"></div>
     <div id="statusArea3" class="statusArea"></div>
@@ -108,7 +110,6 @@
     <!--h1>Това е просто демонстрация</h1>
   <button id="fullscreen-btn" onclick="goFullscreen()">На цял екран</button>
   <button id="exit-fullscreen-btn" onclick="exitFullscreen()" style="display:none;">Нормален екран</button-->
-  <button id="install" style="display:none;">Инсталирай</button>
 
 <script src="status-2.js"></script>
 <script src="calc.js"></script>
@@ -594,8 +595,7 @@
         adjustFontSize(levInput);
         adjustFontSize(eurInput);
     });
-</script>
-  <script>
+
     function goFullscreen() {
       const el = document.documentElement;
       if (el.requestFullscreen) {
@@ -622,11 +622,11 @@
     //document.addEventListener('webkitfullscreenchange', toggleFullscreenButtons);
     //document.addEventListener('msfullscreenchange', toggleFullscreenButtons);
 
-    function toggleFullscreenButtons() {
+    /* function toggleFullscreenButtons() {
       const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
       document.getElementById('fullscreen-btn').style.display = isFullscreen ? 'none' : 'inline-block';
       document.getElementById('exit-fullscreen-btn').style.display = isFullscreen ? 'inline-block' : 'none';
-    }
+    } */
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
@@ -634,7 +634,7 @@
 
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
+      //e.preventDefault();
       deferredPrompt = e;
       const btn = document.getElementById('install');
       btn.style.display = 'block';
