@@ -18,6 +18,9 @@
     </style>
 </head>
 <body>
+    <div id="pageSizeInfo" style="position:fixed; top:0; left:0; background:rgba(255,255,255,0.8); color:#222; font-size:14px; padding:2px 8px; z-index:2000; border-radius:0 0 8px 0;">
+      Размер: <span id="pageSizeText"></span>
+    </div>
     <button id="install" style="position:fixed; top:0px; width: 100%; z-index:1000; display:none;">Инсталиране</button>
 
     <div id="statusArea1" class="statusArea"></div>
@@ -594,15 +597,16 @@
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput);
         adjustFontSize(eurInput);
-    });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const installBtn = document.getElementById('install');
-      // Проверка за инсталирано PWA
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      if (isStandalone) {
-        installBtn.style.display = 'none';
-      }
+        // Проверка за инсталирано PWA
+        const installBtn = document.getElementById('install');
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        if (isStandalone) {
+            installBtn.style.display = 'none';
+        }
+
+        // Динамично показване на размера на страницата
+        updatePageSizeInfo();
     });
 
     function goFullscreen() {
@@ -651,6 +655,13 @@
         deferredPrompt.prompt();
       });
     });
+
+    function updatePageSizeInfo() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      document.getElementById('pageSizeText').textContent = `${w} × ${h}`;
+    }
+    window.addEventListener('resize', updatePageSizeInfo);
   </script>
 
 </body>
