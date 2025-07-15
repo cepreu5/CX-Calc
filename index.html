@@ -8,14 +8,6 @@
     <title>CX-Calc</title>
    	<link rel="shortcut icon" type="image/png" href="CalcFav.png" />
 	  <link rel="stylesheet" href="style.css" />
-
-    <style>
-        /* button {
-          font-size: 1.2em;
-          padding: 1em 2em;
-          margin-top: 1em;
-        } */
-    </style>
 </head>
 <body>
     <!--div id="pageSizeInfo" style="position:fixed; top:0; left:0; background:rgba(255,255,255,0.8); color:#222; font-size:14px; padding:2px 8px; z-index:2000; border-radius:0 0 8px 0;">
@@ -37,9 +29,10 @@
     </div>
 
     <div id="historyModal" class="modal">
+        <div class="modal-overlay"></div> <!-- Засенчващият слой -->
         <div class="modal-content">
             <div class="modal-header">
-                <h2>История на изчисленията</h2>
+                <h2>История</h2>
             </div>
             <ul id="historyList">
             </ul>
@@ -51,6 +44,7 @@
     </div>
 
     <div id="settingsModal" class="modal">
+        <div class="modal-overlay"></div> <!-- Засенчващият слой -->
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Настройки</h2>
@@ -113,7 +107,7 @@
             <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
                 <button id="saveSettings" class="action-button" style="margin-right: 20px;">Запис</button>
                 <button id="ovBtnSettings" class="action-button" style="margin-right: 20px;" 
-                    onclick="if (!ovFlag) {const layout = calcNewCoordinates(); displayCoords = layout.displayCoords; placeKeys(keys, displayCoords); ovFlag = true;} else {noOverlay(); ovFlag = false;} settingsModal.style.display = 'none';">
+                    onclick="showOv()">
                     Зони</button>
                 <button id="closeSettingsModalButton" class="action-button secondary">Затвори</button>
             </div>
@@ -159,6 +153,7 @@
     var Mem = []; // Място за съхранение на паметта
     var levMode = true, isStandalone = false; // Начален режим - лв.
     var MainPoints = {};
+    let modalIsActive = false;
 
     const MAX_HISTORY_ITEMS = 30;
     const historyButton = document.getElementById('historyButton');
@@ -220,57 +215,6 @@
           calcBottomOffsetInput.value = parseInt(val, 10);
       }
     }
-/*
-    // New function to save layout settings
-    function saveLayoutSettings() {
-        for (const key in MainPointsO) {
-            if (MainPointsO.hasOwnProperty(key)) {
-                const obj = MainPointsO[key];
-                if (typeof obj === 'object' && obj !== null) {
-                    for (const prop in obj) {
-                        if (obj.hasOwnProperty(prop)) {
-                            const inputId = key.toLowerCase() + prop.toUpperCase();
-                            const inputElement = document.getElementById(inputId);
-                            if (inputElement && !isNaN(parseFloat(inputElement.value))) {
-                                obj[prop] = parseFloat(inputElement.value);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        localStorage.setItem('MainPointsO', JSON.stringify(MainPointsO)); // Save to localStorage
-        console.log("MainPointsO updated and saved:", MainPointsO);
-        // Re-calculate and position elements
-        const layout = calcNewCoordinates();
-        keys = layout.keys;
-        displayCoords = layout.displayCoords;
-        //const { keys, displayCoords } = calcNewCoordinates();
-        resizeFont();
-        // Запази exchangeRate
-        const exchangeRateInput = document.getElementById('exchangeRateInput');
-        if (exchangeRateInput) {
-            const rate = parseFloat(exchangeRateInput.value);
-            if (!isNaN(rate) && rate > 0) {
-                EXCHANGE_RATE = rate;
-                // Запази в localStorage
-                localStorage.setItem('EXCHANGE_RATE', EXCHANGE_RATE);
-                // Обнови и в заглавието
-                const exchangeRateValue = document.getElementById('exchangeRateValue');
-                if (exchangeRateValue) {
-                    exchangeRateValue.textContent = EXCHANGE_RATE;
-                }
-            }
-        }
-        const calcBottomOffsetInput = document.getElementById('calcBottomOffset');
-        if (calcBottomOffsetInput && !isNaN(parseInt(calcBottomOffsetInput.value, 10))) {
-            const px = parseInt(calcBottomOffsetInput.value, 10);
-            document.documentElement.style.setProperty('--calc-bottom-offset', px + 'px');
-            // По желание: запази и в localStorage
-            localStorage.setItem('calcBottomOffset', px);
-        }
-    }
-*/
 
     function saveLayoutSettings() {
         let reloadNeeded = false;
@@ -400,6 +344,7 @@
 
     function parseNumber(str) {
         if (!str) return NaN;
+        str = str.replace(/\s+/g, ''); // Премахваме интервалите
         return parseFloat(str.replace(',', '.'));
     }
 
@@ -410,7 +355,7 @@
             return ''; // Изчистваме целевото поле, ако изходното е невалидно
         } else {
             let eurValue = levValue / EXCHANGE_RATE;
-            adjustFontSize(levInput, eurInput); // Адаптираме шрифта на изходното поле
+            //adjustFontSize(levInput, eurInput); // Адаптираме шрифта на изходното поле
             recallIndex = -1; // Reset recall index on new calculation
             return formatNumber(eurValue);
         }
@@ -423,28 +368,41 @@
             return ''; // Изчистваме целевото поле, ако изходното е невалидно
         } else {
             let levValue = eurValue * EXCHANGE_RATE;
-            // addHistoryEntry(levValue, eurValue);
             recallIndex = -1; // Reset recall index on new calculation
-            adjustFontSize(levInput, eurInput); // Адаптираме шрифта на изходното поле
             return formatNumber(levValue);
         }
     }
 
     function groupByThree(str, dec) { // dec - дали да се добави десетична част
         if (str == null || str == "") return ""; // Ако входът е празен
-        str = formatNumber(parseNumber(str)); // Форматираме числото
+
         let cleanedStr = str.replace(/\s+/g, ""); // Премахваме интервалите
         let parts = cleanedStr.split(","); // Разделяме цялата и десетичната част
         let wholePart = parts[0]; // Цялата част от числото
         if (wholePart == "") wholePart = "0"; // Ако няма цяла част, връщаме празен низ
+
         let decimalPart = parts.length > 1 ? "," + parts[1] : ""; // Десетичната част (ако я има)
+
         let result = [];
         for (let i = wholePart.length; i > 0; i -= 3) {
             let start = Math.max(i - 3, 0);
             result.unshift(wholePart.slice(start, i)); // Запазваме правилния ред
         }
-        if (dec) if (decimalPart == "" || decimalPart == ",") decimalPart = ",00"
-        else if (decimalPart.length == 2) decimalPart += "0"; // Ако има само една цифра след запетаята, добавяме нула
+
+        // Conditional formatting of decimal part based on 'dec' flag
+        if (dec) {
+            // If 'dec' is true, ensure two decimal places
+            if (decimalPart === "" || decimalPart === ",") {
+                decimalPart = ",00";
+            } else if (decimalPart.length === 2) {
+                // If there's only one digit after the comma, add a zero
+                decimalPart += "0";
+            }
+        } else {
+            // If 'dec' is false, preserve the decimal part as is
+            // No changes needed to decimalPart here, it already contains what was in the input string
+        }
+
         return result.join(" ") + decimalPart; // Свързваме групите и добавяме десетичната част
     }
 
@@ -463,7 +421,89 @@
         return true;
     }
 
+
+//    function updateDisplays(userInput, formattedUserInput) {
+//        const isOperation = /[+\-*/]/.test(userInput);
+/*        const [activeDisplay, passiveDisplay] = levMode ? [displaylv, display] : [display, displaylv];
+        const conversionFn = levMode ? convertFromLevToEur : convertFromEurToLev;
+
+        // Осветяване на активния дисплей
+        activeDisplay.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
+        passiveDisplay.style.backgroundColor = "rgba(201, 255, 5, 0)";
+
+        // Задаване на текст за активния дисплей
+        activeDisplay.textContent = isOperation
+            ? formattedUserInput
+            : groupByThree(userInput, false);
+
+        // Задаване на текст за пасивния дисплей (или изчистване при операция)
+        if (isOperation) {
+            passiveDisplay.textContent = '';
+        } else {
+            const convertedValue = conversionFn(userInput);
+            passiveDisplay.textContent = groupByThree(convertedValue);
+        }
+        // Адаптиране на шрифта
+        adjustFontSize(activeDisplay, passiveDisplay);
+    }
+*/
+
+    function updateDisplays(userInput, formattedUserInput, keyPressed) {
+        const isOperation = /[+\-*/]/.test(userInput);
+        const [activeDisplay, passiveDisplay] = levMode ? [displaylv, display] : [display, displaylv];
+        const conversionFn = levMode ? convertFromLevToEur : convertFromEurToLev;
+
+        // Осветяване на активния дисплей
+        activeDisplay.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
+        activeDisplay.style.borderBottom = "2px solid #fff";
+        passiveDisplay.style.backgroundColor = "rgba(201, 255, 5, 0)";
+        passiveDisplay.style.borderBottom = "none";
+
+        let activeDisplayText;
+
+        if (userInput === "") { // Добавена проверка за празен userInput
+            activeDisplayText = "";
+        } else if (isOperation) {
+            activeDisplayText = formattedUserInput;
+        } else {
+            const hasComma = userInput.includes(',');
+            const decimalPart = hasComma ? userInput.split(',')[1] : '';
+            const isWholeNumber = !hasComma;
+
+            if (keyPressed === "B") { // Режим на изтриване (Backspace)
+                if (isWholeNumber) { // Ако след изтриване числото е цяло (напр. от "12," става "12")
+                    activeDisplayText = groupByThree(userInput, true); // Форматираме го като "12,00"
+                } else { // Ако все още има десетична част (напр. "12,34" -> "12,3" или "12,3" -> "12,")
+                    activeDisplayText = groupByThree(userInput, false); // Показваме го точно както е
+                }
+            } else { // Режим на нормално въвеждане (цифра или запетая)
+                if (isWholeNumber) { // Ако е цяло число (напр. "12")
+                    activeDisplayText = groupByThree(userInput, true); // Форматираме го като "12,00"
+                } else if (decimalPart.length === 0) { // Ако има запетая, но без десетични цифри (напр. "12,")
+                    activeDisplayText = groupByThree(userInput, true); // Показваме го като "12,"
+                } else if (decimalPart.length === 1) { // Ако има една десетична цифра (напр. "12,3")
+                    activeDisplayText = groupByThree(userInput, true); // Форматираме го като "12,30"
+                } else { // Ако има две десетични цифри (напр. "12,34")
+                    activeDisplayText = groupByThree(userInput, false); // Показваме го като "12,34"
+                }
+            }
+        }
+
+        activeDisplay.textContent = activeDisplayText;
+
+        // Задаване на текст за пасивния дисплей (или изчистване при операция)
+        if (isOperation) {
+            passiveDisplay.textContent = '';
+        } else {
+            const convertedValue = conversionFn(userInput);
+            passiveDisplay.textContent = groupByThree(convertedValue, true); // Пасивният дисплей винаги показва два десетични знака
+        }
+        // Адаптиране на шрифта
+        adjustFontSize(activeDisplay, passiveDisplay);
+    }
+
     function appendNumber(value) {
+        var oldUserInput = "";
         const display = document.getElementById('eurInput');
         const displaylv = document.getElementById('levInput');
         if (value === "€") { 
@@ -491,14 +531,20 @@
         } else if (value === "B") {
             userInput = userInput.slice(0, -1);
         } else if (value === "=") {
-            //clearCurrentSessionHistory();
-            //inputSessionId = Date.now(); // нова сесия
             if (!/[+\-*/]$/.test(userInput) && userInput.length > 0) {
                 try {
                     let formattedInput = userInput.replace(/,/g, '.');
+                    oldUserInput = userInput
+                    .replace(/\*/g, "×")
+                    .replace(/\//g, "÷")
+                    .replace(/,/g, '.');
                     let result = eval(formattedInput);
                     result = parseFloat(result).toFixed(2);
                     userInput = result.toString().replace(/\./g, ',');
+                    navigator.clipboard.writeText(userInput)
+                    .then(() => {
+                        console.log("Резултатът беше копиран в клипборда! ✅"); })
+                    .catch(err => { console.error("Грешка при копиране в клипборда:", err); });
                 } catch (error) {
                     console.error("Грешка в изчисленията", error);
                 }
@@ -521,10 +567,6 @@
                 const decimalPart = currentNumber.split(',')[1] || "";
                 if (decimalPart.length >= 2) return;
             }
-            //if (/[+\-*/]/.test(value)) {
-            /*    const [activeDisplay, passiveDisplay] = levMode ? [displaylv, display] : [display, displaylv];
-                while (passiveDisplay.firstChild) passiveDisplay.removeChild(passiveDisplay.firstChild);
-            }*/
             // Не допускаме аритметични знаци в началото на израза или след друг оператор
             if (/[+\-*/]/.test(value) && (userInput.length === 0 || /[+\-*/]$/.test(userInput))) return;
             // Проверка за автоматично изчисление при въвеждане на втори оператор
@@ -532,8 +574,15 @@
             if (match && /[+\-*/]/.test(value)) {
                 try {
                     let formattedInput = match[0].replace(/,/g, '.');
+                    oldUserInput = userInput
+                    .replace(/\*/g, "×")
+                    .replace(/\//g, "÷")
+                    .replace(/,/g, '.');
                     let result = eval(formattedInput);
                     userInput = parseFloat(result).toFixed(2).replace(/\./g, ',') + value;
+                    let levValue = parseNumber(displaylv.textContent);
+                    let eurValue = parseNumber(display.textContent);
+                    addHistoryEntry(oldUserInput, result, "no"); // записва междинен резултат
                 } catch (error) {
                     console.error("Грешка в изчисленията", error);
                 }
@@ -546,36 +595,13 @@
         const formattedUserInput = userInput
         .replace(/\*/g, "×")
         .replace(/\//g, "÷");
-        if (levMode) {
-            displaylv.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
-            display.style.backgroundColor = "rgba(201, 255, 5, 0)";
-            displaylv.textContent = /[+\-*/]/.test(userInput) // levInput остава input
-                ? formattedUserInput
-                : groupByThree(userInput, false);
-            display.textContent = /[+\-*/]/.test(userInput) // Променено за div
-                ? convertFromLevToEur(userInput, true)
-                : groupByThree(convertFromLevToEur(userInput, true));
-        } else {
-            display.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
-            displaylv.style.backgroundColor = "rgba(201, 255, 5, 0)";
-            display.textContent = /[+\-*/]/.test(userInput)
-                ? formattedUserInput
-                : groupByThree(userInput, false);
-            displaylv.textContent = /[+\-*/]/.test(userInput)
-                ? convertFromEurToLev(userInput, true)
-                : groupByThree(convertFromEurToLev(userInput, true));
+        updateDisplays(userInput, formattedUserInput, value);
+        if (value === "=") {
+            let levValue = parseNumber(displaylv.textContent);
+            let eurValue = parseNumber(display.textContent);
+            if (levValue !== "" && eurValue !== "") addHistoryEntry(oldUserInput, levValue, eurValue);
         }
-      if (/[+\-*/]/.test(userInput)) {
-          const [activeDisplay, passiveDisplay] = levMode ? [displaylv, display] : [display, displaylv];
-          while (passiveDisplay.firstChild) passiveDisplay.removeChild(passiveDisplay.firstChild);
-      }
-      if (value === "=") {
-        let levValue = parseNumber(displaylv.textContent);
-        let eurValue = parseNumber(display.textContent);
-        // console.log("levValue = ", levValue, "  eurValue = ", display.textContent, display.innerText, display.innerHTML);
-        if (levValue !== "" && eurValue !== "") addHistoryEntry(levValue, eurValue);
-      }
-      console.log("userInput = ", userInput);
+        console.log("userInput = ", userInput);
     }
 
     function getKeyColumnIndex(key) {
@@ -587,6 +613,7 @@
     }
 
     document.addEventListener("click", function(event) {
+        if (modalIsActive) return; // ❌
         const rect = calculator.getBoundingClientRect();
         const scaleX = rect.width / imageWidthO;
         const scaleY = rect.height / imageHeightO;
@@ -599,6 +626,7 @@
                 if (event.ctrlKey && key.value === '€') {
                     if (ovFlag) {noOverlay(); ovFlag = false;}
                     settingsModal.style.display = 'flex';
+                    modalIsActive = true;
                     populateLayoutSettings();
                 } else if (event.ctrlKey && key.value === '+') {
                     if (!fullscrFlag) goFullscreen()
@@ -652,6 +680,7 @@
                 } else if (key.value === '€') {
                     if (ovFlag) {noOverlay(); ovFlag = false;}
                     settingsModal.style.display = 'flex';
+                    modalIsActive = true;
                     populateLayoutSettings();
                 } else if (isMemoryKey(key.value)) {
                     const col = getKeyColumnIndex(key);
@@ -674,13 +703,23 @@
         }
     });
 
-    document.getElementById('saveSettings').addEventListener('click', function() {
+    document.getElementById('saveSettings').addEventListener('click', function(e) {
         saveLayoutSettings();
         settingsModal.style.display = 'none'; // Close modal after saving
+        setTimeout(() => {
+            modalIsActive = false;
+        }, 0);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
-    document.getElementById('closeSettingsModalButton').addEventListener('click', function() {
+    document.getElementById('closeSettingsModalButton').addEventListener('click', function(e) {
         settingsModal.style.display = 'none'; // Close modal without saving
+        setTimeout(() => {
+            modalIsActive = false;
+        }, 0);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     window.addEventListener("load", async function () {
@@ -726,11 +765,6 @@
                 document.getElementById('exchangeRateChangeBtn').onclick = function() {
                     EXCHANGE_RATE = 1.95583;
                     localStorage.setItem('EXCHANGE_RATE', EXCHANGE_RATE);
-                    //document.getElementById('exchangeRateInput').value = EXCHANGE_RATE;
-                    //document.getElementById('exchangeRateValue').textContent = EXCHANGE_RATE;
-                    //warning.style.display = 'none';
-                    //settingsModal.style.display = 'flex';
-                    //populateLayoutSettings();
                     warning.style.display = 'none';
                 };
                 document.getElementById('exchangeRateConfirmBtn').onclick = function() {
@@ -775,6 +809,20 @@
             if (e.key === 'Escape' || e.key === 'Esc') {
                 historyModal.style.display = 'none';
                 settingsModal.style.display = 'none';
+                modalIsActive = false;
+            } else if (e.key >= '0' && e.key <= '9') {
+                appendNumber(e.key);
+            } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+                appendNumber(e.key);
+            } else if (e.key === 'Enter' || e.key === '=') {
+                appendNumber('=');
+                e.preventDefault(); // Предотвратява стандартното поведение на Enter (напр. изпращане на форма)
+            } else if (e.key === 'Backspace') {
+                appendNumber('B');
+            } else if (e.key === ',' || e.key === '.') {
+                appendNumber(',');
+            } else if (e.key === 'c' || e.key === 'C') {
+                appendNumber('C');
             }
         });
         loadHistory();
@@ -877,7 +925,24 @@
     }
     window.addEventListener('resize', updatePageSizeInfo);
 */
-  </script>
+
+    function showOv() {
+        if (!ovFlag) {
+            const layout = calcNewCoordinates();
+            displayCoords = layout.displayCoords;
+            placeKeys(keys, displayCoords); ovFlag = true;
+        } else {
+            noOverlay(); 
+            ovFlag = false;
+        } 
+        settingsModal.style.display = 'none'; 
+        setTimeout(() => {
+            modalIsActive = false;
+        }, 0);
+        //e.stopPropagation();
+        //e.preventDefault();
+    }
+</script>
 
 </body>
 </html>

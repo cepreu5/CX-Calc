@@ -98,16 +98,15 @@ function adjustFontSize(element1, element2) {
     const minFontSize = 14;
 
     // Вземаме текстовете
-    const text1 = element1.innerText !== undefined ? element1.innerText : element1.textContent || "0";
-    const text2 = element2.innerText !== undefined ? element2.innerText : element2.textContent || "0";
-    console.log("text1: " + text1);
-    console.log("text2: " + text2);
+    const text1 = element1.value !== undefined ? element1.value : element1.textContent || "0";
+    const text2 = element2.value !== undefined ? element2.value : element2.textContent || "0";
+
     // Избираме по-дългия текст (по брой символи)
     const longerText = text1.length >= text2.length ? text1 : text2;
 
     // Използваме ширината и височината на по-малкия елемент (за по-сигурно)
-    const width = Math.min(element1.clientWidth, element2.clientWidth);
-    const height = Math.min(element1.clientHeight, element2.clientHeight);
+    const width = element1.clientWidth; // Math.min(element1.clientWidth, element2.clientWidth);
+    const height = element1.clientHeight; // Math.min(element1.clientHeight, element2.clientHeight);
 
     // Създаваме скрит div за измерване
     const measuringDiv = document.createElement("div");
@@ -116,21 +115,23 @@ function adjustFontSize(element1, element2) {
     measuringDiv.style.height = "auto";
     measuringDiv.style.width = width + "px";
     measuringDiv.style.whiteSpace = "pre";
-    const cs = getComputedStyle(element1);
+    const cs = getComputedStyle(element1); // Приемаме, че стиловете са еднакви
     measuringDiv.style.fontFamily = cs.fontFamily;
     measuringDiv.style.fontWeight = cs.fontWeight;
     measuringDiv.style.letterSpacing = cs.letterSpacing;
-    // Без padding/border, за да мерим само съдържанието
-    measuringDiv.style.padding = "0";
-    measuringDiv.style.border = "none";
-    measuringDiv.style.boxSizing = "border-box";
+    measuringDiv.style.padding = cs.padding;
+    measuringDiv.style.border = cs.border;
+    measuringDiv.style.boxSizing = cs.boxSizing;
     document.body.appendChild(measuringDiv);
 
     let fontSize = maxFontSize;
     while (fontSize >= minFontSize) {
         measuringDiv.style.fontSize = fontSize + "px";
         measuringDiv.textContent = longerText;
-        if (measuringDiv.scrollWidth <= width && measuringDiv.scrollHeight <= height) {
+        if (
+            measuringDiv.scrollWidth <= width &&
+            measuringDiv.scrollHeight <= height
+        ) {
             break;
         }
         fontSize--;

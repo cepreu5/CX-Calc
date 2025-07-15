@@ -42,6 +42,7 @@ body.ready {
     padding: 10px env(safe-area-inset-left, 0) env(safe-area-inset-bottom, 10px) env(safe-area-inset-right, 0);
     box-sizing: border-box;
     background-color: #BFB8B4;
+    z-index: 0;
 }
 
 .calculator-img {
@@ -102,19 +103,6 @@ body.ready {
     box-shadow: inset 0 0 4px #535251;  /* вътрешна светлина */
 }
 
-.ccalculator-display {
-    font-family: 'Arial', sans-serif; /* шрифт Arial */
-    position: absolute;
-    color: white;
-    text-align: right; /* за калкулаторен вид */
-    vertical-align: bottom;
-    background: rgba(255,255,255,0); /* лек фон за четимост */
-    border: none;
-    border-radius: 5px;
-    height: 60px; /* или колкото ти е нужно */
-    line-height: 60px;
-}
-
 .calculator-display {
     font-family: 'Arial', sans-serif;
     position: absolute;
@@ -162,25 +150,17 @@ body.ready {
     margin-bottom: 15px;
 }
 
-/*.modal-blocker {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  background: transparent;
-}*/
-
-/*.modal-overlay {
-    display: none; /~ Hidden by default ~/
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.5); /~ тъмен overlay ~/
-    z-index: 1000;
-    pointer-events: auto; /~ по подразбиране, но важно ~/
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачен фон */
+    z-index: 1;
+    pointer-events: all; /* ← ключово */
+    cursor: default; /* принуждава браузъра да отчете повърхност */
 }
-*/
 
 /* Modal styles */
 .modal {
@@ -208,13 +188,16 @@ body.ready {
     width: 90%;
     max-width: 370px;
     position: relative;
+    pointer-events: auto;
+    z-index: 2;
 }
 
 /* Specific background for history modal content to match container */
 #historyModal .modal-content {
     background-color: var(--container-bg-color);
-    z-index: 1000;
+    z-index: 9999;
     border: 2px solid #ccc; /* Светъл кант */
+    pointer-events: auto;
 }
 
 .modal-header {
