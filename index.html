@@ -23,7 +23,7 @@
     <div id="statusArea3" class="statusArea"></div>
 
     <div class="calculator-container" id="calculatorContainer">     
-        <img src="CalculatorM.png" ID="calculator" class="calculator-img" alt="Калкулатор">
+        <img src="CalculatorF.png" ID="calculator" class="calculator-img" alt="Калкулатор">
         <div id="levInput" class="calculator-display" contenteditable="false"></div>
         <div id="eurInput" class="calculator-display" contenteditable="false"></div>
     </div>
@@ -449,18 +449,15 @@
 */
 
     function updateDisplays(userInput, formattedUserInput, keyPressed) {
-        const isOperation = /[+\-*/]/.test(userInput);
+        const isOperation = /[+\-*/]/.test(userInput.slice(1));
         const [activeDisplay, passiveDisplay] = levMode ? [displaylv, display] : [display, displaylv];
         const conversionFn = levMode ? convertFromLevToEur : convertFromEurToLev;
-
         // Осветяване на активния дисплей
         activeDisplay.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
         activeDisplay.style.borderBottom = "2px solid #fff";
         passiveDisplay.style.backgroundColor = "rgba(201, 255, 5, 0)";
         passiveDisplay.style.borderBottom = "none";
-
         let activeDisplayText;
-
         if (userInput === "") { // Добавена проверка за празен userInput
             activeDisplayText = "";
         } else if (isOperation) {
@@ -469,7 +466,6 @@
             const hasComma = userInput.includes(',');
             const decimalPart = hasComma ? userInput.split(',')[1] : '';
             const isWholeNumber = !hasComma;
-
             if (keyPressed === "B") { // Режим на изтриване (Backspace)
                 if (isWholeNumber) { // Ако след изтриване числото е цяло (напр. от "12," става "12")
                     activeDisplayText = groupByThree(userInput, true); // Форматираме го като "12,00"
@@ -488,9 +484,7 @@
                 }
             }
         }
-
         activeDisplay.textContent = activeDisplayText;
-
         // Задаване на текст за пасивния дисплей (или изчистване при операция)
         if (isOperation) {
             passiveDisplay.textContent = '';
@@ -613,7 +607,7 @@
     }
 
     document.addEventListener("click", function(event) {
-        if (modalIsActive) return; // ❌
+        if (modalIsActive) return; // ❌ за да не пропуска при кликване в модалния екран
         const rect = calculator.getBoundingClientRect();
         const scaleX = rect.width / imageWidthO;
         const scaleY = rect.height / imageHeightO;
@@ -632,6 +626,27 @@
                     if (!fullscrFlag) goFullscreen()
                     else exitFullscreen();
                     fullscrFlag = !fullscrFlag;
+                } else if (event.ctrlKey && key.value === '*') {
+                    console.log("Before %: ", userInput);
+                    userInput = userInput.replace(',', '.');
+                    userInput = eval(userInput);
+                    userInput = (parseFloat(userInput) / 100)
+                      .toFixed(2)
+                      .replace('.', ',');
+                    appendNumber("=");
+                    // console.log("Ctrl+%: ", userInput);
+                }  else if (event.ctrlKey && key.value === '-') {
+                    if (userInput.startsWith("-")) {
+                        userInput = userInput.slice(1); // премахва първия символ "-"
+                    } else {
+                        userInput = "-" + userInput;    // добавя "-"
+                    }
+                    userInput = userInput.replace(',', '.');
+                    userInput = eval(userInput);
+                    userInput = (parseFloat(userInput))
+                      .toFixed(2)
+                      .replace('.', ',');
+                    appendNumber("=");
                 } else if (event.ctrlKey && isMemoryKey(key.value)) {
                     const col = getKeyColumnIndex(key);
                     executeMemoryAction(key.value, col);
@@ -677,6 +692,27 @@
                     if (!fullscrFlag) goFullscreen()
                     else exitFullscreen();
                     fullscrFlag = !fullscrFlag;
+                } else if (key.value === '*') {
+                    console.log("Before %: ", userInput);
+                    userInput = userInput.replace(',', '.');
+                    userInput = eval(userInput);
+                    userInput = (parseFloat(userInput) / 100)
+                      .toFixed(2)
+                      .replace('.', ',');
+                    appendNumber("=");
+                    // console.log("Ctrl+%: ", userInput);
+                }  else if (key.value === '-') {
+                    if (userInput.startsWith("-")) {
+                        userInput = userInput.slice(1); // премахва първия символ "-"
+                    } else {
+                        userInput = "-" + userInput;    // добавя "-"
+                    }
+                    userInput = userInput.replace(',', '.');
+                    userInput = eval(userInput);
+                    userInput = (parseFloat(userInput))
+                      .toFixed(2)
+                      .replace('.', ',');
+                    appendNumber("=");
                 } else if (key.value === '€') {
                     if (ovFlag) {noOverlay(); ovFlag = false;}
                     settingsModal.style.display = 'flex';
