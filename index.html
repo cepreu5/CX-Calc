@@ -375,20 +375,16 @@
 
     function groupByThree(str, dec) { // dec - дали да се добави десетична част
         if (str == null || str == "") return ""; // Ако входът е празен
-
         let cleanedStr = str.replace(/\s+/g, ""); // Премахваме интервалите
         let parts = cleanedStr.split(","); // Разделяме цялата и десетичната част
         let wholePart = parts[0]; // Цялата част от числото
         if (wholePart == "") wholePart = "0"; // Ако няма цяла част, връщаме празен низ
-
         let decimalPart = parts.length > 1 ? "," + parts[1] : ""; // Десетичната част (ако я има)
-
         let result = [];
         for (let i = wholePart.length; i > 0; i -= 3) {
             let start = Math.max(i - 3, 0);
             result.unshift(wholePart.slice(start, i)); // Запазваме правилния ред
         }
-
         // Conditional formatting of decimal part based on 'dec' flag
         if (dec) {
             // If 'dec' is true, ensure two decimal places
@@ -402,8 +398,9 @@
             // If 'dec' is false, preserve the decimal part as is
             // No changes needed to decimalPart here, it already contains what was in the input string
         }
-
-        return result.join(" ") + decimalPart; // Свързваме групите и добавяме десетичната част
+        result = result.join(" ") + decimalPart; // Свързваме групите и добавяме десетичната част
+        result = result.replace(/^-\s(?=\d)/, "-"); // избягване на стърчащ минус: - 5 123,45
+        return result;
     }
 
     function canAddCharacter(currentInput, nextChar) {
@@ -420,33 +417,6 @@
         // Всички други случаи — разрешени
         return true;
     }
-
-
-//    function updateDisplays(userInput, formattedUserInput) {
-//        const isOperation = /[+\-*/]/.test(userInput);
-/*        const [activeDisplay, passiveDisplay] = levMode ? [displaylv, display] : [display, displaylv];
-        const conversionFn = levMode ? convertFromLevToEur : convertFromEurToLev;
-
-        // Осветяване на активния дисплей
-        activeDisplay.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
-        passiveDisplay.style.backgroundColor = "rgba(201, 255, 5, 0)";
-
-        // Задаване на текст за активния дисплей
-        activeDisplay.textContent = isOperation
-            ? formattedUserInput
-            : groupByThree(userInput, false);
-
-        // Задаване на текст за пасивния дисплей (или изчистване при операция)
-        if (isOperation) {
-            passiveDisplay.textContent = '';
-        } else {
-            const convertedValue = conversionFn(userInput);
-            passiveDisplay.textContent = groupByThree(convertedValue);
-        }
-        // Адаптиране на шрифта
-        adjustFontSize(activeDisplay, passiveDisplay);
-    }
-*/
 
     function updateDisplays(userInput, formattedUserInput, keyPressed) {
         const isOperation = /[+\-*/]/.test(userInput.slice(1));
@@ -606,6 +576,37 @@
     return Math.round(relativeX+1); // Връща 1, 2, 3 или 4
     }
 
+    function controlActions(key) {
+        if (key.value === '+') {
+            if (!fullscrFlag) goFullscreen()
+            else exitFullscreen();
+            fullscrFlag = !fullscrFlag;
+        } else if (key.value === '*') {
+            console.log("Before %: ", userInput);
+            userInput = userInput.replace(',', '.');
+            userInput = eval(userInput);
+            userInput = (parseFloat(userInput) / 100)
+                .toFixed(2)
+                .replace('.', ',');
+            appendNumber("=");
+            // console.log("Ctrl+%: ", userInput);
+        }  else if (key.value === '-') {
+            if ((/[+\-*/]$/.test(userInput))) return;
+            if (userInput.startsWith("-")) {
+                userInput = userInput.slice(1); // премахва първия символ "-"
+            } else {
+                userInput = "-" + userInput;    // добавя "-"
+            }
+            userInput = userInput.replace(',', '.');
+            if ((/[+\-*/]$/.test(userInput))) return;
+            userInput = eval(userInput);
+            userInput = (parseFloat(userInput))
+                .toFixed(2)
+                .replace('.', ',');
+            appendNumber("=");
+        }
+    }
+
     document.addEventListener("click", function(event) {
         if (modalIsActive) return; // ❌ за да не пропуска при кликване в модалния екран
         const rect = calculator.getBoundingClientRect();
@@ -627,6 +628,7 @@
                     else exitFullscreen();
                     fullscrFlag = !fullscrFlag;
                 } else if (event.ctrlKey && key.value === '*') {
+                    if ((/[+\-*/]$/.test(userInput))) return;
                     console.log("Before %: ", userInput);
                     userInput = userInput.replace(',', '.');
                     userInput = eval(userInput);
@@ -636,6 +638,7 @@
                     appendNumber("=");
                     // console.log("Ctrl+%: ", userInput);
                 }  else if (event.ctrlKey && key.value === '-') {
+                    if ((/[+\-*/]$/.test(userInput))) return;
                     if (userInput.startsWith("-")) {
                         userInput = userInput.slice(1); // премахва първия символ "-"
                     } else {
@@ -693,6 +696,7 @@
                     else exitFullscreen();
                     fullscrFlag = !fullscrFlag;
                 } else if (key.value === '*') {
+                    if ((/[+\-*/]$/.test(userInput))) return;
                     console.log("Before %: ", userInput);
                     userInput = userInput.replace(',', '.');
                     userInput = eval(userInput);
@@ -702,12 +706,14 @@
                     appendNumber("=");
                     // console.log("Ctrl+%: ", userInput);
                 }  else if (key.value === '-') {
+                    if ((/[+\-*/]$/.test(userInput))) return;
                     if (userInput.startsWith("-")) {
                         userInput = userInput.slice(1); // премахва първия символ "-"
                     } else {
                         userInput = "-" + userInput;    // добавя "-"
                     }
                     userInput = userInput.replace(',', '.');
+                    if ((/[+\-*/]$/.test(userInput))) return;
                     userInput = eval(userInput);
                     userInput = (parseFloat(userInput))
                       .toFixed(2)
@@ -855,6 +861,15 @@
                 e.preventDefault(); // Предотвратява стандартното поведение на Enter (напр. изпращане на форма)
             } else if (e.key === 'Backspace') {
                 appendNumber('B');
+            } else if (e.key === '%') {
+                    if ((/[+\-*/]$/.test(userInput))) return;
+                    console.log("Before %: ", userInput);
+                    userInput = userInput.replace(',', '.');
+                    userInput = eval(userInput);
+                    userInput = (parseFloat(userInput) / 100)
+                      .toFixed(2)
+                      .replace('.', ',');
+                    appendNumber("=");
             } else if (e.key === ',' || e.key === '.') {
                 appendNumber(',');
             } else if (e.key === 'c' || e.key === 'C') {
