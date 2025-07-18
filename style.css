@@ -13,16 +13,12 @@ body {
     justify-content: center;
     height: 100vh;
     margin: 0;
-    /*background-image: url('calculator.png');*/
     background-size: contain;
     background-color: #BFB8B4;
     background-position: center;
     background-repeat: no-repeat;
-}
-
-body {
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
 }
 
 body.ready {
@@ -55,6 +51,7 @@ body.ready {
     margin: 0 auto;
 }
 
+/*
 .calculator-img.glow {
   animation: glow-once 1.2s ease-out;
 }
@@ -80,16 +77,16 @@ body.ready {
     opacity: 1;
   }
 }
+*/
 
 .statusArea {
-    /*background-color: transparent;*/
     position: fixed;
     background-color: #565749;
-    color: white;                         /* светъл текст */
+    color: white;                   /* светъл текст */
     font-family: 'Arial', sans-serif; /* шрифт Arial */
     font-size: 14px;
     font-weight: bold;
-    border: 5px solid #3C3B3B;              /* сив кант */
+    border: 5px solid #3C3B3B;      /* сив кант */
     border-radius: 4px;
     padding: 2px 2px;
     display: flex;
@@ -215,6 +212,7 @@ body.ready {
     color: var(--settings-label-color); /* Използваме същата променлива като за етикетите */
 }
 
+/*
 .close-button {
     color: #aaa;
     font-size: 28px;
@@ -227,6 +225,7 @@ body.ready {
     color: #000;
     text-decoration: none;
 }
+*/
 
 #historyList {
     max-height: 500px; /* Максимална височина на списъка */
