@@ -21,20 +21,8 @@
       "purpose": "any maskable"
     },
     {
-      "src": "Calc72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "Calc96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "Calc144.png",
-      "sizes": "144x144",
+      "src": "Calc120.png",
+      "sizes": "120x120",
       "type": "image/png",
       "purpose": "any maskable"
     },

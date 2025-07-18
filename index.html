@@ -56,7 +56,7 @@
                 <!-- NEW SECTION FOR LAYOUT SETTINGS -->
                 <div class="settings-section">
                     <div class="layout-settings-grid">
-                        <label for="exchangeRateInput">Курс BGN/EUR:</label>
+                        <label for="exchangeRateInput">Валутен курс:</label>
                         <input type="number" style="width: 100px;" step="0.00001" id="exchangeRateInput" value="1.95583">
                         <!-- Keys -->
                         <label>Клавиатура:</label>
@@ -125,11 +125,8 @@
         </div>
       </div>
     </div>    
-  <!--h1>Това е просто демонстрация</h1>
-  <button id="fullscreen-btn" onclick="goFullscreen()">На цял екран</button>
-  <button id="exit-fullscreen-btn" onclick="exitFullscreen()" style="display:none;">Нормален екран</button-->
 
-<script src="status-2.js"></script>
+<script src="status.js"></script>
 <script src="calc.js"></script>
 <script src="history.js"></script>
 <script src="fontcalc.js"></script>
@@ -150,7 +147,7 @@
     var userInput = "";
     var ovFlag = false, fullscrFlag = false; // Флаг за оверлей и пълен екран
     var keys = displayCoords = [];
-    var Mem = []; // Място за съхранение на паметта
+    var Mem = [0, 0, 0, 0]; // Място за съхранение на паметта
     var levMode = true, isStandalone = false; // Начален режим - лв.
     var MainPoints = {};
     let modalIsActive = false;
@@ -623,6 +620,12 @@
                     settingsModal.style.display = 'flex';
                     modalIsActive = true;
                     populateLayoutSettings();
+                } else if (event.ctrlKey && key.value === 'B') {
+                    for (let i = 1; i < 4; i++) {
+                        Mem[i] = 0;
+                        clearStatus (i);
+                    }
+                    localStorage.setItem('CalcMem', JSON.stringify(Mem));
                 } else if (event.ctrlKey && key.value === '+') {
                     if (!fullscrFlag) goFullscreen()
                     else exitFullscreen();
@@ -695,6 +698,12 @@
                     if (!fullscrFlag) goFullscreen()
                     else exitFullscreen();
                     fullscrFlag = !fullscrFlag;
+                } else if (event.ctrlKey && key.value === 'B') {
+                    for (let i = 1; i < 4; i++) {
+                        Mem[i] = 0;
+                        clearStatus (i);
+                    }
+                    localStorage.setItem('CalcMem', JSON.stringify(Mem));
                 } else if (key.value === '*') {
                     if ((/[+\-*/]$/.test(userInput))) return;
                     console.log("Before %: ", userInput);
@@ -773,14 +782,31 @@
                 document.documentElement.style.setProperty('--calc-bottom-offset', savedOffset + 'px');
                 calcBottom
             }
+            // Зареждане на MainPointsO от localStorage
             const savedMainPointsO = localStorage.getItem('MainPointsO');
             if (savedMainPointsO) {
                 MainPointsO = JSON.parse(savedMainPointsO);
-                console.log("Loaded MainPointsO from localStorage:", MainPointsO);
+                console.log("Заредени MainPointsO:", MainPointsO);
             } else {
-                console.log("No saved MainPointsO found in localStorage.");
+                console.log("Няма записани MainPointsO.");
             }
-
+            const savedMem = localStorage.getItem('CalcMem');
+            if (savedMem) {
+                Mem = JSON.parse(savedMem);
+                console.log("Заредени Mem от localStorage:", Mem);
+                for (let i = 1; i <= 3; i++) if (Mem[i] !== undefined && Mem[i] !== null && Mem[i] !== 0) {
+                    updateStatus ("M", i);
+                }
+            } else {
+                console.log("Няма записани Mem от localStorage.");
+            }
+            const savedMainPoints = localStorage.getItem('MainPoints');
+            if (savedMainPoints) {
+                MainPoints = JSON.parse(savedMainPoints);
+                console.log("Заредени MainPoints:", MainPoints);
+            } else {
+                console.log("Няма записани MainPoints.");
+            }
             // Зареди курса от localStorage
             const savedRate = localStorage.getItem('EXCHANGE_RATE');
             if (savedRate && !isNaN(parseFloat(savedRate))) {
@@ -789,15 +815,13 @@
                     showWarning = true;
                 }
             }
-
             // Основни изчисления
             getImageSize();
             getImageVisualSize();
             scaleMainPoints(aspectRatioW, aspectRatioH);
-            const layout = calcNewCoordinates(); //@@ calculator, imageWidthO, imageHeightO
+            const layout = calcNewCoordinates();
             keys = layout.keys; // This needs to be updated after MainPointsO is potentially loaded
             displayCoords = layout.displayCoords;
-            //const { keys, displayCoords } = calcNewCoordinates();
             resizeFont();
             appendNumber("C");
             // --- ПРЕДУПРЕЖДЕНИЕ ЗА КУРСА ---
@@ -880,13 +904,10 @@
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
         // Проверка за инсталирано PWA
-        //const installBtn = document.getElementById('install');
         isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         // if (isStandalone) {
            // installBtn.style.display = 'none';
         //}
-        // Динамично показване на размера на страницата
-        // updatePageSizeInfo();
     });
 
     function goFullscreen() {
@@ -909,17 +930,6 @@
         document.msExitFullscreen();
       }
     }
-
-    // Показване/скриване на бутоните според режима
-    //document.addEventListener('fullscreenchange', toggleFullscreenButtons);
-    //document.addEventListener('webkitfullscreenchange', toggleFullscreenButtons);
-    //document.addEventListener('msfullscreenchange', toggleFullscreenButtons);
-
-    /* function toggleFullscreenButtons() {
-      const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-      document.getElementById('fullscreen-btn').style.display = isFullscreen ? 'none' : 'inline-block';
-      document.getElementById('exit-fullscreen-btn').style.display = isFullscreen ? 'inline-block' : 'none';
-    } */
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
@@ -963,19 +973,6 @@
             dismissBtn.addEventListener('click', dismissHandler);
         });
     }
-/*
-    function updatePageSizeInfo() {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const levInput = document.getElementById('levInput');
-      let fontSize = '';
-      if (levInput) {
-        fontSize = window.getComputedStyle(levInput).fontSize;
-      }
-      document.getElementById('pageSizeText').textContent = `${w} × ${h} | levInput font: ${fontSize}`;
-    }
-    window.addEventListener('resize', updatePageSizeInfo);
-*/
 
     function showOv() {
         if (!ovFlag) {
