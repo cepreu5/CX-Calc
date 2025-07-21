@@ -90,21 +90,22 @@
             console.warn(`ℹ️ Памет Mem[${slot}] е празна или нулева.`);
             return;
         }
-        const displayElement = document.getElementById('levInput'); // Това е input, така че value е ок
-        const eurDisplayElement = document.getElementById('eurInput'); // Добавяме референция към eurInput div
-        const originalValue = displayElement.textContent; // Запазваме оригиналната стойност на levInput
-        const originalEurValue = eurDisplayElement.textContent; // Запазваме оригиналната стойност на eurInput (div)
-        const originalBgColor = displayElement.style.backgroundColor;
-        const originalEurBgColor = eurDisplayElement.style.backgroundColor; // Запазваме оригиналния фон на eurInput (div)
+        // const displaylv = document.getElementById('levInput'); // Това е input, така че value е ок
+        //const display = document.getElementById('eurInput'); // Добавяме референция към eurInput div
+        const originalValue = displaylv.textContent; // Запазваме оригиналната стойност на levInput
+        const originalEurValue = display.textContent; // Запазваме оригиналната стойност на eurInput (div)
+        const originalBgColor = displaylv.style.backgroundColor;
+        const originalEurBgColor = display.style.backgroundColor; // Запазваме оригиналния фон на eurInput (div)
         // Форматираме и показваме стойността от паметта
         const memValueStr = groupByThree(formatNumber(Mem[slot]));
         // Показваме стойността в eurInput (div)
-        eurDisplayElement.textContent = memValueStr;
-        eurDisplayElement.style.backgroundColor = 'rgba(255, 223, 186, 0.5)'; // Светло оранжево за индикация
+        display.textContent = memValueStr;
+        adjustFontSize(displaylv, display);
+        display.style.backgroundColor = 'rgba(255, 223, 186, 0.5)'; // Светло оранжево за индикация
         // Връщаме оригиналните стойности след 3 секунди
         setTimeout(() => {
-            eurDisplayElement.textContent = originalEurValue;
-            eurDisplayElement.style.backgroundColor = originalEurBgColor;
+            display.textContent = originalEurValue;
+            display.style.backgroundColor = originalEurBgColor;
             // displayElement.value = originalValue; // Няма нужда да връщаме levInput, ако показваме в eurInput
             // displayElement.style.backgroundColor = originalBgColor;
         }, 1000);
@@ -112,31 +113,32 @@
 
     function memoryRecall(slot) {
         let dspl;
-        if (Mem[slot] === undefined || Mem[slot] === 0) {
-            console.warn(`ℹ️ Mem[${slot}] е празна или нулева.`);
+        if (Mem[slot] === undefined || Mem[slot] === 0 || (userInput != "" && !(/[+\-*/×÷]$/.test(userInput)))) {
             return;
         }
         const valueStr = Mem[slot].toString().replace('.', ','); // 💬 замяна за визуализация, ако е нужно
-        userInput += valueStr; dspl = userInput; // Добавяме стойността от паметта към текущия вход
-        if (levMode) { // levInput е input, eurInput е div
+        // if (/[+\-*/×÷]/.test(userInput) || userInput === "") userInput += valueStr;  // Добавяме стойността от паметта към текущия вход
+        userInput += valueStr;  // Добавяме стойността от паметта към текущия вход
+        dspl = userInput;
+        if (levMode) {
             displaylv.textContent = /[+\-*/×÷]/.test(userInput)
-            ? dspl = dspl.replace(/\*/g, "×").replace(/\//g, "÷") // Променено за div;
-            : groupByThree(userInput, false);
-            display.textContent = /[+\-*/×÷]/.test(userInput) // Променено за div
-            ? convertFromLevToEur(userInput, true)
-            : groupByThree(convertFromLevToEur(userInput, true));
-        } else { // eurInput е div, levInput е input
-            display.textContent = /[+\-*/×÷]/.test(userInput) // Променено за div replace(/\//g, "÷");
             ? dspl = dspl.replace(/\*/g, "×").replace(/\//g, "÷")
-            : groupByThree(userInput, false);
+            : groupByThree(userInput, true);
+            display.textContent = /[+\-*/×÷]/.test(userInput)
+            ? "" // Не конвертираме, ако има операция
+            : groupByThree(convertFromLevToEur(userInput, true));
+        } else {
+            display.textContent = /[+\-*/×÷]/.test(userInput)
+            ? dspl = dspl.replace(/\*/g, "×").replace(/\//g, "÷")
+            : groupByThree(userInput, true);
             displaylv.textContent = /[+\-*/×÷]/.test(userInput)
-            ? convertFromEurToLev(userInput, true)
+            ? "" // Не конвертираме, ако има операция convertFromEurToLev(userInput, true)
             : groupByThree(convertFromEurToLev(userInput, true));
         }
         console.log(`📟 MR от Mem[${slot}] → "${valueStr}" → нов userInput: "${userInput}"`);
-        //Mem[slot] = 0;
+        adjustFontSize(displaylv, display);
         updateMemoryStatusDisplay(slot, false); // Връща оригиналния фон веднага при извикване
-        }
+    }
 
     function updateStatus(message, sArea) {
         const statusId = typeof sArea === "number" ? `statusArea${sArea}` : sArea;

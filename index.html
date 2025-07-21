@@ -646,6 +646,7 @@
         }
     }
 
+/*
     document.addEventListener("click", function(event) {
         if (modalIsActive) return; // ❌ за да не пропуска при кликване в модалния екран
         const rect = calculator.getBoundingClientRect();
@@ -672,9 +673,9 @@
                     if (!fullscrFlag) goFullscreen()
                     else exitFullscreen();
                     fullscrFlag = !fullscrFlag;
-                } else if (event.ctrlKey && key.value === '*') {
-                    if ((/[+\-*/]$/.test(userInput))) return;
-                    console.log("Before %: ", userInput);
+                } else if (event.ctrlKey && key.value === '*') { */
+                    // if ((/[+\-*/]$/.test(userInput))) return;
+/*                    console.log("Before %: ", userInput);
                     userInput = userInput.replace(',', '.');
                     userInput = eval(userInput);
                     userInput = (parseFloat(userInput) / 100)
@@ -682,9 +683,9 @@
                       .replace('.', ',');
                     appendNumber("=");
                     // console.log("Ctrl+%: ", userInput);
-                }  else if (event.ctrlKey && key.value === '-') {
-                    if ((/[+\-*/]$/.test(userInput))) return;
-                    if (userInput.startsWith("-")) {
+                }  else if (event.ctrlKey && key.value === '-') {*/
+                    //if ((/[+\-*/]$/.test(userInput))) return;
+/*                    if (userInput.startsWith("-")) {
                         userInput = userInput.slice(1); // премахва първия символ "-"
                     } else {
                         userInput = "-" + userInput;    // добавя "-"
@@ -746,9 +747,9 @@
                         clearStatus (i);
                     }
                     localStorage.setItem('CalcMem', JSON.stringify(Mem));
-                } else if (key.value === '*') {
-                    if ((/[+\-*/]$/.test(userInput))) return;
-                    console.log("Before %: ", userInput);
+                } else if (key.value === '*') { */
+                    //if ((/[+\-*/]$/.test(userInput))) return;
+/*                    console.log("Before %: ", userInput);
                     userInput = userInput.replace(',', '.');
                     userInput = eval(userInput);
                     userInput = (parseFloat(userInput) / 100)
@@ -756,16 +757,16 @@
                       .replace('.', ',');
                     appendNumber("=");
                     // console.log("Ctrl+%: ", userInput);
-                }  else if (key.value === '-') {
-                    if ((/[+\-*/]$/.test(userInput))) return;
-                    if (userInput.startsWith("-")) {
+                }  else if (key.value === '-') { */
+                    //if ((/[+\-*/]$/.test(userInput))) return;
+/*                    if (userInput.startsWith("-")) {
                         userInput = userInput.slice(1); // премахва първия символ "-"
                     } else {
                         userInput = "-" + userInput;    // добавя "-"
                     }
-                    userInput = userInput.replace(',', '.');
-                    if ((/[+\-*/]$/.test(userInput))) return;
-                    userInput = eval(userInput);
+                    userInput = userInput.replace(',', '.'); */
+                    // if ((/[+\-*/]$/.test(userInput))) return;
+/*                    userInput = eval(userInput);
                     userInput = (parseFloat(userInput))
                       .toFixed(2)
                       .replace('.', ',');
@@ -795,6 +796,177 @@
             }
         }
     });
+*/
+/*
+    function handleSpecialKey(keyValue, event) {
+        if (event.ctrlKey && keyValue === '€') {
+            if (ovFlag) { noOverlay(); ovFlag = false; }
+            settingsModal.style.display = 'flex';
+            modalIsActive = true;
+            populateLayoutSettings();
+        } else if (event.ctrlKey && keyValue === 'B') {
+            clearAllMemory();
+        } else if (event.ctrlKey && keyValue === '+') {
+            toggleFullscreen();
+        } else if (event.ctrlKey && keyValue === '*') {
+            const result = sanitizeAndEvaluateInput(userInput, 'percent');
+            if (result !== null) {
+                userInput = result;
+                appendNumber("=");
+            }
+        } else if (event.ctrlKey && keyValue === '-') {
+            const result = sanitizeAndEvaluateInput(userInput, 'negate');
+            if (result !== null) {
+                userInput = result;
+                appendNumber("=");
+            }
+        } else if (event.ctrlKey && isMemoryKey(keyValue)) {
+            const col = getKeyColumnIndex(keyValue);
+            executeMemoryAction(keyValue, col);
+        } else {
+            appendNumber(keyValue);
+        }
+    }
+*/
+/*
+    document.addEventListener("click", function(event) {
+        if (modalIsActive) return;
+        const { keyWidth, keyHeight } = getKeyDimensions();
+        keys.forEach(key => {
+            if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
+                handleSpecialKey(key.value, event);
+            }
+        });
+        handleStatusZones(event, event.ctrlKey);
+    });
+
+    document.addEventListener("contextmenu", function(event) {
+        event.preventDefault();
+        const { keyWidth, keyHeight } = getKeyDimensions();
+        keys.forEach(key => {
+            if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
+                handleSpecialKey(key.value, event);
+            }
+        });
+        handleStatusZones(event, false);
+    });
+*/
+
+    function getKeyDimensions() {
+            const rect = calculator.getBoundingClientRect();
+            const scaleX = rect.width / imageWidthO;
+            const scaleY = rect.height / imageHeightO;
+            return {
+                keyWidth: MainPointsO.KeySize.x * scaleX,
+                keyHeight: MainPointsO.KeySize.y * scaleY
+            };
+        }
+
+    function isWithinKeyBounds(event, key, keyWidth, keyHeight) {
+        return (
+            event.clientX >= key.x &&
+            event.clientX <= key.x + keyWidth &&
+            event.clientY >= key.y &&
+            event.clientY <= key.y + keyHeight
+        );
+    }
+
+    function handleStatusZones(event, isCtrlRequired) {
+        for (let i = 1; i <= 3; i++) {
+            const statusEl = document.getElementById(`statusArea${i}`);
+            if (statusEl && getComputedStyle(statusEl).opacity > 0) {
+                const rect = statusEl.getBoundingClientRect();
+                const withinBounds = (
+                    event.clientX >= rect.left &&
+                    event.clientX <= rect.right &&
+                    event.clientY >= rect.top &&
+                    event.clientY <= rect.bottom
+                );
+                if (withinBounds) {
+                    isCtrlRequired ? memoryShow(i) : memoryRecall(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    function sanitizeAndEvaluateInput(input, operationType) {
+        if ((/[+\-*/]$/.test(input))) return null;
+        input = input.replace(',', '.');
+        let result = eval(input);
+        if (operationType === 'percent') {
+            result = result / 100;
+        } else if (operationType === 'negate') {
+            result = input.startsWith('-') ? input.slice(1) : '-' + input;
+            result = eval(result); // отново evaluate след добавяне/премахване
+        }
+        return parseFloat(result).toFixed(2).replace('.', ',');
+    }
+
+    function toggleFullscreen() {
+        if (!fullscrFlag) goFullscreen();
+        else exitFullscreen();
+        fullscrFlag = !fullscrFlag;
+    }
+
+    function clearAllMemory() {
+        for (let i = 1; i < 4; i++) {
+            Mem[i] = 0;
+            clearStatus(i);
+        }
+        localStorage.setItem('CalcMem', JSON.stringify(Mem));
+    }
+
+    function handleCalculatorInteraction(event, options = {}) {
+        const { keyWidth, keyHeight } = getKeyDimensions();
+        keys.forEach(key => {
+            if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
+                // Прескачане при активен модал
+                if (modalIsActive && event.type === "click") return;
+                const keyValue = key.value;
+                // Обработка на специални клавиши
+                if (event.ctrlKey && keyValue === '€') {
+                    if (ovFlag) { noOverlay(); ovFlag = false; }
+                    settingsModal.style.display = 'flex';
+                    modalIsActive = true;
+                    populateLayoutSettings();
+                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === 'B') {
+                    clearAllMemory();
+                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '+') {
+                    toggleFullscreen();
+                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '*') {
+                    const result = sanitizeAndEvaluateInput(userInput, 'percent');
+                    if (result !== null) {
+                        userInput = result;
+                        appendNumber("=");
+                    }
+                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '-') {
+                    const result = sanitizeAndEvaluateInput(userInput, 'negate');
+                    if (result !== null) {
+                        userInput = result;
+                        appendNumber("=");
+                    }
+                } else if ((event.ctrlKey || options.allowWithoutCtrl) && isMemoryKey(keyValue)) {
+                    const col = getKeyColumnIndex(key);
+                    executeMemoryAction(keyValue, col);
+                } else {
+                    appendNumber(keyValue);
+                }
+            }
+        });
+        // Обработка на статус зони
+        handleStatusZones(event, event.ctrlKey || options.allowWithoutCtrl);
+    }
+
+    document.addEventListener("click", function(event) {
+        handleCalculatorInteraction(event);
+    });
+
+    document.addEventListener("contextmenu", function(event) {
+        event.preventDefault(); // блокира контекстното меню
+        handleCalculatorInteraction(event, { allowWithoutCtrl: true });
+    });
+
 
     document.getElementById('saveSettings').addEventListener('click', function(e) {
         saveLayoutSettings();
