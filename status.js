@@ -52,36 +52,36 @@
 
     // Действията за памет
     function executeMemoryAction(value, statusArea) {
-    switch (statusArea) {
-        case 1:
-        switch (value) {
-            case "1": memoryAdd(1, "+"); updateStatus("M+", statusArea); break;
-            case "4": memoryAdd(1, "-"); updateStatus("M−", statusArea); break;
-            case "7": memoryAdd(1, "0"); updateStatus("MR", statusArea); clearStatus(statusArea); break;
+        switch (statusArea) {
+            case 1:
+            switch (value) {
+                case "1": memoryAdd(1, "+"); updateStatus("M+", statusArea); break;
+                case "4": memoryAdd(1, "-"); updateStatus("M−", statusArea); break;
+                case "7": memoryAdd(1, "0"); updateStatus("MC", statusArea); clearStatus(statusArea); break;
+            }
+            break;
+            case 2:
+            switch (value) {
+                case "2": memoryAdd(2, "+"); updateStatus("M+", statusArea); break;
+                case "5": memoryAdd(2, "-"); updateStatus("M−", statusArea); break;
+                case "8": memoryAdd(2, "0"); updateStatus("MC", statusArea); clearStatus(statusArea); break;
+            }
+            break;
+            case 3:
+            switch (value) {
+                case "3": memoryAdd(3, "+"); updateStatus("M+", statusArea); break;
+                case "6": memoryAdd(3, "-"); updateStatus("M−", statusArea); break;
+                case "9": memoryAdd(3, "0"); updateStatus("MC", statusArea); clearStatus(statusArea); break;
+            }
+            break;
+            /*case 4: break;
+            switch (value) {
+                case "-": memoryAdd(); updateStatus("M+", statusArea); break;
+                case "/": memorySubtract(); updateStatus("M−", statusArea); break;
+                case "*": memoryRecall(); updateStatus("MR", statusArea); clearStatus(statusArea); break;
+            }
+            break;*/
         }
-        break;
-        case 2:
-        switch (value) {
-            case "2": memoryAdd(2, "+"); updateStatus("M+", statusArea); break;
-            case "5": memoryAdd(2, "-"); updateStatus("M−", statusArea); break;
-            case "8": memoryAdd(2, "0"); updateStatus("MR", statusArea); clearStatus(statusArea); break;
-        }
-        break;
-        case 3:
-        switch (value) {
-            case "3": memoryAdd(3, "+"); updateStatus("M+", statusArea); break;
-            case "6": memoryAdd(3, "-"); updateStatus("M−", statusArea); break;
-            case "9": memoryAdd(3, "0"); updateStatus("MR", statusArea); clearStatus(statusArea); break;
-        }
-        break;
-        case 4: break;
-        switch (value) {
-            case "-": memoryAdd(); updateStatus("M+", statusArea); break;
-            case "/": memorySubtract(); updateStatus("M−", statusArea); break;
-            case "*": memoryRecall(); updateStatus("MR", statusArea); clearStatus(statusArea); break;
-        }
-        break;
-    }
     }
 
     //memoryShow: Временно показва стойността от даден слот на паметтав горния дисплей, без да го променя

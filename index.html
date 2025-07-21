@@ -209,17 +209,15 @@
     const closeHistoryModalButton = document.getElementById('closeHistoryModalButton');
 
     var MainPointsO = {
-        Keys:   { x: 43, y: 235 },
-        KeySize:{ x: 84, y: 70 },
-        KbdGaps:{ x: 13, y: 13 },
-        Display:{ x: 102, y: 47 },
-        Displaylv:{ x: 102, y: 127 },
-        DisplaySize:{ x: 310, y: 57 },
-        Status: { x: -10, y: 185 },
-        StatusSize: { x: 45, y: 15 }
+        Keys:       {x: 43, y: 235},
+        KeySize:    {x: 84, y: 70},
+        KbdGaps:    {x: 13, y: 13},
+        Display:    {x: 102, y: 43},
+        Displaylv:  {x: 102, y: 123},
+        DisplaySize:{x: 310, y: 57},
+        Status:     {x: -10, y: 185},
+        StatusSize: {x: 45, y: 15}
     };
-
-    let recallIndex = -1; // -1 means no recall started, 0 is the last item
 
     // New function to populate layout settings
     function populateLayoutSettings() {
@@ -399,8 +397,6 @@
             return ''; // Изчистваме целевото поле, ако изходното е невалидно
         } else {
             let eurValue = levValue / EXCHANGE_RATE;
-            //adjustFontSize(levInput, eurInput); // Адаптираме шрифта на изходното поле
-            recallIndex = -1; // Reset recall index on new calculation
             return formatNumber(eurValue);
         }
     }
@@ -412,7 +408,6 @@
             return ''; // Изчистваме целевото поле, ако изходното е невалидно
         } else {
             let levValue = eurValue * EXCHANGE_RATE;
-            recallIndex = -1; // Reset recall index on new calculation
             return formatNumber(levValue);
         }
     }
