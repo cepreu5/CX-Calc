@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8"/>
+<title>EUR ↔ BGN Calculator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#1e293b"/>
+<link rel="shortcut icon" type="image/png" href="KimiFav.png" />
+<link rel="manifest" href="kimimanif.json">
+
+<style>
+:root{
+  --bg:#ffffff;--page:#e5e7eb;--calc:#ffffff;--text:#111827;
+  --btn:#e2e8f0;--btn-op:#cbd5e1;--btn-c:#ef4444;--btn-del:#f97316;
+  --accent:#3b82f6;
+  --font:2rem;--dec:2;--rate:1.95583;
+  --display-bg:#f1f5f9;--display-text:#111827;--btn-text:#111827;
+  --expr-bg:#f1f5f9;        /* цвят на фона на горния дисплей */
+  --expr-text:#111827;      /* цвят на шрифта на горния дисплей */
+}
+
+[data-theme=dark]{
+  --bg:#111827;--page:#0f172a;--calc:#1e293b;--text:#f9fafb;
+  --btn:#374151;--btn-op:#4b5563;--btn-c:#dc2626;--btn-del:#ea580c;
+  --display-bg:#111827;--display-text:#f9fafb;--btn-text:#f9fafb;
+  --expr-bg:#111827;
+  --expr-text:#f9fafb;
+}
+
+*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;user-select:none}
+
+body{
+  margin:0;
+  background:var(--page);
+  display:flex;
+  justify-content:center;
+  align-items:center;   /* вертикално центриране */
+  min-height:100vh;
+  padding:.5rem;
+}
+#calcWrap{
+  background:var(--calc); border:3px solid #9ca3af; border-radius:12px;
+  padding:.5rem;box-shadow:0 0 20px rgba(0,0,0,.15);
+  width:100%;max-width:400px;
+}
+#calc{width:100%}
+#expr,#result{height:3rem;font-size:var(--font);text-align:right;padding:.5rem;border-radius:.5rem;background:var(--display-bg);color:var(--display-text);margin-bottom:.25rem;overflow:hidden;word-break:break-all}
+#expr{height:auto;min-height:3rem;font-size:calc(var(--font)*.9);white-space:pre-wrap}
+
+#result {
+  font-weight: bold;
+  font-size: calc(var(--font)*1.2);
+  text-align: right;
+  padding-right: .5rem;
+  padding-top: 0rem;
+  border-radius: .5rem;
+  background: var(--display-bg);
+  color: var(--display-text);
+  margin-bottom: .25rem;
+  min-height: 3rem; /* Минималната височина */
+}
+
+/*
+#result{font-weight:bold;font-size:calc(var(--font)*1.2)}
+button{padding:.75rem;border:none;border-radius:.5rem;font-size:calc(var(--font)*.9);
+    background:var(--btn);color:var(--btn-text);cursor:pointer;
+    box-shadow:0 4px #0003;transform:translateY(-2px);transition:.1s}
+    button:active{transform:translateY(1px);box-shadow:0 2px #0002}*/
+
+
+  button {
+    padding: .75rem;
+    border: none;
+    border-radius: .5rem;
+    font-size: calc(var(--font) * .9);
+    background: var(--btn);
+    color: var(--btn-text);
+    cursor: pointer;
+    box-shadow: 0 4px #0003;
+    transform: translateY(-2px);
+    transition: .1s;
+    font-weight: bold; /* Добавете bold */
+  }
+
+  button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px #0002;
+  }
+
+  button.op{background:var(--btn-op)}
+  button.c{background:var(--btn-c)}
+  button.del{background:var(--btn-del)}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:.5rem}
+  .fullBtn{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0}
+  #settings,#history{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--calc);padding:1rem;z-index:9;display:none;flex-direction:column;gap:.5rem;overflow-y:auto}
+  #settings h2,#history h2{margin:.2rem 0 .5rem}
+  #historyList button{display:block;width:100%;text-align:left;margin-bottom:.25rem;padding:.4rem}
+  label{display:flex;justify-content:space-between;align-items:center}
+  input[type=range]{width:50%}
+  input[type=color]{width:30px;height:30px;border:none;border-radius:4px}
+  #themeToggle{cursor:pointer;font-size:1.5rem}
+  #memoryInd{display:flex;justify-content:space-around;font-size:.8rem;margin-bottom:.25rem}
+  #expr{
+    background:var(--expr-bg);
+    color:var(--expr-text);
+  }
+</style>
+<script>
+    if('serviceWorker' in navigator){
+        navigator.serviceWorker.register('kimisw.js');
+    }
+</script>
+</head>
+<body>
+<div id="calcWrap">
+  <div id="calc">
+    <div id="expr" contenteditable="true" spellcheck="false"></div>
+    <div id="result">0&nbsp;<span id="unit"></span></div>
+    <div id="memoryInd">
+      <span id="m1">M1:0</span><span id="m2">M2:0</span><span id="m3">M3:0</span>
+    </div>
+    <div class="fullBtn">
+      <button onclick="convert('EUR')" class="op">€ → лв</button>
+      <button onclick="convert('BGN')">лв → €</button>
+    </div>
+    <div class="grid">
+    <button onclick="act('(')">(</button>
+    <button onclick="act(')')">)</button>
+    <button onclick="numClick(event,'C')" onpointerdown="long(event,'C')" onpointerup="clearLong()" oncontextmenu="return false" class="c">C</button>
+    <button onclick="act('⌫')" class="del">⌫</button>
+
+    <button onclick="numClick(event,'7')" onpointerdown="long(event,'7')" onpointerup="clearLong()" oncontextmenu="return false">7</button>
+    <button onclick="numClick(event,'8')" onpointerdown="long(event,'8')" onpointerup="clearLong()" oncontextmenu="return false">8</button>
+    <button onclick="numClick(event,'9')" onpointerdown="long(event,'9')" onpointerup="clearLong()" oncontextmenu="return false">9</button>
+    <button onclick="act('/')" class="op">/</button>
+
+    <button onclick="numClick(event,'4')" onpointerdown="long(event,'4')" onpointerup="clearLong()" oncontextmenu="return false">4</button>
+    <button onclick="numClick(event,'5')" onpointerdown="long(event,'5')" onpointerup="clearLong()" oncontextmenu="return false">5</button>
+    <button onclick="numClick(event,'6')" onpointerdown="long(event,'6')" onpointerup="clearLong()" oncontextmenu="return false">6</button>
+    <button onclick="act('*')" class="op">×</button>
+
+    <button onclick="numClick(event,'1')" onpointerdown="long(event,'1')" onpointerup="clearLong()" oncontextmenu="return false">1</button>
+    <button onclick="numClick(event,'2')" onpointerdown="long(event,'2')" onpointerup="clearLong()" oncontextmenu="return false">2</button>
+    <button onclick="numClick(event,'3')" onpointerdown="long(event,'3')" onpointerup="clearLong()" oncontextmenu="return false">3</button>
+    <button onclick="act('-')" class="op">-</button>
+
+    <button onclick="act('0')">0</button>
+    <button onclick="act(',')">,</button>
+    <button onclick="act('±')">±</button>
+    <button onclick="act('+')" class="op">+</button>
+
+    <button onclick="act('%')">%</button>
+    <button onclick="toggleHistory()">📜</button>
+    <button onclick="toggleSettings()">⚙️</button>
+    <button onclick="act('=')" class="op">=</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings">
+  <h2>Настройки <span id="themeToggle" onclick="toggleTheme()">🌞</span></h2>
+
+  <label>Курс €→лв
+    <input type="number" step="0.00001" id="rateInput">
+  </label>
+  <label>Десетични знаци (основен)
+    <input type="number" min="0" max="10" id="decField">
+  </label>
+  <label>Десетични знаци (история/горен ред)
+    <input type="number" min="0" max="10" id="decHUField">
+  </label>
+
+  <label>Цвят на фона на страницата
+    <input type="color" id="bgColor">
+  </label>
+  <label>Цвят на калкулатора
+    <input type="color" id="calcColor">
+  </label>
+  <label>Цвят на дисплеите
+    <input type="color" id="displayColor">
+  </label>
+  <label>Цвят на фона на горен дисплей
+    <input type="color" id="exprBgColor">
+  </label>
+  <label>Цвят на бутоните
+    <input type="color" id="btnColor">
+  </label>
+  <label>Цвят на шрифта на бутоните
+    <input type="color" id="btnTextColor">
+  </label>
+  <label>Цвят на операционните бутони
+    <input type="color" id="opColor">
+  </label>
+  <label>Цвят на шрифта на дисплея
+    <input type="color" id="displayTextColor">
+  </label>
+  <label>Цвят на шрифта на горен дисплей
+    <input type="color" id="exprTextColor">
+  </label>
+  <button onclick="toggleSettings()">Затвори</button>
+</div>
+
+<!-- History Modal -->
+<div id="history">
+  <h2>История (последни 30)</h2>
+  <div id="historyList"></div>
+    <div style="display:flex;gap:.5rem;margin-top:.5rem">
+    <button onclick="clearHistory()" style="flex:1">Изтрий</button>
+    <button onclick="toggleHistory()" style="flex:1">Затвори</button>
+    </div>
+</div>
+
+<script>
+/* ---------- CONFIG ---------- */
+let RATE = 1.95583; 
+const MAX_HIST = 30;
+let expr = '', dec = 2, memory = [0,0,0], unit='', longTimer;
+let decHU = 2;   // история + горен ред
+
+/* ---------- UTILS ---------- */
+/*function toNum(str){
+  if(typeof str==='number') return str;
+  return parseFloat(String(str).replace(',','.'));
+}*/
+
+function toNum(str) {
+    if(typeof str==='number') return str;
+    // Премахваме интервалите, ако има такива
+    str = str.replace(/\s/g, '');
+    return parseFloat(str.replace(',', '.'));
+}
+
+/* винаги 2 десетични цифри
+function toStr(num, digits = decHU){
+  return Number(num).toLocaleString('bg-BG', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: digits
+  });
+}
+*/
+
+function toStr(num, digits = decHU){
+  const str = Number(num).toLocaleString('bg-BG', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: digits
+  });
+  // ако има ровно една цифра след запетаята → добавяме 0
+  if (str.includes(',') && str.split(',')[1].length === 1) {
+    return str + '0';
+  }
+  return str;
+}
+
+function round(num){return Number(num.toFixed(dec));}
+function fitFont(){
+  const el=result;
+  el.style.fontSize='calc(var(--font)*1.2)';
+  while(el.scrollWidth>el.clientWidth && parseFloat(getComputedStyle(el).fontSize)>10){
+    el.style.fontSize=(parseFloat(getComputedStyle(el).fontSize)-1)+'px';
+  }
+}
+
+async function clearHistory(){
+  const db = await openDB();
+  const tx = db.transaction(store,'readwrite');
+  tx.objectStore(store).clear();
+  historyList.innerHTML='';
+}
+
+/* ---------- LONG PRESS ---------- */
+function long(e,k){
+  e.preventDefault();
+  if(['1','2','3'].includes(k)){
+    const idx=['1','2','3'].indexOf(k);
+    // longTimer=setTimeout(()=>{memory[idx]+=toNum(result);updateMem();},500);
+    memory[idx]+=toNum(result.textContent.replace(unit, '').replace(',', '.'));
+    updateMem();
+  }else if(['4','5','6'].includes(k)){
+    const idx=['4','5','6'].indexOf(k);
+    longTimer=setTimeout(()=>{memory[idx]-=toNum(result);updateMem();},500);
+  }else if(['7','8','9'].includes(k)){
+    const idx=['7','8','9'].indexOf(k);
+    longTimer=setTimeout(()=>{result=toStr(memory[idx]);upd();},500);
+  }else if(k==='C'){
+    longTimer=setTimeout(()=>{memory=[0,0,0];updateMem();},500);
+  }
+}
+/**/
+/*/ ---- MEMORY КОМБИНАЦИ ----
+function long(e, k){
+  e.preventDefault();
+  if(['7','8','9'].includes(k)){
+    const idx=['7','8','9'].indexOf(k);
+    memory[idx]+=toNum(result.textContent.replace(unit, '').replace(',', '.'));
+    updateMem();
+  }else if(['4','5','6'].includes(k)){
+    const idx=['4','5','6'].indexOf(k);
+    memory[idx]-=toNum(result.textContent.replace(unit, '').replace(',', '.'));
+    updateMem();
+  }else if(['1','2','3'].includes(k)){
+    const idx=['1','2','3'].indexOf(k);
+    expr=toStr(memory[idx], decHU); upd();
+  }
+}*/
+
+function clearLong(){clearTimeout(longTimer);}
+
+/* ---------- DB ---------- */
+const dbName='calcDB',store='history';
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(dbName,1);
+    req.onupgradeneeded=()=>req.result.createObjectStore(store,{keyPath:'id',autoIncrement:true});
+    req.onerror=()=>reject(req.error);
+    req.onsuccess=()=>resolve(req.result);
+  });
+}
+async function addHist(item){
+  const db=await openDB();
+  const tx=db.transaction(store,'readwrite');
+  tx.objectStore(store).add(item);
+  tx.objectStore(store).openCursor(null,'prev').onsuccess=e=>{
+    let c=e.target.result,advance=c.value.id-MAX_HIST;
+    if(advance>0) tx.objectStore(store).delete(advance);
+  };
+}
+async function getHistory(){
+  const db=await openDB();
+  return new Promise(res=>{
+    const arr=[];
+    db.transaction(store).objectStore(store).openCursor(null,'prev').onsuccess=e=>{
+      const c=e.target.result;
+      if(c){arr.push(c.value);c.continue();}else res(arr);
+    };
+  });
+}
+
+/* ---------- ACTIONS ---------- */
+function act(k){
+  if(k==='C'){expr=''; unit=''; upd(); return;}
+  if(k==='⌫'){expr=expr.slice(0,-1);upd();return;}
+  if(k==='±'){expr=expr.startsWith('-')?expr.slice(1):'-'+expr;upd();return;}
+  if(k===','){
+    if(!expr.includes(',')){expr+=',';upd();}
+    return;
+  }
+  if(k==='=') {unit=''; upd(); calc(); return; }
+  if(k==='%'){
+    expr=toStr(toNum(expr)/100);upd();return;
+  }
+  expr+=k;upd();
+}
+
+function round(num, digits = decHU){
+  return Number(num.toFixed(digits));
+}
+
+function balanceBrackets(str){
+  let open = 0;
+  for (const c of str) if (c === '(') open++; else if (c === ')') open--;
+  return str + ')'.repeat(Math.max(0, open));
+}
+
+function calc(){
+  try {
+    let balanced = balanceBrackets(expr);
+    const res = round(Function('"use strict";return ('+balanced.replace(/,/g,'.')+')')(), decHU);
+    const txt = balanced + ' = ' + toStr(res, decHU);
+    addHist({expr:txt,res});
+    expr = toStr(res, decHU);
+    upd();
+  }
+  catch {result.textContent='Грешка!';}
+}
+
+function upd(){
+  expr = String(expr);
+  exprDisp.textContent = expr || '0';
+
+  const val = toNum(expr || 0);
+  const display = isNaN(val) ? '0' : toStr(val, decHU);
+  result.textContent = `${display} ${unit}`;
+  fitFont();
+}
+
+/* ---------- CONVERT ---------- */
+function convert(dir){
+  if(!expr) return;
+  const val = toNum(expr);
+  if(isNaN(val)) return;
+  let res;
+  if(dir === 'EUR'){
+    res = val * RATE;
+    unit = 'лв';
+    unitTop = '€';
+  } else {
+    res = val / RATE;
+    unit = '€';
+    unitTop = 'лв';
+  }
+  const rounded = round(res, dec); 
+  // горен ред:  "10 € →"
+  exprDisp.textContent = `${expr} ${unitTop} ↓`;
+  // долен ред: "19.56 лв"
+  result.textContent   = `${toStr(rounded, dec)} ${unit}`;
+  
+  
+  fitFont();
+}
+
+/* ---------- UI ---------- */
+const exprDisp=document.getElementById('expr');
+const result=document.getElementById('result');
+
+function toggleSettings() {
+  const el = document.getElementById('settings');
+  const visible = el.style.display === 'flex';
+  if (!visible) {
+    loadSettings();  // зареждаме настройките при отваряне
+    // ---- зареждаме актуалните цветове в селекторите ----
+    ['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor']
+      .forEach(id=>{
+        const color = getComputedStyle(document.documentElement)
+                      .getPropertyValue(
+                        {bgColor:'--page',calcColor:'--calc',displayColor:'--display-bg',
+                        btnColor:'--btn',btnTextColor:'--btn-text',opColor:'--btn-op',
+                        displayTextColor:'--display-text',exprBgColor:'--expr-bg',exprTextColor:'--expr-text'}[id]
+                      ).trim();
+        document.getElementById(id).value = color;
+      });
+  } else {                                 // затваряме → записваме
+    RATE   = parseFloat(document.getElementById('rateInput').value);
+    dec    = +document.getElementById('decField').value;
+    decHU  = +document.getElementById('decHUField').value;
+
+    localStorage.setItem('rate',  RATE);
+    localStorage.setItem('dec',   dec);
+    localStorage.setItem('decHU', decHU);
+  }
+  el.style.display = visible ? 'none' : 'flex';
+}
+
+
+function toggleHistory(){toggle('history');loadHistory();}
+
+function toggle(id){
+  const el=document.getElementById(id);
+  el.style.display=el.style.display==='flex'?'none':'flex';
+}
+
+function updateMem(){
+  ['m1','m2','m3'].forEach((id,i)=>document.getElementById(id).textContent=`M${i+1}:${toStr(memory[i])}`);
+}
+
+function loadSettings(){
+  document.getElementById('rateInput').value = RATE;
+  document.getElementById('decField').value = dec;
+  document.getElementById('decHUField').value = decHU;
+  const colorMap = {
+    bgColor:'--page',
+    calcColor:'--calc',
+    displayColor:'--display-bg',
+    btnColor:'--btn',
+    btnTextColor:'--btn-text',
+    opColor:'--btn-op',
+    displayTextColor:'--display-text',
+    exprBgColor:'--expr-bg',
+    exprTextColor:'--expr-text'
+  };
+  Object.keys(colorMap).forEach(id=>{
+    if(localStorage[id])
+      document.documentElement.style.setProperty(colorMap[id], localStorage[id]);
+  });
+}
+
+['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input',e=>{
+    const propMap={
+      bgColor:'--page',calcColor:'--calc',displayColor:'--display-bg',
+      btnColor:'--btn',btnTextColor:'--btn-text',opColor:'--btn-op',
+      displayTextColor:'--display-text',exprBgColor:'--expr-bg',exprTextColor:'--expr-text'
+    };
+    document.documentElement.style.setProperty(propMap[id],e.target.value);
+    localStorage.setItem(id,e.target.value);
+  });
+});
+
+function toggleTheme(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const newTheme=isDark?'light':'dark';
+  document.documentElement.setAttribute('data-theme',newTheme);
+  localStorage.setItem('theme',newTheme);
+  document.getElementById('themeToggle').textContent=isDark?'🌞':'🌙';
+}
+function loadHistory(){
+  getHistory().then(list=>{
+    historyList.innerHTML='';
+    list.forEach(h=>{
+      const btn=document.createElement('button');
+      btn.textContent=h.expr;
+      btn.onclick=()=>{expr=h.expr.split(' = ')[0];upd();toggleHistory();};
+      historyList.appendChild(btn);
+    });
+  });
+}
+
+/* ---------- INIT ---------- */
+window.addEventListener('load',()=>{
+  decHU = parseInt(localStorage.getItem('decHU') || 2, 10);
+  dec = parseInt(localStorage.getItem('dec') || 2, 10);
+  
+  /*document.getElementById('decHURange').value = decHU;
+  document.getElementById('decHUVal').textContent = decHU;
+  document.getElementById('decRange').value = dec;
+  document.getElementById('decVal').textContent = dec;*/
+
+  if(localStorage.theme){
+    document.documentElement.setAttribute('data-theme',localStorage.theme);
+    document.getElementById('themeToggle').textContent=localStorage.theme==='dark'?'🌙':'🌞';
+  }
+  if(localStorage.dec) dec=+localStorage.dec;
+  if(localStorage.rate) RATE=parseFloat(localStorage.rate);
+  loadSettings();upd();updateMem();
+});
+
+/*document.getElementById('decHURange').addEventListener('input', e=>{
+  decHU = +e.target.value;
+  localStorage.setItem('decHU', decHU);
+  document.getElementById('decHUVal').textContent = decHU;
+});
+
+document.getElementById('decRange').addEventListener('input', e=>{
+  dec = +e.target.value;
+  localStorage.setItem('dec', dec);
+  document.getElementById('decVal').textContent = dec;
+});*/
+
+// ---- Клавиш в комбинация ----
+function numClick(ev,k){
+  if(ev.ctrlKey){
+    // Ctrl-комбинация
+    if(['1','2','3'].includes(k)){
+      const idx=['1','2','3'].indexOf(k);
+      memory[idx]+=toNum(expr);
+    }else if(['4','5','6'].includes(k)){
+      const idx=['4','5','6'].indexOf(k);
+      memory[idx]-=toNum(expr);
+    }else if(['7','8','9'].includes(k)){
+      const idx=['7','8','9'].indexOf(k);
+      expr=toStr(memory[idx]); upd();
+    }else if(k==='C'){
+      memory=[0,0,0];
+    }
+    updateMem();
+    ev.preventDefault();
+  }else{
+    act(k);                       // обикновено въвеждане
+  }
+}
+</script>
+</body>
+</html>

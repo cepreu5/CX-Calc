@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8"/>
+<title>EUR ↔ BGN Calculator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1e293b">
+<link rel="manifest" href="data:application/manifest+json,{
+  \"name\":\"EUR↔BGN Calculator\",\"short_name\":\"EUR↔BGN\",
+  "icons":[{"src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231e293b'/%3E%3Ctext x='256' y='256' font-size='240' fill='white' text-anchor='middle' dominant-baseline='middle'%3E€%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}],
+  \"start_url\":\".\",\"display\":\"standalone\",\"background_color\":\"#ffffff\"
+}">
+<style>
+  :root{
+    --bg:#ffffff;--bg2:#f1f5f9;--text:#111827;--accent:#3b82f6;
+    --btn:#e2e8f0;--btn-op:#cbd5e1;--font:1.5rem;
+  }
+  [data-theme=dark]{--bg:#111827;--bg2:#1e293b;--text:#f9fafb;--btn:#374151;--btn-op:#4b5563;}
+  *{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  body{margin:0;background:var(--bg);color:var(--text);display:flex;justify-content:center;align-items:center;min-height:100vh}
+  #calc{width:100%;max-width:380px;padding:1rem}
+  #expr,#result{height:3rem;font-size:var(--font);text-align:right;padding:.5rem;border-radius:.5rem;background:var(--bg2);margin-bottom:.25rem;overflow:hidden}
+  #result{font-weight:bold;font-size:calc(var(--font)*1.3)}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:.5rem}
+  button{padding:.75rem;border:none;border-radius:.5rem;font-size:calc(var(--font)*.9);background:var(--btn);color:var(--text);cursor:pointer}
+  button.op{background:var(--btn-op)}
+  button:active{transform:scale(.96)}
+  #settings,#history{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);padding:1rem;z-index:9;display:none;flex-direction:column;gap:.5rem;overflow-y:auto}
+  #settings h2,#history h2{margin:.2rem 0 .5rem}
+  #historyList button{display:block;width:100%;text-align:left;margin-bottom:.25rem;padding:.4rem}
+</style>
+</head>
+<body>
+<div id="calc">
+  <div id="expr"></div>
+  <div id="result">0</div>
+  <div class="grid">
+    <button onclick="act('(')">(</button><button onclick="act(')')">)</button><button onclick="act('C')">C</button><button onclick="act('⌫')">⌫</button>
+    <button onclick="act('7')">7</button><button onclick="act('8')">8</button><button onclick="act('9')">9</button><button onclick="act('/')" class="op">/</button>
+    <button onclick="act('4')">4</button><button onclick="act('5')">5</button><button onclick="act('6')">6</button><button onclick="act('*')" class="op">×</button>
+    <button onclick="act('1')">1</button><button onclick="act('2')">2</button><button onclick="act('3')">3</button><button onclick="act('-')" class="op">-</button>
+    <button onclick="act('0')">0</button><button onclick="act('.')">.</button><button onclick="act('±')">±</button><button onclick="act('+')" class="op">+</button>
+    <button onclick="act('%')">%</button><button onclick="toggleHistory()">📜</button><button onclick="toggleSettings()">⚙️</button><button onclick="act('=')" class="op">=</button>
+  </div>
+  <div style="text-align:center;margin-top:.5rem;font-size:.9rem">
+    <button onclick="convert('EUR')">€ → лв</button>
+    <button onclick="convert('BGN')">лв → €</button>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings">
+  <h2>Настройки</h2>
+  <label>Тема:
+    <select onchange="setTheme(this.value)">
+      <option value="light">Светла</option>
+      <option value="dark">Тъмна</option>
+    </select>
+  </label>
+  <label>Размер на шрифта:
+    <input type="range" min="1.2" max="2.5" step=".1" oninput="setFont(this.value)">
+  </label>
+  <label>Знаци след десетичната:
+    <input type="range" min="0" max="5" oninput="setDec(this.value)">
+  </label>
+  <button onclick="toggleSettings()">Затвори</button>
+</div>
+
+<!-- History Modal -->
+<div id="history">
+  <h2>История (последни 30)</h2>
+  <div id="historyList"></div>
+  <button onclick="toggleHistory()">Затвори</button>
+</div>
+
+<script>
+/* ---------- CONFIG ---------- */
+const RATE = 1.95583;
+const MAX_HIST = 30;
+
+/* ---------- STATE ---------- */
+let expr = '', dec = 2, theme = 'light';
+
+/* ---------- DB ---------- */
+const dbName='calcDB',store='history';
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(dbName,1);
+    req.onupgradeneeded=()=>req.result.createObjectStore(store,{keyPath:'id',autoIncrement:true});
+    req.onerror=()=>reject(req.error);
+    req.onsuccess=()=>resolve(req.result);
+  });
+}
+async function addHist(item){
+  const db=await openDB();
+  const tx=db.transaction(store,'readwrite');
+  tx.objectStore(store).add(item);
+  tx.objectStore(store).openCursor(null,'prev').onsuccess=e=>{
+    let c=e.target.result,advance=c.value.id-MAX_HIST;
+    if(advance>0) tx.objectStore(store).delete(advance);
+  };
+}
+async function getHistory(){
+  const db=await openDB();
+  return new Promise(res=>{
+    const arr=[];
+    db.transaction(store).objectStore(store).openCursor(null,'prev').onsuccess=e=>{
+      const c=e.target.result;
+      if(c){arr.push(c.value);c.continue();}else res(arr);
+    };
+  });
+}
+
+/* ---------- ACTIONS ---------- */
+function act(k){
+  if(k==='C'){expr='';upd();return;}
+  if(k==='⌫'){expr=expr.slice(0,-1);upd();return;}
+  if(k==='±'){expr.startsWith('-')?expr=expr.slice(1):expr='-'+expr;upd();return;}
+  if(k==='='){calc();return;}
+  if(k==='%'){
+    try{expr=String(parseFloat(expr)/100);}catch{expr='Error';}
+    upd();return;
+  }
+  expr+=k;upd();
+}
+function calc(){
+  try{
+    const res=Function('"use strict";return ('+expr.replace(/×/g,'*')+')')();
+    const txt=expr+' = '+format(res);
+    addHist({expr,res});
+    expr=String(res);upd();
+  }catch{result.textContent='Error';}
+}
+function upd(){
+  exprDisp.textContent=expr||'0';
+  result.textContent=format(parseFloat(expr||0));
+}
+function format(n){
+  return n.toLocaleString('bg-BG',{minimumFractionDigits:0,maximumFractionDigits:dec});
+}
+
+/* ---------- CONVERT ---------- */
+function convert(dir){
+  if(!expr) return;
+  const val=parseFloat(expr);
+  if(isNaN(val)) return;
+  let res;
+  if(dir==='EUR') res=val*RATE;
+  else res=val/RATE;
+  expr=String(res);upd();
+}
+
+/* ---------- UI ---------- */
+const exprDisp=document.getElementById('expr');
+const result=document.getElementById('result');
+function toggleSettings(){toggle('settings');}
+function toggleHistory(){toggle('history');loadHistory();}
+function toggle(id){
+  const el=document.getElementById(id);
+  el.style.display=el.style.display==='flex'?'none':'flex';
+}
+function setTheme(t){theme=t;document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+function setFont(f){document.documentElement.style.setProperty('--font',f+'rem');localStorage.setItem('font',f);}
+function setDec(d){dec=+d;localStorage.setItem('dec',d);upd();}
+function loadHistory(){
+  getHistory().then(list=>{
+    historyList.innerHTML='';
+    list.forEach(h=>{
+      const btn=document.createElement('button');
+      btn.textContent=`${h.expr} → ${format(h.res)}`;
+      btn.onclick=()=>{expr=h.res;upd();toggleHistory();};
+      historyList.appendChild(btn);
+    });
+  });
+}
+
+/* ---------- INIT ---------- */
+window.addEventListener('load',()=>{
+  if(localStorage.theme) setTheme(localStorage.theme);
+  if(localStorage.font) setFont(localStorage.font);
+  if(localStorage.dec) setDec(localStorage.dec);
+  upd();
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('data:text/javascript,console.log("sw")');
+  }
+});
+document.addEventListener('keydown',e=>{
+  const k=e.key;
+  if(/[0-9+\-*/().]/.test(k)) act(k);
+  if(k==='Enter') act('=');
+  if(k==='Backspace') act('⌫');
+  if(k==='Delete') act('C');
+});
+</script>
+</body>
+</html>
