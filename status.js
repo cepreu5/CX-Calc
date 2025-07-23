@@ -28,6 +28,7 @@
             Mem[targetSlot] += value;
                 console.log(`M+ в Mem[${targetSlot}] → +${value} = [${Mem}]`);
                 updateMemoryStatusDisplay(targetSlot, true); // Променя фона на светлосин
+                //status.textContent = "operation";
                 setTimeout(() => {
                     updateMemoryStatusDisplay(targetSlot, false); // Връща оригиналния фон след х секунди
                 }, 300);
@@ -36,6 +37,7 @@
                 Mem[targetSlot] -= value;
                 console.log(`M− в Mem[${targetSlot}] → −${value} = [${Mem}]`);
                 updateMemoryStatusDisplay(targetSlot, true); // Променя фона на светлосин
+                //status.textContent = "operation";
                 setTimeout(() => {
                     updateMemoryStatusDisplay(targetSlot, false); // Връща оригиналния фон след х секунди
                 }, 300);
@@ -48,6 +50,18 @@
                 console.warn("❗ Непозната операция:", operation);
         }
         localStorage.setItem('CalcMem', JSON.stringify(Mem));
+    //function updateStatus(message, sArea) {
+        const statusId = typeof targetSlot === "number" ? `statusArea${targetSlot}` : targetSlot;
+        const status = document.getElementById(statusId);
+        if (!status) {
+            //console.warn(`updateStatus: елемент с id '${statusId}' не е намерен.`);
+            return;
+        }
+        //console.log(`✔️ updateStatus(${statusId}):`, message);
+        status.textContent = "M" + targetSlot;
+        status.style.opacity = "1";
+    //}
+
     }
 
     // Действията за памет
@@ -55,39 +69,32 @@
         switch (statusArea) {
             case 1:
             switch (value) {
-                case "1": memoryAdd(1, "+"); updateStatus("M+", statusArea); break;
-                case "4": memoryAdd(1, "-"); updateStatus("M−", statusArea); break;
-                case "7": memoryAdd(1, "0"); updateStatus("MC", statusArea); clearStatus(statusArea); break;
+                case "1": memoryAdd(1, "+"); break;
+                case "4": memoryAdd(1, "-"); break;
+                case "7": memoryAdd(1, "0"); clearStatus(statusArea); break;
             }
             break;
             case 2:
             switch (value) {
-                case "2": memoryAdd(2, "+"); updateStatus("M+", statusArea); break;
-                case "5": memoryAdd(2, "-"); updateStatus("M−", statusArea); break;
-                case "8": memoryAdd(2, "0"); updateStatus("MC", statusArea); clearStatus(statusArea); break;
+                case "2": memoryAdd(2, "+"); break;
+                case "5": memoryAdd(2, "-"); break;
+                case "8": memoryAdd(2, "0"); clearStatus(statusArea); break;
             }
             break;
             case 3:
             switch (value) {
-                case "3": memoryAdd(3, "+"); updateStatus("M+", statusArea); break;
-                case "6": memoryAdd(3, "-"); updateStatus("M−", statusArea); break;
-                case "9": memoryAdd(3, "0"); updateStatus("MC", statusArea); clearStatus(statusArea); break;
+                case "3": memoryAdd(3, "+"); break;
+                case "6": memoryAdd(3, "-"); break;
+                case "9": memoryAdd(3, "0"); clearStatus(statusArea); break;
             }
             break;
-            /*case 4: break;
-            switch (value) {
-                case "-": memoryAdd(); updateStatus("M+", statusArea); break;
-                case "/": memorySubtract(); updateStatus("M−", statusArea); break;
-                case "*": memoryRecall(); updateStatus("MR", statusArea); clearStatus(statusArea); break;
-            }
-            break;*/
         }
     }
 
     //memoryShow: Временно показва стойността от даден слот на паметтав горния дисплей, без да го променя
     function memoryShow(slot) {
-        if (Mem[slot] === undefined || Mem[slot] === 0) {
-            console.warn(`ℹ️ Памет Mem[${slot}] е празна или нулева.`);
+        if (Mem[slot] === undefined) {
+            console.warn(`ℹ️ Памет Mem[${slot}] е недефинирана.`);
             return;
         }
         // const displaylv = document.getElementById('levInput'); // Това е input, така че value е ок
@@ -112,46 +119,30 @@
     }
 
     function memoryRecall(slot) {
-        let dspl;
-        if (Mem[slot] === undefined || Mem[slot] === 0 || (userInput != "" && !(/[+\-*/×÷]$/.test(userInput)))) {
+        // Guard clause: не променяме, ако паметта е празна или ако потребителят вече е въвел число
+        if (Mem[slot] === undefined || Mem[slot] === 0 || (userInput !== "" && !(/[+\-*/×÷]$/.test(userInput)))) {
             return;
         }
-        const valueStr = Mem[slot].toString().replace('.', ','); // 💬 замяна за визуализация, ако е нужно
-        // if (/[+\-*/×÷]/.test(userInput) || userInput === "") userInput += valueStr;  // Добавяме стойността от паметта към текущия вход
-        userInput += valueStr;  // Добавяме стойността от паметта към текущия вход
-        dspl = userInput;
-        if (levMode) {
-            displaylv.textContent = /[+\-*/×÷]/.test(userInput)
-            ? dspl = dspl.replace(/\*/g, "×").replace(/\//g, "÷")
-            : groupByThree(userInput, true);
-            display.textContent = /[+\-*/×÷]/.test(userInput)
-            ? "" // Не конвертираме, ако има операция
-            : groupByThree(convertFromLevToEur(userInput, true));
+        const valueStr = Mem[slot].toString().replace('.', ',');
+        userInput += valueStr; // Добавяме стойността от паметта към текущия вход
+        const isExpression = /[+\-*/×÷(]/.test(userInput);
+        // Определяме кой дисплей е първичен и кой вторичен, за да избегнем повторение на код
+        const primaryDisplay = levMode ? displaylv : display;
+        const secondaryDisplay = levMode ? display : displaylv;
+        const conversionFunction = levMode ? convertFromLevToEur : convertFromEurToLev;
+        if (isExpression) {
+            // Ако е израз, показваме го в първичния дисплей и изчистваме вторичния
+            primaryDisplay.textContent = userInput.replace(/\*/g, "×").replace(/\//g, "÷");
+            secondaryDisplay.textContent = "";
         } else {
-            display.textContent = /[+\-*/×÷]/.test(userInput)
-            ? dspl = dspl.replace(/\*/g, "×").replace(/\//g, "÷")
-            : groupByThree(userInput, true);
-            displaylv.textContent = /[+\-*/×÷]/.test(userInput)
-            ? "" // Не конвертираме, ако има операция convertFromEurToLev(userInput, true)
-            : groupByThree(convertFromEurToLev(userInput, true));
+            // Ако е число, форматираме го и показваме конвертираната стойност
+            primaryDisplay.textContent = groupByThree(userInput, true);
+            secondaryDisplay.textContent = groupByThree(conversionFunction(userInput, true));
         }
         console.log(`📟 MR от Mem[${slot}] → "${valueStr}" → нов userInput: "${userInput}"`);
         adjustFontSize(displaylv, display);
         updateMemoryStatusDisplay(slot, false); // Връща оригиналния фон веднага при извикване
     }
-
-    function updateStatus(message, sArea) {
-        const statusId = typeof sArea === "number" ? `statusArea${sArea}` : sArea;
-        const status = document.getElementById(statusId);
-        if (!status) {
-            console.warn(`updateStatus: елемент с id '${statusId}' не е намерен.`);
-            return;
-        }
-        console.log(`✔️ updateStatus(${statusId}):`, message);
-        status.textContent = message;
-        status.style.opacity = "1";
-    }
-
 
     function clearStatus(sArea) {
     const statusId = typeof sArea === "number" ? `statusArea${sArea}` : sArea;

@@ -505,6 +505,12 @@
         adjustFontSize(activeDisplay, passiveDisplay);
     }
 
+    function balanceBrackets(str){
+        let open = 0;
+        for (const c of str) if (c === '(') open++; else if (c === ')') open--;
+        return str + ')'.repeat(Math.max(0, open));
+    }
+
     function appendNumber(value) {
         var oldUserInput = "";
         const display = document.getElementById('eurInput');
@@ -537,10 +543,13 @@
             if (!/[+\-*/]$/.test(userInput) && userInput.length > 0) {
                 try {
                     let formattedInput = userInput.replace(/,/g, '.');
+                    console.log("Изчисляване на:", formattedInput);
                     oldUserInput = userInput
                     .replace(/\*/g, "×")
                     .replace(/\//g, "÷")
                     .replace(/,/g, '.');
+                    formattedInput = balanceBrackets(formattedInput);
+                    console.log("1-Изчисляване на:", formattedInput);
                     let result = eval(formattedInput);
                     result = parseFloat(result).toFixed(2);
                     userInput = result.toString().replace(/\./g, ',');
@@ -576,11 +585,14 @@
             let match = userInput.match(/([\d,]+[+\-*/])([\d,]+)/);
             if (match && /[+\-*/]/.test(value)) {
                 try {
-                    let formattedInput = match[0].replace(/,/g, '.');
+                    //let formattedInput = match[0].replace(/,/g, '.');
+                    let formattedInput = userInput.replace(/,/g, '.');
                     oldUserInput = userInput
                     .replace(/\*/g, "×")
                     .replace(/\//g, "÷")
                     .replace(/,/g, '.');
+                    formattedInput = balanceBrackets(formattedInput);
+                    console.log("2-Изчисляване на:", formattedInput);
                     let result = eval(formattedInput);
                     userInput = parseFloat(result).toFixed(2).replace(/\./g, ',') + value;
                     let levValue = parseNumber(displaylv.textContent);
@@ -946,13 +958,17 @@
                 if (modalIsActive && event.type === "click") return;
                 const keyValue = key.value;
                 // Обработка на специални клавиши
-                if (event.ctrlKey && keyValue === '€') {
+                if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '€') {
                     if (ovFlag) { noOverlay(); ovFlag = false; }
                     settingsModal.style.display = 'flex';
                     modalIsActive = true;
                     populateLayoutSettings();
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === 'B') {
                     clearAllMemory();
+                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '0') {
+                    appendNumber("(");
+                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === ',') {
+                    appendNumber(")");
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '+') {
                     toggleFullscreen();
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '*') {
@@ -1025,16 +1041,6 @@
             } else {
                 console.log("Няма записани MainPointsO.");
             }
-            const savedMem = localStorage.getItem('CalcMem');
-            if (savedMem) {
-                Mem = JSON.parse(savedMem);
-                console.log("Заредени Mem от localStorage:", Mem);
-                for (let i = 1; i <= 3; i++) if (Mem[i] !== undefined && Mem[i] !== null && Mem[i] !== 0) {
-                    updateStatus ("M", i);
-                }
-            } else {
-                console.log("Няма записани Mem от localStorage.");
-            }
             const savedMainPoints = localStorage.getItem('MainPoints');
             if (savedMainPoints) {
                 MainPoints = JSON.parse(savedMainPoints);
@@ -1071,6 +1077,16 @@
                 document.getElementById('exchangeRateConfirmBtn').onclick = function() {
                     warning.style.display = 'none';
                 };
+            }
+            const savedMem = localStorage.getItem('CalcMem');
+            if (savedMem) {
+                Mem = JSON.parse(savedMem);
+                console.log("Заредени Mem от localStorage:", Mem);
+                for (let i = 1; i <= 3; i++) if (Mem[i] !== undefined && Mem[i] !== null && Mem[i] !== 0) {
+                    memoryAdd(i, "+"); // updateStatus ("M", i);
+                }
+            } else {
+                console.log("Няма записани Mem от localStorage.");
             }
         } catch (err) {
             console.warn("⚠️ Грешка при инициализация:", err);

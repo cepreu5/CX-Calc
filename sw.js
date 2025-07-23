@@ -24,8 +24,14 @@ const ASSETS = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+      .then(cache => {
+        console.log('SW: Опит за кеширане на статични ресурси...');
+        return cache.addAll(ASSETS);
+      })
       .then(() => self.skipWaiting()) // активирай SW веднага
+      .catch(error => {
+        console.error('SW: Неуспешно кеширане на ресурси по време на инсталация:', error);
+      })
   );
 });
 
@@ -70,4 +76,3 @@ self.addEventListener('fetch', event => {
       })
   );
 });
-
