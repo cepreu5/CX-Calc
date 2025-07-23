@@ -896,10 +896,11 @@
                 );
                 if (withinBounds) {
                     isCtrlRequired ? memoryShow(i) : memoryRecall(i);
-                    break;
+                    return true; // Връщаме true, за да покажем, че кликът е обработен
                 }
             }
         }
+        return false; // Връщаме false, ако кликът не е върху активна зона
     }
 
     function sanitizeAndEvaluateInput(input, operationType) {
@@ -951,10 +952,12 @@
     }
 
     function handleCalculatorInteraction(event, options = {}) {
+        let interactionHandled = false;
         const { keyWidth, keyHeight } = getKeyDimensions();
         keys.forEach(key => {
             if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
                 // Прескачане при активен модал
+                interactionHandled = true;
                 if (modalIsActive && event.type === "click") return;
                 const keyValue = key.value;
                 // Обработка на специални клавиши
@@ -992,7 +995,19 @@
             }
         });
         // Обработка на статус зони
-        handleStatusZones(event, event.ctrlKey || options.allowWithoutCtrl);
+        if (handleStatusZones(event, event.ctrlKey || options.allowWithoutCtrl)) {
+            interactionHandled = true;
+        }
+
+        // Ако кликът е извън интерактивните зони и е Ctrl+Click или задържане
+        if (!interactionHandled && (event.ctrlKey || options.allowWithoutCtrl)) {
+            // Нулиране на отместването отдолу
+            document.documentElement.style.setProperty('--calc-bottom-offset', '0px');
+            localStorage.setItem('calcBottomOffset', '0');
+            calcBottom = 0;
+            console.log('Отместването отдолу (calcBottomOffset) е нулирано.');
+            location.reload(); // Презареждаме, за да се приложат промените в геометрията
+        }
     }
 
     document.addEventListener("click", function(event) {
