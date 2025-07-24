@@ -11,8 +11,8 @@
                     x: originalPoint.x * aspectRatioW,
                     y: originalPoint.y * aspectRatioH
                 };
-                console.log(`MainPoints[${key}]: x=${MainPoints[key].x}, y=${MainPoints[key].y}`);
-                console.log(`MainPointsO[${key}]: x=${MainPointsO[key].x}, y=${MainPointsO[key].y}`);
+                // console.log(`MainPoints[${key}]: x=${MainPoints[key].x}, y=${MainPoints[key].y}`);
+                // console.log(`MainPointsO[${key}]: x=${MainPointsO[key].x}, y=${MainPointsO[key].y}`);
             }
         }
     }
@@ -113,7 +113,7 @@
             return { keys: [], displayCoords: {} };
         }
         const rect = calculator.getBoundingClientRect();
-        console.log("Координати на калкулатора L T:", rect.left, rect.top, MainPoints.Display.y);
+        // console.log("Координати на калкулатора L T:", rect.left, rect.top, MainPoints.Display.y);
         // Връщаме координати за оверлея
         const displayCoords = {
             lv: {
@@ -142,7 +142,7 @@
             { label: "Валута",       id: "currency",  coords: { x: displayCoords.eur.x + MainPoints.CurrencyOffset.x, y: displayCoords.eur.y + MainPoints.CurrencyOffset.y } }
         ];
         markers.forEach(({ label, id, coords }) => {
-            console.log("Дисплей на калкулатора.");
+            // console.log("Дисплей на калкулатора.");
             const x = parseFloat(coords?.x);
             const y = parseFloat(coords?.y);
             if (isNaN(x) || isNaN(y)) {

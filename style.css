@@ -50,34 +50,16 @@ body.ready {
     display: block;
     margin: 0 auto;
 }
-
-/*
-.calculator-img.glow {
-  animation: glow-once 1.2s ease-out;
+/* нов стил за валутата */
+#currency {
+    position: absolute; /* Абсолютно позициониране спрямо контейнера */
+    font-family: 'Arial', sans-serif;
+    font-size: 24px; /* Или друг подходящ размер */
+    font-weight: bold;
+    color: #d8d9d9;
+    z-index: 200; /* Показва валутата над изображението */
+    user-select: none; /* Предотвратява селектиране */
 }
-
-@keyframes glow-once {
-  0% {
-    filter: drop-shadow(0 0 0px #fff);
-    transform: scale(1);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-    filter: drop-shadow(0 0 10px #fffa);
-    transform: scale(1.02);
-  }
-  60% {
-    filter: drop-shadow(0 0 25px #ffd);
-    transform: scale(1);
-  }
-  100% {
-    filter: none;
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-*/
 
 .statusArea {
     position: fixed;

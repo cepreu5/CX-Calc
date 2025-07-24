@@ -9,19 +9,6 @@
    	<link rel="shortcut icon" type="image/png" href="CalcFav.png" />
 	<link rel="stylesheet" href="style.css" />
 </head>
-<style>
-/* нов стил за валутата */
-#currency {
-    position: absolute; /* Абсолютно позициониране спрямо контейнера */
-    font-family: 'Arial', sans-serif;
-    font-size: 24px; /* Или друг подходящ размер */
-    font-weight: bold;
-    color: #d8d9d9;
-    z-index: 200; /* Показва валутата над изображението */
-    user-select: none; /* Предотвратява селектиране */
-}
-</style>
-
 <body>
     <div id="install-bar" style="
         position:fixed;
@@ -381,10 +368,10 @@
 
     function getImageSize() {
         if (calculator) {
-            //console.log("Извлечен път:", calculator.src); // Проверка в конзолата
+            // console.log("Извлечен път:", calculator.src); // Проверка в конзолата
             imageWidthO = calculator.naturalWidth;
             imageHeightO = calculator.naturalHeight;
-            console.log("Оригинален размер (1:1) на изображението: W:", imageWidthO, " x H:", imageHeightO);
+            // console.log("Оригинален размер (1:1) на изображението: W:", imageWidthO, " x H:", imageHeightO);
         } else {
             console.log("Изображението не е намерено!");
         }
@@ -414,9 +401,9 @@
         } else {
             imageWidth = calculator.width;
             imageHeight = calculator.height;
-            console.log("(no contain) - Използваме зададените размери на изображението.");
+            // console.log("(no contain) - Използваме зададените размери на изображението.");
         }
-        console.log("Визуален размер на изображението: W:", imageWidth, " x H:", imageHeight);
+        // console.log("Визуален размер на изображението: W:", imageWidth, " x H:", imageHeight);
         // Заменяме window.innerWidth с containerWidth
         aspectRatioW = imageWidth / imageWidthO; // aspectRatioW е съотношението на ширината на изображението към оригиналната ширина
         aspectRatioH = imageHeight / imageHeightO; // aspectRatioH е съотношението на височината на изображението към оригиналната височина
@@ -424,7 +411,7 @@
         //StartingPoint.x = ConstX * aspectRatioW + (containerWidth - imageWidth) / 2;
         //StartingPoint.y = ConstY * aspectRatioH + (containerHeight - imageHeight); // (imageHeight / calculator.naturalHeight)
         //console.log("StartingPoint.x = ", StartingPoint.x, "  StartingPoint.y = ", StartingPoint.y);
-        console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
+        //console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
     }
 
     function getKeyValue(row, col) {
@@ -604,19 +591,19 @@
             if (!/[+\-*/]$/.test(userInput) && userInput.length > 0) {
                 try {
                     let formattedInput = userInput.replace(/,/g, '.');
-                    console.log("Изчисляване на:", formattedInput);
+                    // console.log("Изчисляване на:", formattedInput);
                     oldUserInput = userInput
                     .replace(/\*/g, "×")
                     .replace(/\//g, "÷")
                     .replace(/,/g, '.');
                     formattedInput = balanceBrackets(formattedInput);
-                    console.log("1-Изчисляване на:", formattedInput);
+                    // console.log("1-Изчисляване на:", formattedInput);
                     let result = eval(formattedInput);
                     result = parseFloat(result).toFixed(2);
                     userInput = result.toString().replace(/\./g, ',');
                     navigator.clipboard.writeText(userInput)
                     .then(() => {
-                        console.log("Резултатът беше копиран в клипборда! ✅"); })
+                        console.log("Резултатът е копиран в клипборда! ✅"); })
                     .catch(err => { console.error("Грешка при копиране в клипборда:", err); });
                 } catch (error) {
                     console.error("Грешка в изчисленията", error);
@@ -1136,7 +1123,7 @@
                         Object.assign(MainPointsO[key], parsedSettings[key]);
                     }
                 }
-                console.log("Слети и заредени MainPointsO:"); //, MainPointsO
+                console.log("Заредени и допълнени MainPointsO:");
             } else {
                 console.log("Няма записани MainPointsO, използват се тези по подразбиране.");
             }
