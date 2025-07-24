@@ -218,6 +218,21 @@ const MAX_HIST = 30;
 let expr = '', dec = 2, memory = [0,0,0], unit='', longTimer;
 let decHU = 2;   // история + горен ред
 
+const settingsToSave = [
+    { id: 'rateInput', key: 'rate', type: 'number' },
+    { id: 'decField', key: 'dec', type: 'number' },
+    { id: 'decHUField', key: 'decHU', type: 'number' },
+    { id: 'bgColor', key: 'bgColor', type: 'color' },
+    { id: 'calcColor', key: 'calcColor', type: 'color' },
+    { id: 'displayColor', key: 'displayColor', type: 'color' },
+    { id: 'btnColor', key: 'btnColor', type: 'color' },
+    { id: 'btnTextColor', key: 'btnTextColor', type: 'color' },
+    { id: 'opColor', key: 'opColor', type: 'color' },
+    { id: 'displayTextColor', key: 'displayTextColor', type: 'color' },
+    { id: 'exprBgColor', key: 'exprBgColor', type: 'color' },
+    { id: 'exprTextColor', key: 'exprTextColor', type: 'color' }
+];
+
 /* ---------- UTILS ---------- */
 /*function toNum(str){
   if(typeof str==='number') return str;
@@ -413,6 +428,7 @@ function convert(dir){
 const exprDisp=document.getElementById('expr');
 const result=document.getElementById('result');
 
+/*
 function toggleSettings() {
   const el = document.getElementById('settings');
   const visible = el.style.display === 'flex';
@@ -441,6 +457,64 @@ function toggleSettings() {
   el.style.display = visible ? 'none' : 'flex';
 }
 
+function toggleSettings() { отделни стойности в паметта
+    const el = document.getElementById('settings');
+    const visible = el.style.display === 'flex';
+
+    if (!visible) {
+        loadSettings();  // зареждаме настройките при отваряне
+        // ---- зареждаме актуалните цветове в селекторите ----
+        ['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor']
+            .forEach(id => {
+                const color = getComputedStyle(document.documentElement)
+                            .getPropertyValue(
+                                {bgColor:'--page',calcColor:'--calc',displayColor:'--display-bg',
+                                btnColor:'--btn',btnTextColor:'--btn-text',opColor:'--btn-op',
+                                displayTextColor:'--display-text',exprBgColor:'--expr-bg',exprTextColor:'--expr-text'}[id]
+                            ).trim();
+                document.getElementById(id).value = color;
+            });
+    } else {                                 // затваряме → записваме
+        RATE   = parseFloat(document.getElementById('rateInput').value);
+        dec    = +document.getElementById('decField').value;
+        decHU  = +document.getElementById('decHUField').value;
+
+        // Записваме всички цветове
+        ['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor']
+            .forEach(id => {
+                const color = document.getElementById(id).value;
+                localStorage.setItem(id, color);
+            });
+
+        localStorage.setItem('rate',  RATE);
+        localStorage.setItem('dec',   dec);
+        localStorage.setItem('decHU', decHU);
+    }
+
+    el.style.display = visible ? 'none' : 'flex';
+}*/
+
+function toggleSettings() {
+    const el = document.getElementById('settings');
+    const visible = el.style.display === 'flex';
+
+    if (!visible) {
+        //loadSettings();  // зареждаме настройките при отваряне
+    } else {                                 // затваряме → записваме
+        const settingsData = {};
+        settingsToSave.forEach(setting => {
+            const value = document.getElementById(setting.id).value;
+            if (setting.type === 'number') {
+                settingsData[setting.key] = parseFloat(value);
+            } else if (setting.type === 'color') {
+                settingsData[setting.key] = value;
+            }
+        });
+        localStorage.setItem('settings', JSON.stringify(settingsData));
+    }
+
+    el.style.display = visible ? 'none' : 'flex';
+}
 
 function toggleHistory(){toggle('history');loadHistory();}
 
@@ -453,7 +527,7 @@ function updateMem(){
   ['m1','m2','m3'].forEach((id,i)=>document.getElementById(id).textContent=`M${i+1}:${toStr(memory[i])}`);
 }
 
-function loadSettings(){
+/*function loadSettings(){ отделни стойности в паметта
   document.getElementById('rateInput').value = RATE;
   document.getElementById('decField').value = dec;
   document.getElementById('decHUField').value = decHU;
@@ -473,8 +547,33 @@ function loadSettings(){
       document.documentElement.style.setProperty(colorMap[id], localStorage[id]);
   });
 }
+*/
+function loadSettings() {
+    const savedSettings = JSON.parse(localStorage.getItem('settings')) || {};
 
-['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor'].forEach(id=>{
+    // Зареждаме числените стойности
+    document.getElementById('rateInput').value = savedSettings.rate !== undefined ? savedSettings.rate : 1.95583;
+    document.getElementById('decField').value = savedSettings.dec !== undefined ? savedSettings.dec : 2;
+    document.getElementById('decHUField').value = savedSettings.decHU !== undefined ? savedSettings.decHU : 2;
+
+    // Зареждаме цветовете
+    ['bgColor', 'calcColor', 'displayColor', 'btnColor', 'btnTextColor', 'opColor', 'displayTextColor', 'exprBgColor', 'exprTextColor'].forEach(id => {
+        const color = savedSettings[id] || getComputedStyle(document.documentElement)
+            .getPropertyValue({bgColor: '--page', calcColor: '--calc', displayColor: '--display-bg',
+            btnColor: '--btn', btnTextColor: '--btn-text', opColor: '--btn-op',
+            displayTextColor: '--display-text', exprBgColor: '--expr-bg', exprTextColor: '--expr-text'}[id]).trim();
+
+        document.getElementById(id).value = color;
+        document.documentElement.style.setProperty(
+            {bgColor: '--page', calcColor: '--calc', displayColor: '--display-bg',
+            btnColor: '--btn', btnTextColor: '--btn-text', opColor: '--btn-op',
+            displayTextColor: '--display-text', exprBgColor: '--expr-bg', exprTextColor: '--expr-text'}[id],
+            color
+        );
+    });
+}
+
+/*['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor'].forEach(id=>{
   document.getElementById(id)?.addEventListener('input',e=>{
     const propMap={
       bgColor:'--page',calcColor:'--calc',displayColor:'--display-bg',
@@ -485,6 +584,17 @@ function loadSettings(){
     localStorage.setItem(id,e.target.value);
   });
 });
+
+['rateInput','decField','decHUField'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input',e=>{
+    const keyMap = {rateInput:'rate',decField:'dec',decHUField:'decHU'};
+    const value = e.target.value;
+    localStorage.setItem(keyMap[id], value);
+    if (keyMap[id] === 'rate') RATE = parseFloat(value);
+    if (keyMap[id] === 'dec') dec = parseInt(value, 10);
+    if (keyMap[id] === 'decHU') decHU = parseInt(value, 10);
+  });
+});*/
 
 function toggleTheme(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
@@ -558,6 +668,63 @@ function numClick(ev,k){
     act(k);                       // обикновено въвеждане
   }
 }
+
+// Добавяме обработчик за клавишни сабития - Lumo made
+document.addEventListener('keydown', function(event) {
+    const key = event.key;
+    switch (key) {
+        case 'Escape': // Затваряне на модалите
+            toggleSettings();
+            toggleHistory();
+            break;
+        case 'Enter': // Пресмятане
+            act('=');
+            break;
+        case 'Backspace': // Изтриване
+            act('⌫');
+            break;
+        case 'Delete': // Изтриване
+            act('⌫');
+            break;
+        case 'c': // Изтриване на всичко
+        case 'C': // Изтриване на всичко
+            if (event.ctrlKey) {
+                act('C');
+            }
+            break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        case '0':
+            act(key);
+            break;
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+            act(key);
+            break;
+        case '%':
+            act('%');
+            break;
+        case '=':
+            act('=');
+            break;
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            // Обработка на стрелки за движение в текста
+            break;
+        default:
+            // Игнорираме други клавиши
+            break;
+    }
+});
 </script>
 </body>
 </html>

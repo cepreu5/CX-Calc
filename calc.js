@@ -137,10 +137,11 @@
             }
         }
         const markers = [
-            { label: "Лев дисплей", coords: displayCoords.lv },
-            { label: "Евро дисплей", coords: displayCoords.eur }
+            { label: "Лев дисплей",  id: "levInput",  coords: displayCoords.lv },
+            { label: "Евро дисплей", id: "eurInput",  coords: displayCoords.eur },
+            { label: "Валута",       id: "currency",  coords: { x: displayCoords.eur.x + MainPoints.CurrencyOffset.x, y: displayCoords.eur.y + MainPoints.CurrencyOffset.y } }
         ];
-        markers.forEach(({ label, coords }) => {
+        markers.forEach(({ label, id, coords }) => {
             console.log("Дисплей на калкулатора.");
             const x = parseFloat(coords?.x);
             const y = parseFloat(coords?.y);
@@ -148,17 +149,22 @@
                 console.warn(`⚠️ ${label} получи невалидни координати:`, coords);
                 return;
             }
-            var marker = document.getElementById("levInput");
-            if (label == "Евро дисплей") {
-                marker = document.getElementById("eurInput");
+            const marker = document.getElementById(id);
+            if (!marker) {
+                console.warn(`⚠️ Елемент с id '${id}' не е намерен.`);
+                return;
             }
-            marker.className = "calculator-display";
+
             marker.title = label;
             marker.style.position = "absolute";
             marker.style.left = `${x}px`;
             marker.style.top = `${y - rect.top}px`;
-            marker.style.width = `${MainPoints.DisplaySize.x}px`; // "5px";
-            marker.style.height = `${MainPoints.DisplaySize.y+calcBottom}px`; // "5px";
+            // Прилагаме размер и клас само на дисплеите, не и на символа за валута
+            if (id === "levInput" || id === "eurInput") {
+                marker.className = "calculator-display";
+                marker.style.width = `${MainPoints.DisplaySize.x}px`;
+                marker.style.height = `${MainPoints.DisplaySize.y+calcBottom}px`;
+            }
         });
         for (let i = 1; i < 5; i++) positionStatusArea(i);
         return { keys, displayCoords };
