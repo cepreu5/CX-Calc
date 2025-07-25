@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="theme-color" content="#1e293b"/>
 <link rel="shortcut icon" type="image/png" href="KimiFav.png" />
-<link rel="manifest" href="kimimanif.json">
+<!--link rel="manifest" href="kimimanif.json"-->
 
 <style>
 :root{
@@ -17,14 +17,6 @@
   --display-bg:#f1f5f9;--display-text:#111827;--btn-text:#111827;
   --expr-bg:#f1f5f9;        /* цвят на фона на горния дисплей */
   --expr-text:#111827;      /* цвят на шрифта на горния дисплей */
-}
-
-[data-theme=dark]{
-  --bg:#111827;--page:#0f172a;--calc:#1e293b;--text:#f9fafb;
-  --btn:#374151;--btn-op:#4b5563;--btn-c:#dc2626;--btn-del:#ea580c;
-  --display-bg:#111827;--display-text:#f9fafb;--btn-text:#f9fafb;
-  --expr-bg:#111827;
-  --expr-text:#f9fafb;
 }
 
 *{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;user-select:none}
@@ -98,41 +90,70 @@ button{padding:.75rem;border:none;border-radius:.5rem;font-size:calc(var(--font)
   label{display:flex;justify-content:space-between;align-items:center}
   input[type=range]{width:50%}
   input[type=color]{width:30px;height:30px;border:none;border-radius:4px}
-  #themeToggle{cursor:pointer;font-size:1.5rem}
   #memoryInd{display:flex;justify-content:space-around;font-size:.8rem;margin-bottom:.25rem}
   #expr{
     background:var(--expr-bg);
     color:var(--expr-text);
   }
+
+  .icon-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.6rem; /* Леко намален padding за икони */
+  }
+
+  .icon-btn svg {
+    width: 1.2em; /* Размер на иконата спрямо шрифта на бутона */
+    height: 1.2em;
+  }
 </style>
-<script>
+<!--script>
     if('serviceWorker' in navigator){
         navigator.serviceWorker.register('kimisw.js');
     }
-</script>
+</script-->
 </head>
 <body>
 <div id="calcWrap">
   <div id="calc">
-    <div id="expr" contenteditable="true" spellcheck="false"></div>
+    <div id="expr" contenteditable="false" spellcheck="false"></div>
     <div id="result">0&nbsp;<span id="unit"></span></div>
     <div id="memoryInd">
-      <span id="m1">M1:0</span><span id="m2">M2:0</span><span id="m3">M3:0</span>
+      <span id="m1"></span><span id="m2"></span><span id="m3"></span>
     </div>
     <div class="fullBtn">
       <button onclick="convert('EUR')" class="op">€ → лв</button>
       <button onclick="convert('BGN')">лв → €</button>
     </div>
     <div class="grid">
-    <button onclick="act('(')">(</button>
-    <button onclick="act(')')">)</button>
+    <button class="icon-btn" onclick="toggleSettings()" title="Настройки">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.65l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.031 7.031 0 0 0-1.7-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65a7.031 7.031 0 0 0-1.7.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.65l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.65l2 3.46c.14.24.44.34.7.22l2.49-1c.53.38 1.12.7 1.7.98l.38 2.65c.04.26.26.42.5.42h4c.26 0 .46-.16.5-.42l.38-2.65c.58-.28 1.17-.6 1.7-.98l2.49 1c.26.12.56.02.7-.22l2-3.46a.5.5 0 0 0-.12-.65l-2.11-1.65z"/>
+  <!-- Централна "дупка" за оста -->
+  <circle cx="12" cy="12" r="2.5" fill="#000"/>
+</svg>
+    </button>
+    <button class="icon-btn" onclick="toggleHistory()" title="История">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+  <!-- Контур на листа -->
+  <rect x="4" y="3" width="16" height="18" rx="2" ry="2" fill="#F1F505" stroke="#000" stroke-width="1.5"/>
+  <!-- Горна гънка -->
+  <path d="M20 6h-5V3" fill="#eee"/>
+  <!-- Редове -->
+  <line x1="6" y1="7" x2="18" y2="7" stroke="#888" stroke-width="1"/>
+  <line x1="6" y1="10" x2="18" y2="10" stroke="#888" stroke-width="1"/>
+  <line x1="6" y1="13" x2="18" y2="13" stroke="#888" stroke-width="1"/>
+  <line x1="6" y1="16" x2="18" y2="16" stroke="#888" stroke-width="1"/>
+</svg>
+    </button>
     <button onclick="numClick(event,'C')" onpointerdown="long(event,'C')" onpointerup="clearLong()" oncontextmenu="return false" class="c">C</button>
     <button onclick="act('⌫')" class="del">⌫</button>
 
     <button onclick="numClick(event,'7')" onpointerdown="long(event,'7')" onpointerup="clearLong()" oncontextmenu="return false">7</button>
     <button onclick="numClick(event,'8')" onpointerdown="long(event,'8')" onpointerup="clearLong()" oncontextmenu="return false">8</button>
     <button onclick="numClick(event,'9')" onpointerdown="long(event,'9')" onpointerup="clearLong()" oncontextmenu="return false">9</button>
-    <button onclick="act('/')" class="op">/</button>
+    <button onclick="act('/')" class="op">÷</button>
 
     <button onclick="numClick(event,'4')" onpointerdown="long(event,'4')" onpointerup="clearLong()" oncontextmenu="return false">4</button>
     <button onclick="numClick(event,'5')" onpointerdown="long(event,'5')" onpointerup="clearLong()" oncontextmenu="return false">5</button>
@@ -146,20 +167,20 @@ button{padding:.75rem;border:none;border-radius:.5rem;font-size:calc(var(--font)
 
     <button onclick="act('0')">0</button>
     <button onclick="act(',')">,</button>
-    <button onclick="act('±')">±</button>
+    <button onclick="act('±')" class="op">±</button>
     <button onclick="act('+')" class="op">+</button>
 
-    <button onclick="act('%')">%</button>
-    <button onclick="toggleHistory()">📜</button>
-    <button onclick="toggleSettings()">⚙️</button>
-    <button onclick="act('=')" class="op">=</button>
+    <button onclick="act('(')" class="op">(</button>
+    <button onclick="act(')')" class="op">)</button>
+    <button onclick="act('%')" class="op">%</button>
+    <button onclick="act('=')" class="del">=</button>
     </div>
   </div>
 </div>
 
 <!-- Settings Modal -->
 <div id="settings">
-  <h2>Настройки <span id="themeToggle" onclick="toggleTheme()">🌞</span></h2>
+  <h2>Настройки</h2>
 
   <label>Курс €→лв
     <input type="number" step="0.00001" id="rateInput">
@@ -288,15 +309,22 @@ function long(e,k){
   e.preventDefault();
   if(['1','2','3'].includes(k)){
     const idx=['1','2','3'].indexOf(k);
-    // longTimer=setTimeout(()=>{memory[idx]+=toNum(result);updateMem();},500);
-    memory[idx]+=toNum(result.textContent.replace(unit, '').replace(',', '.'));
-    updateMem();
+    longTimer=setTimeout(()=>{
+      memory[idx]+=toNum(result.textContent.replace(unit, ''));
+      updateMem();
+    },500);
   }else if(['4','5','6'].includes(k)){
     const idx=['4','5','6'].indexOf(k);
-    longTimer=setTimeout(()=>{memory[idx]-=toNum(result);updateMem();},500);
+    longTimer=setTimeout(()=>{
+      memory[idx]-=toNum(result.textContent.replace(unit, ''));
+      updateMem();
+    },500);
   }else if(['7','8','9'].includes(k)){
     const idx=['7','8','9'].indexOf(k);
-    longTimer=setTimeout(()=>{result=toStr(memory[idx]);upd();},500);
+    longTimer=setTimeout(()=>{
+      expr=toStr(memory[idx], decHU);
+      upd();
+    },500);
   }else if(k==='C'){
     longTimer=setTimeout(()=>{memory=[0,0,0];updateMem();},500);
   }
@@ -404,7 +432,7 @@ function convert(dir){
   if(!expr) return;
   const val = toNum(expr);
   if(isNaN(val)) return;
-  let res;
+  let res, unitTop;
   if(dir === 'EUR'){
     res = val * RATE;
     unit = 'лв';
@@ -415,6 +443,11 @@ function convert(dir){
     unitTop = 'лв';
   }
   const rounded = round(res, dec); 
+
+  // Добавяне на запис в историята
+  const histExpr = `${toStr(val, dec)} ${unitTop} → ${toStr(rounded, dec)} ${unit}`;
+  addHist({expr: histExpr, res: rounded});
+
   // горен ред:  "10 € →"
   exprDisp.textContent = `${expr} ${unitTop} ↓`;
   // долен ред: "19.56 лв"
@@ -497,7 +530,6 @@ function toggleSettings() { отделни стойности в паметта
 function toggleSettings() {
     const el = document.getElementById('settings');
     const visible = el.style.display === 'flex';
-
     if (!visible) {
         //loadSettings();  // зареждаме настройките при отваряне
     } else {                                 // затваряме → записваме
@@ -511,8 +543,8 @@ function toggleSettings() {
             }
         });
         localStorage.setItem('settings', JSON.stringify(settingsData));
+        location.reload();
     }
-
     el.style.display = visible ? 'none' : 'flex';
 }
 
@@ -524,7 +556,8 @@ function toggle(id){
 }
 
 function updateMem(){
-  ['m1','m2','m3'].forEach((id,i)=>document.getElementById(id).textContent=`M${i+1}:${toStr(memory[i])}`);
+//['m1','m2','m3'].forEach((id,i)=>document.getElementById(id).textContent=`M${i+1}:${toStr(memory[i])}`);
+  ['m1','m2','m3'].forEach((id,i)=>document.getElementById(id).textContent=`M${String.fromCharCode(65+i)}:${toStr(memory[i])}`);
 }
 
 /*function loadSettings(){ отделни стойности в паметта
@@ -594,22 +627,29 @@ function loadSettings() {
     if (keyMap[id] === 'dec') dec = parseInt(value, 10);
     if (keyMap[id] === 'decHU') decHU = parseInt(value, 10);
   });
-});*/
+});
 
-function toggleTheme(){
-  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  const newTheme=isDark?'light':'dark';
-  document.documentElement.setAttribute('data-theme',newTheme);
-  localStorage.setItem('theme',newTheme);
-  document.getElementById('themeToggle').textContent=isDark?'🌞':'🌙';
-}
-function loadHistory(){
+function loadHistory(){ // взима израза, а не резултата
   getHistory().then(list=>{
     historyList.innerHTML='';
     list.forEach(h=>{
       const btn=document.createElement('button');
       btn.textContent=h.expr;
       btn.onclick=()=>{expr=h.expr.split(' = ')[0];upd();toggleHistory();};
+      historyList.appendChild(btn);
+    });
+  });
+}
+
+*/
+
+function loadHistory(){
+  getHistory().then(list=>{
+    historyList.innerHTML='';
+    list.forEach(h=>{
+      const btn=document.createElement('button');
+      btn.textContent=h.expr;
+      btn.onclick=()=>{expr=toStr(h.res, decHU);upd();toggleHistory();};
       historyList.appendChild(btn);
     });
   });
@@ -625,10 +665,6 @@ window.addEventListener('load',()=>{
   document.getElementById('decRange').value = dec;
   document.getElementById('decVal').textContent = dec;*/
 
-  if(localStorage.theme){
-    document.documentElement.setAttribute('data-theme',localStorage.theme);
-    document.getElementById('themeToggle').textContent=localStorage.theme==='dark'?'🌙':'🌞';
-  }
   if(localStorage.dec) dec=+localStorage.dec;
   if(localStorage.rate) RATE=parseFloat(localStorage.rate);
   loadSettings();upd();updateMem();
@@ -652,10 +688,10 @@ function numClick(ev,k){
     // Ctrl-комбинация
     if(['1','2','3'].includes(k)){
       const idx=['1','2','3'].indexOf(k);
-      memory[idx]+=toNum(expr);
+      memory[idx]+=toNum(result.textContent.replace(unit, ''));
     }else if(['4','5','6'].includes(k)){
       const idx=['4','5','6'].indexOf(k);
-      memory[idx]-=toNum(expr);
+      memory[idx]-=toNum(result.textContent.replace(unit, ''));
     }else if(['7','8','9'].includes(k)){
       const idx=['7','8','9'].indexOf(k);
       expr=toStr(memory[idx]); upd();
