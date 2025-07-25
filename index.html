@@ -134,11 +134,11 @@
                 </div>
             </div>
             <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-                <button id="saveSettings" class="action-button" style="margin-right: 20px;">Запис</button>
-                <button id="ovBtnSettings" class="action-button" style="margin-right: 20px;" 
+                <button id="ovBtnSettings" class="action-button"  style="margin-right: 20px;" 
                     onclick="showOv()">
                     Зони</button>
-                <button id="closeSettingsModalButton" class="action-button secondary">Затвори</button>
+                <button id="closeSettingsModalButton" class="action-button secondary" style="margin-right: 20px;">Затвори</button>
+                <button id="saveSettings" class="action-button">Запис</button>
             </div>
         </div>
     </div>
@@ -214,7 +214,7 @@
     var ovFlag = false, fullscrFlag = false; // Флаг за оверлей и пълен екран
     var keys = displayCoords = [];
     var Mem = [0, 0, 0, 0]; // Място за съхранение на паметта
-    var levMode = true, isStandalone = false; // Начален режим - лв.
+    var levMode = false, isStandalone = false; // Начален режим - лв.
     var MainPoints = {};
     let modalIsActive = false;
 
@@ -1049,12 +1049,18 @@
 
         // Ако кликът е извън интерактивните зони и е Ctrl+Click или задържане
         if (!interactionHandled && (event.ctrlKey || options.allowWithoutCtrl)) {
-            // Нулиране на отместването отдолу
-            document.documentElement.style.setProperty('--calc-bottom-offset', '0px');
-            localStorage.setItem('calcBottomOffset', '0');
-            calcBottom = 0;
-            console.log('Отместването отдолу (calcBottomOffset) е нулирано.');
-            location.reload(); // Презареждаме, за да се приложат промените в геометрията
+            // Изтриване на всички настройки от localStorage
+            if (confirm('Сигурни ли сте, че искате да изтриете всички запазени настройки и данни?')) {
+                localStorage.removeItem('MainPointsO');
+                localStorage.removeItem('EXCHANGE_RATE');
+                localStorage.removeItem('calcBottomOffset');
+                localStorage.removeItem('CURRENCY_SYMBOL');
+                localStorage.removeItem('showRateWarningEnabled');
+                localStorage.removeItem('CalcMem');
+                localStorage.removeItem('pwaInstallDeclined');
+                console.log('Всички запазени настройки са изтрити.');
+                location.reload();
+            }
         }
     }
 
@@ -1126,13 +1132,6 @@
                 console.log("Заредени и допълнени MainPointsO:");
             } else {
                 console.log("Няма записани MainPointsO, използват се тези по подразбиране.");
-            }
-            const savedMainPoints = localStorage.getItem('MainPoints');
-            if (savedMainPoints) {
-                MainPoints = JSON.parse(savedMainPoints);
-                console.log("Заредени MainPoints:"); //, MainPoints
-            } else {
-                console.log("Няма записани MainPoints.");
             }
             // Зареди курса от localStorage
             const savedRate = localStorage.getItem('EXCHANGE_RATE');
