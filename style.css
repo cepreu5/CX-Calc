@@ -51,10 +51,10 @@ body.ready {
     margin: 0 auto;
 }
 /* нов стил за валутата */
-#currency {
+#currency, #currencyLev {
     position: absolute; /* Абсолютно позициониране спрямо контейнера */
     font-family: 'Arial', sans-serif;
-    font-size: 24px; /* Или друг подходящ размер */
+    /* font-size: 24px;  Размерът вече се задава динамично в calc.js */
     font-weight: bold;
     color: #d8d9d9;
     z-index: 200; /* Показва валутата над изображението */

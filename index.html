@@ -39,6 +39,7 @@
     <div class="calculator-container" id="calculatorContainer">     
         <img src="CalculatorF.png" ID="calculator" class="calculator-img" alt="Калкулатор">
         <div id="currency" contenteditable="false" ></div>
+        <div id="currencyLev" contenteditable="false" ></div>
         <div id="eurInput" class="calculator-display" contenteditable="false"></div>
         <div id="levInput" class="calculator-display" contenteditable="false"></div>
     </div>
@@ -78,6 +79,32 @@
                                 <input type="checkbox" id="rateWarningCheckbox" checked>
                             </label>
                         </div>
+                        <!-- Currency Symbols -->
+                        <label>Валути:</label>
+                        <div style="grid-column: 2 / -1; display: flex; gap: 10px;">
+                            <input type="text" id="currencySymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="text" id="currencyLevSymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+
+                        <!-- New CurrencyOffset -->
+                        <label>Отместване горе:</label>
+                        <input type="number" id="currencyoffsetX" data-key="CurrencyOffset" data-prop="x">
+                        <input type="number" id="currencyoffsetY" data-key="CurrencyOffset" data-prop="y">
+                        <label>Отместване долу:</label>
+                        <input type="number" id="currencylevoffsetX" data-key="CurrencyLevOffset" data-prop="x">
+                        <input type="number" id="currencylevoffsetY" data-key="CurrencyLevOffset" data-prop="y">
+
+                        <!-- Initial Display Mode -->
+                        <label style="font-weight: bold;">Активен дисплей:</label>
+                        <div style="grid-column: 2 / -1; display: flex; justify-content: flex-start; gap: 20px; align-items: center;">
+                            <label for="initialDisplayEur" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="initialDisplay" id="initialDisplayEur" value="eur"> Горен
+                            </label>
+                            <label for="initialDisplayLev" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="initialDisplay" id="initialDisplayLev" value="lev" checked> Долен
+                            </label>
+                        </div>
+                        <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                         <!-- Keys -->
                         <label>Клавиатура:</label>
                         <input type="number" id="keysX" data-key="Keys" data-prop="x">
@@ -99,12 +126,12 @@
                         <input type="number" id="displaysizeY" data-key="DisplaySize" data-prop="y">
 
                         <!-- Display (EUR) -->
-                        <label>Дисплей: Евро</label>
+                        <label>Горен дисплей:</label>
                         <input type="number" id="displayX" data-key="Display" data-prop="x">
                         <input type="number" id="displayY" data-key="Display" data-prop="y">
 
                         <!-- Displaylv (BGN) -->
-                        <label>Дисплей: Лев</label>
+                        <label>Долен дисплей:</label>
                         <input type="number" id="displaylvX" data-key="Displaylv" data-prop="x">
                         <input type="number" id="displaylvY" data-key="Displaylv" data-prop="y">
 
@@ -118,18 +145,10 @@
                         <input type="number" id="statussizeX" data-key="StatusSize" data-prop="x">
                         <input type="number" id="statussizeY" data-key="StatusSize" data-prop="y">
 
-                        <!-- New Currency Symbol -->
-                        <label for="currencySymbolInput">Символ валута:</label>
-                        <input type="text" id="currencySymbolInput" style="grid-column: 2 / span 2; width: 60px; text-align: center; justify-self: left; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
-
-                        <!-- New CurrencyOffset -->
-                        <label>Отместване валута:</label>
-                        <input type="number" id="currencyoffsetX" data-key="CurrencyOffset" data-prop="x">
-                        <input type="number" id="currencyoffsetY" data-key="CurrencyOffset" data-prop="y">
-
                         <!-- New setting for calculator bottom offset -->
                         <label for="calcBottomOffset">Поле отдолу:</label>
                         <input type="number" id="calcBottomOffset" min="0" max="500" value="0">
+
                     </div>
                 </div>
             </div>
@@ -204,6 +223,7 @@
     var calcBottom = 0;
     var EXCHANGE_RATE = 1.95583;
     var CURRENCY_SYMBOL = '€'; // Валутен символ по подразбиране
+    var CURRENCY_LEV_SYMBOL = 'лв'; // Валутен символ за лев
     var showRateWarningEnabled = true; // Флаг за разрешение на предупреждението
     var showWarning = false; // Флаг за показване на предупреждение за курса
 
@@ -214,7 +234,7 @@
     var ovFlag = false, fullscrFlag = false; // Флаг за оверлей и пълен екран
     var keys = displayCoords = [];
     var Mem = [0, 0, 0, 0]; // Място за съхранение на паметта
-    var levMode = false, isStandalone = false; // Начален режим - лв.
+    var levMode = true, isStandalone = false; // Начален режим - лв.
     var MainPoints = {};
     let modalIsActive = false;
 
@@ -224,20 +244,78 @@
     //const hModalOverlay = document.getElementById('hisModalOverlay');
     const settingsModal = document.getElementById('settingsModal');
     const historyList = document.getElementById('historyList');
-    const clearHistoryButton = document.getElementById('clearHistoryButton');
     const closeHistoryModalButton = document.getElementById('closeHistoryModalButton');
 
     var MainPointsO = {
         Keys:       {x: 43, y: 235},
         KeySize:    {x: 84, y: 70},
         KbdGaps:    {x: 13, y: 13},
-        Display:    {x: 102, y: 43},
-        Displaylv:  {x: 102, y: 123},
-        DisplaySize:{x: 310, y: 57},
+        Display:    {x: 102, y: 33},
+        Displaylv:  {x: 102, y: 110},
+        DisplaySize:{x: 312, y: 57},
         Status:     {x: -10, y: 185},
         StatusSize: {x: 45, y: 15},
-        CurrencyOffset: {x: -40, y: 15}
+        CurrencyOffset: {x: -40, y: 15},
+        CurrencyLevOffset: {x: -40, y: 15}
     };
+
+    // Обект с настройките по подразбиране
+    const defaultSettings = {
+        exchangeRate: 1.95583,
+        currencySymbol: '€',
+        currencyLevSymbol: 'лв',
+        showRateWarningEnabled: true,
+        calcMem: [0, 0, 0, 0],
+        calcBottomOffset: 0,
+        initialDisplay: 'lev', // 'eur' или 'lev'
+        pwaInstallDeclined: false
+    };
+
+    function saveSettings() {
+        // --- ЗАПИС НА НАСТРОЙКИТЕ ---
+        // 1. Актуализираме MainPointsO с новите стойности от полетата
+        for (const key in MainPointsO) {
+            if (MainPointsO.hasOwnProperty(key)) {
+                const obj = MainPointsO[key];
+                if (typeof obj === 'object' && obj !== null) {
+                    for (const prop in obj) {
+                        if (obj.hasOwnProperty(prop)) {
+                            const inputId = key.toLowerCase() + prop.toUpperCase();
+                            const inputElement = document.getElementById(inputId);
+                            if (inputElement) {
+                                const newValue = parseFloat(inputElement.value);
+                                if (!isNaN(newValue)) {
+                                    obj[prop] = newValue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        localStorage.setItem('MainPointsO', JSON.stringify(MainPointsO));
+
+        // 2. Събираме и записваме останалите настройки в appSettings
+        const currentSettings = JSON.parse(localStorage.getItem('appSettings')) || defaultSettings;
+        // Събираме и записваме останалите настройки в appSettings
+        const newAppSettings = {
+            exchangeRate: parseFloat(document.getElementById('exchangeRateInput').value) || defaultSettings.exchangeRate,
+            currencySymbol: document.getElementById('currencySymbolInput').value.trim() || defaultSettings.currencySymbol,
+            currencyLevSymbol: document.getElementById('currencyLevSymbolInput').value.trim() || defaultSettings.currencyLevSymbol,
+            showRateWarningEnabled: document.getElementById('rateWarningCheckbox').checked,
+            calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
+            initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
+            calcMem: Mem,
+            pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined
+        };
+        localStorage.setItem('appSettings', JSON.stringify(newAppSettings));
+
+        // --- ПРИЛАГАНЕ НА ПРОМЕНИТЕ ---
+        // 3. Презареждаме страницата, за да се приложат всички промени консистентно
+        console.log("Настройките са запазени. Страницата ще бъде презаредена.");
+        location.reload();
+    }
+
 
     // New function to populate layout settings
     function populateLayoutSettings() {
@@ -280,6 +358,11 @@
       if (currencySymbolInput) {
           currencySymbolInput.value = CURRENCY_SYMBOL;
       }
+      // Попълни currencyLevSymbolInput
+      const currencyLevSymbolInput = document.getElementById('currencyLevSymbolInput');
+      if (currencyLevSymbolInput) {
+          currencyLevSymbolInput.value = CURRENCY_LEV_SYMBOL;
+      }
       // Попълни rateWarningCheckbox
       const rateWarningCheckbox = document.getElementById('rateWarningCheckbox');
       if (rateWarningCheckbox) {
@@ -287,6 +370,48 @@
       }
     }
 
+    function loadSettings() {
+        const savedSettings = JSON.parse(localStorage.getItem('appSettings'));
+        // Слива запазените настройки с тези по подразбиране, за да се гарантира, че всички ключове съществуват.
+        // Запазените стойности имат предимство.
+        const settings = { ...defaultSettings, ...savedSettings };
+
+        // Прилага настройките към глобалните променливи на приложението
+        EXCHANGE_RATE = settings.exchangeRate;
+        CURRENCY_SYMBOL = settings.currencySymbol;
+        CURRENCY_LEV_SYMBOL = settings.currencyLevSymbol;
+        showRateWarningEnabled = settings.showRateWarningEnabled;
+        Mem = settings.calcMem;
+        calcBottom = settings.calcBottomOffset;
+        // Задаваме активния дисплей при стартиране според запазената стойност
+        levMode = (settings.initialDisplay === 'lev');
+
+        // Прилага визуални настройки, които са нужни веднага при зареждане
+        document.documentElement.style.setProperty('--calc-bottom-offset', `${calcBottom}px`);
+
+        // Проверява дали да покаже предупреждение за курса, ако е различен от стандартния
+        if (EXCHANGE_RATE !== defaultSettings.exchangeRate) {
+            showWarning = true;
+        }
+
+        // Зареждане на MainPointsO от localStorage
+        const savedMainPointsO = localStorage.getItem('MainPointsO');
+        if (savedMainPointsO) {
+            const parsedSettings = JSON.parse(savedMainPointsO);
+            // Дълбоко сливане на запазените настройки с тези по подразбиране.
+            // Това гарантира, че нови свойства (като CurrencyOffset) се добавят,
+            // дори ако потребителят има стари настройки в localStorage.
+            for (const key in MainPointsO) {
+                if (parsedSettings[key]) {
+                    // Слива индивидуалните x/y стойности, за да не се губят
+                    Object.assign(MainPointsO[key], parsedSettings[key]);
+                }
+            }
+            console.log("Заредени и допълнени MainPointsO от loadSettings():");
+        }
+    }
+
+/*
     function saveLayoutSettings() {
         let reloadNeeded = false;
         // Проверка за промяна на позиционните параметри (MainPoints)
@@ -365,6 +490,7 @@
             location.reload();
         }
     }
+*/
 
     function getImageSize() {
         if (calculator) {
@@ -411,7 +537,7 @@
         //StartingPoint.x = ConstX * aspectRatioW + (containerWidth - imageWidth) / 2;
         //StartingPoint.y = ConstY * aspectRatioH + (containerHeight - imageHeight); // (imageHeight / calculator.naturalHeight)
         //console.log("StartingPoint.x = ", StartingPoint.x, "  StartingPoint.y = ", StartingPoint.y);
-        //console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
+        console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
     }
 
     function getKeyValue(row, col) {
@@ -553,6 +679,17 @@
         adjustFontSize(activeDisplay, passiveDisplay);
     }
 
+    function toggleDisplayMode() {
+        levMode = !levMode;
+        const newActiveValue = levMode
+            ? displaylv.textContent
+            : display.textContent;
+        userInput = newActiveValue
+            .replace(/\s/g, ''); // премахване на интервали
+        console.log("Променен режим - userInput:", userInput);
+        updateDisplays(userInput, userInput.replace(/\*/g, "×").replace(/\//g, "÷"), 'L');
+    }
+
     function balanceBrackets(str){
         let open = 0;
         for (const c of str) if (c === '(') open++; else if (c === ')') open--;
@@ -568,18 +705,8 @@
             return;
         }
         if (value === "L") {
-            value = "";
-            //clearCurrentSessionHistory();
-            //inputSessionId = Date.now(); // нова сесия
-            levMode = !levMode;
-            const newActiveValue = levMode
-                ? displaylv.textContent
-                : display.textContent;
-            userInput = newActiveValue
-                .replace(/\s/g, '') // премахване на интервали
-                //.replace(/,/g, '.'); // нормализиране на десетичния разделител
-            console.log("Променен режим - userInput:", userInput);
-            // return; // по желание: спирай тук, ако не искаш допълнителна обработка след превключване
+            toggleDisplayMode();
+            return;
         }
         if (value === "C") {
             display.textContent = "";
@@ -1047,19 +1174,37 @@
             interactionHandled = true;
         }
 
-        // Ако кликът е извън интерактивните зони и е Ctrl+Click или задържане
+        // Обработка на клик върху дисплеите
+        if (!interactionHandled) {
+            const levDisplayEl = document.getElementById('levInput');
+            const eurDisplayEl = document.getElementById('eurInput');
+            const levRect = levDisplayEl.getBoundingClientRect();
+            const eurRect = eurDisplayEl.getBoundingClientRect();
+            const isClickOnLev = event.clientX >= levRect.left && event.clientX <= levRect.right &&
+                                 event.clientY >= levRect.top && event.clientY <= levRect.bottom;
+            const isClickOnEur = event.clientX >= eurRect.left && event.clientX <= eurRect.right &&
+                                 event.clientY >= eurRect.top && event.clientY <= eurRect.bottom;
+            if ((isClickOnLev || isClickOnEur)) { //  && (event.ctrlKey || options.allowWithoutCtrl)
+                toggleDisplayMode();
+                interactionHandled = true;
+            }
+        }
+
+        // Ако кликът е извън контейнера на калкулатора и е Ctrl+Click или задържане
         if (!interactionHandled && (event.ctrlKey || options.allowWithoutCtrl)) {
-            // Изтриване на всички настройки от localStorage
-            if (confirm('Сигурни ли сте, че искате да изтриете всички запазени настройки и данни?')) {
-                localStorage.removeItem('MainPointsO');
-                localStorage.removeItem('EXCHANGE_RATE');
-                localStorage.removeItem('calcBottomOffset');
-                localStorage.removeItem('CURRENCY_SYMBOL');
-                localStorage.removeItem('showRateWarningEnabled');
-                localStorage.removeItem('CalcMem');
-                localStorage.removeItem('pwaInstallDeclined');
-                console.log('Всички запазени настройки са изтрити.');
-                location.reload();
+            const calculatorContainer = document.getElementById('calculatorContainer');
+            const containerRect = calculatorContainer.getBoundingClientRect();
+            const isOutsideContainer = event.clientX < containerRect.left ||
+                                       event.clientX > containerRect.right ||
+                                       event.clientY < containerRect.top ||
+                                       event.clientY > containerRect.bottom;
+            if (isOutsideContainer) {
+                if (confirm('Сигурни ли сте, че искате да изтриете всички запазени настройки и данни?')) {
+                    localStorage.removeItem('MainPointsO');
+                    localStorage.removeItem('appSettings');
+                    console.log('Всички запазени настройки (MainPointsO, appSettings) са изтрити.');
+                    location.reload();
+                }
             }
         }
     }
@@ -1075,7 +1220,7 @@
 
 
     document.getElementById('saveSettings').addEventListener('click', function(e) {
-        saveLayoutSettings();
+        saveSettings();
         settingsModal.style.display = 'none'; // Close modal after saving
         setTimeout(() => {
             modalIsActive = false;
@@ -1096,51 +1241,11 @@
     window.addEventListener("load", async function () {
         try {
             calculator = document.querySelector(".calculator-img");
-            // Load saved MainPointsO from localStorage
-            const savedOffset = localStorage.getItem('calcBottomOffset');
-            if (savedOffset && !isNaN(parseInt(savedOffset, 10))) {
-                document.documentElement.style.setProperty('--calc-bottom-offset', savedOffset + 'px');
-                //calcBottom
-            }
-            // Зареди символа за валута
-            const savedSymbol = localStorage.getItem('CURRENCY_SYMBOL');
-            if (savedSymbol) {
-                CURRENCY_SYMBOL = savedSymbol;
-            }
+            loadSettings(); // Зарежда всички настройки от appSettings
             // Прилагаме символа към елемента
             document.getElementById('currency').textContent = CURRENCY_SYMBOL;
+            document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;
 
-            // Зареди настройката за показване на предупреждение
-            const savedShowRateWarning = localStorage.getItem('showRateWarningEnabled');
-            if (savedShowRateWarning !== null) {
-                showRateWarningEnabled = (savedShowRateWarning === 'true');
-            }
-
-            // Зареждане на MainPointsO от localStorage
-            const savedMainPointsO = localStorage.getItem('MainPointsO');
-            if (savedMainPointsO) {
-                const parsedSettings = JSON.parse(savedMainPointsO);
-                // Дълбоко сливане на запазените настройки с тези по подразбиране.
-                // Това гарантира, че нови свойства (като CurrencyOffset) се добавят,
-                // дори ако потребителят има стари настройки в localStorage.
-                for (const key in MainPointsO) {
-                    if (parsedSettings[key]) {
-                        // Слива индивидуалните x/y стойности, за да не се губят
-                        Object.assign(MainPointsO[key], parsedSettings[key]);
-                    }
-                }
-                console.log("Заредени и допълнени MainPointsO:");
-            } else {
-                console.log("Няма записани MainPointsO, използват се тези по подразбиране.");
-            }
-            // Зареди курса от localStorage
-            const savedRate = localStorage.getItem('EXCHANGE_RATE');
-            if (savedRate && !isNaN(parseFloat(savedRate))) {
-                EXCHANGE_RATE = parseFloat(savedRate);
-                if (EXCHANGE_RATE !== 1.95583) {
-                    showWarning = true;
-                }
-            }
             // Основни изчисления
             getImageSize();
             getImageVisualSize();
@@ -1155,23 +1260,21 @@
                 const warning = document.getElementById('exchangeRateWarning');
                 warning.style.display = 'flex';
                 document.getElementById('exchangeRateChangeBtn').onclick = function() {
-                    EXCHANGE_RATE = 1.95583;
-                    localStorage.setItem('EXCHANGE_RATE', EXCHANGE_RATE);
-                    warning.style.display = 'none';
+                    // Връщаме курса по подразбиране и запазваме в новата структура
+                    const settings = JSON.parse(localStorage.getItem('appSettings')) || defaultSettings;
+                    settings.exchangeRate = defaultSettings.exchangeRate;
+                    localStorage.setItem('appSettings', JSON.stringify(settings));
+                    location.reload(); // Презареждаме, за да се приложи
                 };
                 document.getElementById('exchangeRateConfirmBtn').onclick = function() {
                     warning.style.display = 'none';
                 };
             }
-            const savedMem = localStorage.getItem('CalcMem');
-            if (savedMem) {
-                Mem = JSON.parse(savedMem);
-                // console.log("Заредени Mem от localStorage:", Mem);
-                for (let i = 1; i <= 3; i++) if (Mem[i] !== undefined && Mem[i] !== null && Mem[i] !== 0) {
+            // Визуализираме заредената памет
+            for (let i = 1; i <= 3; i++) {
+                if (Mem[i] !== undefined && Mem[i] !== null && Mem[i] !== 0) {
                     memoryAdd(i, "+"); // updateStatus ("M", i);
                 }
-            } else {
-                console.log("Няма заредени Mem от localStorage.");
             }
         } catch (err) {
             console.warn("⚠️ Грешка при инициализация:", err);
@@ -1244,7 +1347,8 @@
         keys = layout.keys;
         displayCoords = layout.displayCoords;
         //const { keys, displayCoords } = calcNewCoordinates();
-        resizeFont();
+        adjustFontSize(levInput, eurInput)
+        //resizeFont();
     })
 
     function showOv() {
@@ -1264,9 +1368,11 @@
         //e.preventDefault();
     }
 
+    /* // Деактивирано по време на разработка, за да се зарежда винаги от сървъра
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
+    */
 
     let deferredPrompt;
     if (localStorage.getItem('pwaInstallDeclined') === 'true') {

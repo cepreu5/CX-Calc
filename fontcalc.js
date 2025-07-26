@@ -21,18 +21,19 @@
         const text2 = element2.innerText !== undefined ? element2.innerText : element2.textContent || "0";
         console.log("text1: " + text1);
         console.log("text2: " + text2);
-        // Избираме по-дългия текст (по брой символи)
-        const longerText = text1.length >= text2.length ? text1 : text2;
         // Използваме ширината и височината на по-малкия елемент (за по-сигурно)
-        const width = Math.min(element1.clientWidth, element2.clientWidth);
-        const height = Math.min(element1.clientHeight, element2.clientHeight);
+        // Използваме getBoundingClientRect() за по-голяма точност (връща дробни стойности)
+        const rect1 = element1.getBoundingClientRect();
+        const rect2 = element2.getBoundingClientRect();
+        const width = Math.min(rect1.width, rect2.width);
+        const height = Math.min(rect1.height, rect2.height);
         // Създаваме скрит div за измерване
         const measuringDiv = document.createElement("div");
         measuringDiv.style.position = "absolute";
         measuringDiv.style.visibility = "hidden";
         measuringDiv.style.height = "auto";
-        measuringDiv.style.width = width + "px";
-        measuringDiv.style.whiteSpace = "pre";
+        measuringDiv.style.width = "auto"; // Позволяваме на елемента да се разшири свободно
+        measuringDiv.style.whiteSpace = "nowrap"; // Предотвратяваме пренасянето на нов ред
         const cs = getComputedStyle(element1);
         measuringDiv.style.fontFamily = cs.fontFamily;
         measuringDiv.style.fontWeight = cs.fontWeight;
@@ -42,10 +43,19 @@
         measuringDiv.style.border = "none";
         measuringDiv.style.boxSizing = "border-box";
         document.body.appendChild(measuringDiv);
+
+        // Определяме кой от двата текста е визуално по-широк, за да го използваме за измерване
+        measuringDiv.style.fontSize = maxFontSize + "px"; // Измерваме с максималния шрифт
+        measuringDiv.textContent = text1;
+        const width1 = measuringDiv.scrollWidth;
+        measuringDiv.textContent = text2;
+        const width2 = measuringDiv.scrollWidth;
+        const widerText = width1 >= width2 ? text1 : text2;
+
         let fontSize = maxFontSize;
         while (fontSize >= minFontSize) {
             measuringDiv.style.fontSize = fontSize + "px";
-            measuringDiv.textContent = longerText;
+            measuringDiv.textContent = widerText;
             if (measuringDiv.scrollWidth <= width && measuringDiv.scrollHeight <= height) {
                 break;
             }
@@ -53,12 +63,13 @@
         }
         if (fontSize < minFontSize) fontSize = minFontSize;
         // Прилагаме еднакъв размер и на двата елемента
+        fontSize--;
         element1.style.fontSize = fontSize + "px";
         element2.style.fontSize = fontSize + "px";
         document.body.removeChild(measuringDiv);
     }
 
-    function resizeFont() {return;
+    function resizeFont() {
         const height = display.clientHeight; // Взимаме височината на дисплея
         display.style.fontSize = displaylv.style.fontSize = (height * 0.99) + 'px'; // 8% от височината
     }

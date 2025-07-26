@@ -1,23 +1,23 @@
 // sw.js – Service Worker за CX-Calc (PWA + офлайн)
 const CACHE_NAME = 'cx-calc-v1';
-const OFFLINE_PAGE = '/CX-Calc/index.html';
+const OFFLINE_PAGE = 'index.html';
 
 // Активи за кеширане – редактирай списъка според файловете в проекта
 const ASSETS = [
   OFFLINE_PAGE,
-  '/CX-Calc/style.css',
-  '/CX-Calc/calc.js',
-  '/CX-Calc/history.js',
-  '/CX-Calc/status.js',
-  '/CX-Calc/fontcalc.js',
-  '/CX-Calc/CalculatorF.png',
-  '/CX-Calc/CalcFav.png',
-  '/CX-Calc/Calc32.png',
-  '/CX-Calc/Calc48.png',
-  '/CX-Calc/Calc120.png',
-  '/CX-Calc/Calc192.png',
-  '/CX-Calc/Calc512.png',
-  '/CX-Calc/manifest.webmanifest'
+  'style.css',
+  'calc.js',
+  'history.js',
+  'status.js',
+  'fontcalc.js',
+  'CalculatorF.png',
+  'CalcFav.png',
+  'Calc32.png',
+  'Calc48.png',
+  'Calc120.png',
+  'Calc192.png',
+  'Calc512.png',
+  'manifest.webmanifest'
 ];
 
 // 1. Инсталирай SW и кеширай всички статични ресурси
