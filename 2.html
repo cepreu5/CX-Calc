@@ -10,16 +10,34 @@
 
 <style>
 :root{
-  --bg:#ffffff;--page:#e5e7eb;--calc:#ffffff;--text:#111827;
-  --btn:#e2e8f0;--btn-op:#cbd5e1;--btn-c:#ef4444;--btn-del:#f97316;
+  /*--bg:#4e0404;*/
+  /*--text:#111827;*/
+
+  --page:#4e0404;
+  --calc:#BBB5B1;
+  --btn:#3a3938;
+  --btn-text:#ffffff;
+  --btn-op:#e77023;
+
+  --btn-c:#787878;
+  --btn-del:#c80000;
+
+  --display-bg:#58584a;
+  --display-text:#f0fc03;
+  --expr-bg:#b0b0b0;        /* цвят на фона на горния дисплей */
+  --expr-text:#000000;      /* цвят на шрифта на горния дисплей */
+
   --accent:#3b82f6;
-  --font:2rem;--dec:2;--rate:1.95583;
-  --display-bg:#f1f5f9;--display-text:#111827;--btn-text:#111827;
-  --expr-bg:#f1f5f9;        /* цвят на фона на горния дисплей */
-  --expr-text:#111827;      /* цвят на шрифта на горния дисплей */
+  --font:2rem;
+  --dec:2;
+  --rate:1.95583;
 }
 
-*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;user-select:none}
+*{
+  box-sizing:border-box;
+  font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  user-select:none
+}
 
 body{
   margin:0;
@@ -30,14 +48,39 @@ body{
   min-height:100vh;
   padding:.5rem;
 }
+
 #calcWrap{
-  background:var(--calc); border:3px solid #9ca3af; border-radius:12px;
-  padding:.5rem;box-shadow:0 0 20px rgba(0,0,0,.15);
-  width:100%;max-width:400px;
+  background:var(--calc);
+  border:3px solid #9ca3af;
+  border-radius:12px;
+  padding:.5rem;
+  box-shadow:0 0 20px rgba(0,0,0,.15);
+  width:100%;
+  max-width:400px;
 }
-#calc{width:100%}
-#expr,#result{height:3rem;font-size:var(--font);text-align:right;padding:.5rem;border-radius:.5rem;background:var(--display-bg);color:var(--display-text);margin-bottom:.25rem;overflow:hidden;word-break:break-all}
-#expr{height:auto;min-height:3rem;font-size:calc(var(--font)*.9);white-space:pre-wrap}
+
+#calc{
+  width:100%}
+
+#expr, #result {
+  height:3rem;
+  font-size:var(--font);
+  text-align:right;
+  padding:.5rem;
+  border-radius:.5rem;
+  background:var(--display-bg);
+  color:var(--display-text);
+  margin-bottom:.25rem;
+  overflow:hidden;
+  word-break:break-all
+}
+
+#expr {
+  height:auto;
+  min-height:3rem;
+  font-size:calc(var(--font)*.9);
+  white-space:pre-wrap
+}
 
 #result {
   font-weight: bold;
@@ -51,14 +94,6 @@ body{
   margin-bottom: .25rem;
   min-height: 3rem; /* Минималната височина */
 }
-
-/*
-#result{font-weight:bold;font-size:calc(var(--font)*1.2)}
-button{padding:.75rem;border:none;border-radius:.5rem;font-size:calc(var(--font)*.9);
-    background:var(--btn);color:var(--btn-text);cursor:pointer;
-    box-shadow:0 4px #0003;transform:translateY(-2px);transition:.1s}
-    button:active{transform:translateY(1px);box-shadow:0 2px #0002}*/
-
 
   button {
     padding: .75rem;
@@ -79,19 +114,78 @@ button{padding:.75rem;border:none;border-radius:.5rem;font-size:calc(var(--font)
     box-shadow: 0 2px #0002;
   }
 
-  button.op{background:var(--btn-op)}
-  button.c{background:var(--btn-c)}
-  button.del{background:var(--btn-del)}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:.5rem}
-  .fullBtn{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0}
-  #settings,#history{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--calc);padding:1rem;z-index:9;display:none;flex-direction:column;gap:.5rem;overflow-y:auto}
-  #settings h2,#history h2{margin:.2rem 0 .5rem}
-  #historyList button{display:block;width:100%;text-align:left;margin-bottom:.25rem;padding:.4rem}
-  label{display:flex;justify-content:space-between;align-items:center}
-  input[type=range]{width:50%}
-  input[type=color]{width:30px;height:30px;border:none;border-radius:4px}
-  #memoryInd{display:flex;justify-content:space-around;font-size:.8rem;margin-bottom:.25rem}
-  #expr{
+  button.op {
+    background:var(--btn-op)}
+  
+  button.c {
+    background:var(--btn-c)}
+  
+  button.del {
+    background:var(--btn-del);}
+
+  .grid {
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:.5rem;
+    margin-top:.5rem
+  }
+
+  .fullBtn {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.5rem;
+    margin:.5rem 0
+  }
+
+  #settings, #history {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:var(--calc);
+    padding:1rem;
+    z-index:9;
+    display:none;
+    flex-direction:column;
+    gap:.5rem;
+    overflow-y:auto
+  }
+
+  #settings h2, #history h2 {
+    margin:.2rem 0 .5rem}
+
+  #historyList button {
+    display:block;
+    width:100%;
+    text-align:left;
+    margin-bottom:.25rem;
+    padding:.4rem
+  }
+
+  label {
+    display:flex;
+    justify-content:space-between;
+    align-items:center
+  }
+
+  input[type=range] {width:50%}
+
+  input[type=color] {
+    width:30px;
+    height:30px;
+    border:none;
+    border-radius:4px
+  }
+
+  #memoryInd {
+    display:flex;
+    justify-content:space-around;
+    font-size:.8rem;
+    margin-bottom:.25rem
+  }
+
+  #expr {
     background:var(--expr-bg);
     color:var(--expr-text);
   }
@@ -127,28 +221,28 @@ button{padding:.75rem;border:none;border-radius:.5rem;font-size:calc(var(--font)
       <button onclick="convert('BGN')">лв → €</button>
     </div>
     <div class="grid">
-    <button class="icon-btn" onclick="toggleSettings()" title="Настройки">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.65l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.031 7.031 0 0 0-1.7-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65a7.031 7.031 0 0 0-1.7.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.65l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.65l2 3.46c.14.24.44.34.7.22l2.49-1c.53.38 1.12.7 1.7.98l.38 2.65c.04.26.26.42.5.42h4c.26 0 .46-.16.5-.42l.38-2.65c.58-.28 1.17-.6 1.7-.98l2.49 1c.26.12.56.02.7-.22l2-3.46a.5.5 0 0 0-.12-.65l-2.11-1.65z"/>
-  <!-- Централна "дупка" за оста -->
-  <circle cx="12" cy="12" r="2.5" fill="#000"/>
-</svg>
+    <button class="icon-btn c" onclick="toggleSettings()" title="Настройки">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.65l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.031 7.031 0 0 0-1.7-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65a7.031 7.031 0 0 0-1.7.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.65l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.65l2 3.46c.14.24.44.34.7.22l2.49-1c.53.38 1.12.7 1.7.98l.38 2.65c.04.26.26.42.5.42h4c.26 0 .46-.16.5-.42l.38-2.65c.58-.28 1.17-.6 1.7-.98l2.49 1c.26.12.56.02.7-.22l2-3.46a.5.5 0 0 0-.12-.65l-2.11-1.65z"/>
+        <!-- Централна "дупка" за оста -->
+        <circle cx="12" cy="12" r="2.5" fill="#000"/>
+      </svg>
     </button>
     <button class="icon-btn" onclick="toggleHistory()" title="История">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Контур на листа -->
-  <rect x="4" y="3" width="16" height="18" rx="2" ry="2" fill="#F1F505" stroke="#000" stroke-width="1.5"/>
-  <!-- Горна гънка -->
-  <path d="M20 6h-5V3" fill="#eee"/>
-  <!-- Редове -->
-  <line x1="6" y1="7" x2="18" y2="7" stroke="#888" stroke-width="1"/>
-  <line x1="6" y1="10" x2="18" y2="10" stroke="#888" stroke-width="1"/>
-  <line x1="6" y1="13" x2="18" y2="13" stroke="#888" stroke-width="1"/>
-  <line x1="6" y1="16" x2="18" y2="16" stroke="#888" stroke-width="1"/>
-</svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <!-- Контур на листа -->
+        <rect x="4" y="3" width="16" height="18" rx="2" ry="2" fill=var(--btn); stroke="#000" stroke-width="1.5"/>
+        <!-- Горна гънка -->
+        <path d="M20 6h-5V3" fill="#eee"/>
+        <!-- Редове -->
+        <line x1="6" y1="7" x2="18" y2="7" stroke="#888" stroke-width="1"/>
+        <line x1="6" y1="10" x2="18" y2="10" stroke="#888" stroke-width="1"/>
+        <line x1="6" y1="13" x2="18" y2="13" stroke="#888" stroke-width="1"/>
+        <line x1="6" y1="16" x2="18" y2="16" stroke="#888" stroke-width="1"/>
+      </svg>
     </button>
-    <button onclick="numClick(event,'C')" onpointerdown="long(event,'C')" onpointerup="clearLong()" oncontextmenu="return false" class="c">C</button>
     <button onclick="act('⌫')" class="del">⌫</button>
+    <button onclick="numClick(event,'C')" onpointerdown="long(event,'C')" onpointerup="clearLong()" oncontextmenu="return false" class="c">C</button>
 
     <button onclick="numClick(event,'7')" onpointerdown="long(event,'7')" onpointerup="clearLong()" oncontextmenu="return false">7</button>
     <button onclick="numClick(event,'8')" onpointerdown="long(event,'8')" onpointerup="clearLong()" oncontextmenu="return false">8</button>
@@ -192,32 +286,38 @@ button{padding:.75rem;border:none;border-radius:.5rem;font-size:calc(var(--font)
     <input type="number" min="0" max="10" id="decHUField">
   </label>
 
-  <label>Цвят на фона на страницата
+  <label>Фон на страницата
     <input type="color" id="bgColor">
   </label>
-  <label>Цвят на калкулатора
+  <label>Калкулатор
     <input type="color" id="calcColor">
   </label>
-  <label>Цвят на дисплеите
+  <label><b>Дисплей </b>
     <input type="color" id="displayColor">
   </label>
-  <label>Цвят на фона на горен дисплей
+  <label>Горен дисплей
     <input type="color" id="exprBgColor">
   </label>
-  <label>Цвят на бутоните
-    <input type="color" id="btnColor">
-  </label>
-  <label>Цвят на шрифта на бутоните
-    <input type="color" id="btnTextColor">
-  </label>
-  <label>Цвят на операционните бутони
-    <input type="color" id="opColor">
-  </label>
-  <label>Цвят на шрифта на дисплея
+  <label>Шрифт на дисплея
     <input type="color" id="displayTextColor">
   </label>
-  <label>Цвят на шрифта на горен дисплей
+  <label>Шрифт на горен дисплей
     <input type="color" id="exprTextColor">
+  </label>
+  <label><b>Бутони</b>
+    <input type="color" id="btnColor">
+  </label>
+  <label>Операционни бутони
+    <input type="color" id="opColor">
+  </label>
+  <label>Бутон C (Clear)
+    <input type="color" id="cColor">
+  </label>
+  <label>Бутон ⌫ (Delete)
+    <input type="color" id="delColor">
+  </label>
+  <label>Шрифт на бутоните
+    <input type="color" id="btnTextColor">
   </label>
   <button onclick="toggleSettings()">Затвори</button>
 </div>
@@ -237,7 +337,7 @@ button{padding:.75rem;border:none;border-radius:.5rem;font-size:calc(var(--font)
 let RATE = 1.95583; 
 const MAX_HIST = 30;
 let expr = '', dec = 2, memory = [0,0,0], unit='', longTimer;
-let decHU = 2;   // история + горен ред
+let decHU = 5;   // история + горен ред
 
 const settingsToSave = [
     { id: 'rateInput', key: 'rate', type: 'number' },
@@ -249,17 +349,14 @@ const settingsToSave = [
     { id: 'btnColor', key: 'btnColor', type: 'color' },
     { id: 'btnTextColor', key: 'btnTextColor', type: 'color' },
     { id: 'opColor', key: 'opColor', type: 'color' },
+    { id: 'cColor', key: 'cColor', type: 'color' },
+    { id: 'delColor', key: 'delColor', type: 'color' },
     { id: 'displayTextColor', key: 'displayTextColor', type: 'color' },
     { id: 'exprBgColor', key: 'exprBgColor', type: 'color' },
     { id: 'exprTextColor', key: 'exprTextColor', type: 'color' }
 ];
 
 /* ---------- UTILS ---------- */
-/*function toNum(str){
-  if(typeof str==='number') return str;
-  return parseFloat(String(str).replace(',','.'));
-}*/
-
 function toNum(str) {
     if(typeof str==='number') return str;
     // Премахваме интервалите, ако има такива
@@ -267,28 +364,25 @@ function toNum(str) {
     return parseFloat(str.replace(',', '.'));
 }
 
-/* винаги 2 десетични цифри
 function toStr(num, digits = decHU){
-  return Number(num).toLocaleString('bg-BG', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: digits
-  });
-}
-*/
-
-function toStr(num, digits = decHU){
-  const str = Number(num).toLocaleString('bg-BG', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: digits
-  });
-  // ако има ровно една цифра след запетаята → добавяме 0
-  if (str.includes(',') && str.split(',')[1].length === 1) {
-    return str + '0';
-  }
-  return str;
+    const validNum = Number(num);
+    if (isNaN(validNum)) {
+        // Връщаме форматирана нула, за да сме консистентни
+        if (digits === 0) return '0';
+        return '0,' + '0'.repeat(digits);
+    }
+    // 1. Форматираме до фиксиран брой знаци. Резултатът е низ с десетична точка.
+    const fixedString = validNum.toFixed(digits);
+    // 2. Разделяме на цяла и дробна част
+    const parts = fixedString.split('.');
+    let integerPart = parts[0];
+    const fractionalPart = parts[1];
+    // 3. Добавяме разделители за хилядите (интервал) в цялата част.
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    // 4. Сглобяваме резултата с десетична запетая, ако има дробна част
+    return fractionalPart !== undefined ? integerPart + ',' + fractionalPart : integerPart;
 }
 
-function round(num){return Number(num.toFixed(dec));}
 function fitFont(){
   const el=result;
   el.style.fontSize='calc(var(--font)*1.2)';
@@ -329,23 +423,6 @@ function long(e,k){
     longTimer=setTimeout(()=>{memory=[0,0,0];updateMem();},500);
   }
 }
-/**/
-/*/ ---- MEMORY КОМБИНАЦИ ----
-function long(e, k){
-  e.preventDefault();
-  if(['7','8','9'].includes(k)){
-    const idx=['7','8','9'].indexOf(k);
-    memory[idx]+=toNum(result.textContent.replace(unit, '').replace(',', '.'));
-    updateMem();
-  }else if(['4','5','6'].includes(k)){
-    const idx=['4','5','6'].indexOf(k);
-    memory[idx]-=toNum(result.textContent.replace(unit, '').replace(',', '.'));
-    updateMem();
-  }else if(['1','2','3'].includes(k)){
-    const idx=['1','2','3'].indexOf(k);
-    expr=toStr(memory[idx], decHU); upd();
-  }
-}*/
 
 function clearLong(){clearTimeout(longTimer);}
 
@@ -395,7 +472,7 @@ function act(k){
   expr+=k;upd();
 }
 
-function round(num, digits = decHU){
+function round(num, digits = dec){
   return Number(num.toFixed(digits));
 }
 
@@ -407,7 +484,7 @@ function balanceBrackets(str){
 
 function calc(){
   try {
-    let balanced = balanceBrackets(expr);
+    let balanced = balanceBrackets(expr.replace(/×/g, '*').replace(/÷/g, '/'));
     const res = round(Function('"use strict";return ('+balanced.replace(/,/g,'.')+')')(), decHU);
     const txt = balanced + ' = ' + toStr(res, decHU);
     addHist({expr:txt,res});
@@ -420,9 +497,8 @@ function calc(){
 function upd(){
   expr = String(expr);
   exprDisp.textContent = expr || '0';
-
-  const val = toNum(expr || 0);
-  const display = isNaN(val) ? '0' : toStr(val, decHU);
+  const val = toNum(expr.split(' ')[0] || 0); // Вземаме само числото, без единицата
+  const display = isNaN(val) ? '0' : toStr(val, dec);
   result.textContent = `${display} ${unit}`;
   fitFont();
 }
@@ -443,17 +519,13 @@ function convert(dir){
     unitTop = 'лв';
   }
   const rounded = round(res, dec); 
-
   // Добавяне на запис в историята
-  const histExpr = `${toStr(val, dec)} ${unitTop} → ${toStr(rounded, dec)} ${unit}`;
-  addHist({expr: histExpr, res: rounded});
-
+  const histExpr = `${toStr(val, decHU)} ${unitTop} → ${toStr(rounded, decHU)} ${unit}`;
+  addHist({expr: histExpr, res: res}); // Запазваме пълната стойност в историята
   // горен ред:  "10 € →"
   exprDisp.textContent = `${expr} ${unitTop} ↓`;
   // долен ред: "19.56 лв"
   result.textContent   = `${toStr(rounded, dec)} ${unit}`;
-  
-  
   fitFont();
 }
 
@@ -461,77 +533,11 @@ function convert(dir){
 const exprDisp=document.getElementById('expr');
 const result=document.getElementById('result');
 
-/*
-function toggleSettings() {
-  const el = document.getElementById('settings');
-  const visible = el.style.display === 'flex';
-  if (!visible) {
-    loadSettings();  // зареждаме настройките при отваряне
-    // ---- зареждаме актуалните цветове в селекторите ----
-    ['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor']
-      .forEach(id=>{
-        const color = getComputedStyle(document.documentElement)
-                      .getPropertyValue(
-                        {bgColor:'--page',calcColor:'--calc',displayColor:'--display-bg',
-                        btnColor:'--btn',btnTextColor:'--btn-text',opColor:'--btn-op',
-                        displayTextColor:'--display-text',exprBgColor:'--expr-bg',exprTextColor:'--expr-text'}[id]
-                      ).trim();
-        document.getElementById(id).value = color;
-      });
-  } else {                                 // затваряме → записваме
-    RATE   = parseFloat(document.getElementById('rateInput').value);
-    dec    = +document.getElementById('decField').value;
-    decHU  = +document.getElementById('decHUField').value;
-
-    localStorage.setItem('rate',  RATE);
-    localStorage.setItem('dec',   dec);
-    localStorage.setItem('decHU', decHU);
-  }
-  el.style.display = visible ? 'none' : 'flex';
-}
-
-function toggleSettings() { отделни стойности в паметта
+function toggleSettings() {//return; // отделни стойности в паметта
     const el = document.getElementById('settings');
     const visible = el.style.display === 'flex';
-
     if (!visible) {
         loadSettings();  // зареждаме настройките при отваряне
-        // ---- зареждаме актуалните цветове в селекторите ----
-        ['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor']
-            .forEach(id => {
-                const color = getComputedStyle(document.documentElement)
-                            .getPropertyValue(
-                                {bgColor:'--page',calcColor:'--calc',displayColor:'--display-bg',
-                                btnColor:'--btn',btnTextColor:'--btn-text',opColor:'--btn-op',
-                                displayTextColor:'--display-text',exprBgColor:'--expr-bg',exprTextColor:'--expr-text'}[id]
-                            ).trim();
-                document.getElementById(id).value = color;
-            });
-    } else {                                 // затваряме → записваме
-        RATE   = parseFloat(document.getElementById('rateInput').value);
-        dec    = +document.getElementById('decField').value;
-        decHU  = +document.getElementById('decHUField').value;
-
-        // Записваме всички цветове
-        ['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor']
-            .forEach(id => {
-                const color = document.getElementById(id).value;
-                localStorage.setItem(id, color);
-            });
-
-        localStorage.setItem('rate',  RATE);
-        localStorage.setItem('dec',   dec);
-        localStorage.setItem('decHU', decHU);
-    }
-
-    el.style.display = visible ? 'none' : 'flex';
-}*/
-
-function toggleSettings() {
-    const el = document.getElementById('settings');
-    const visible = el.style.display === 'flex';
-    if (!visible) {
-        //loadSettings();  // зареждаме настройките при отваряне
     } else {                                 // затваряме → записваме
         const settingsData = {};
         settingsToSave.forEach(setting => {
@@ -556,92 +562,42 @@ function toggle(id){
 }
 
 function updateMem(){
-//['m1','m2','m3'].forEach((id,i)=>document.getElementById(id).textContent=`M${i+1}:${toStr(memory[i])}`);
-  ['m1','m2','m3'].forEach((id,i)=>document.getElementById(id).textContent=`M${String.fromCharCode(65+i)}:${toStr(memory[i])}`);
+  ['m1','m2','m3'].forEach((id,i)=>document.getElementById(id).textContent=`M${String.fromCharCode(65+i)}: ${toStr(memory[i], dec)}`);
 }
 
-/*function loadSettings(){ отделни стойности в паметта
-  document.getElementById('rateInput').value = RATE;
-  document.getElementById('decField').value = dec;
-  document.getElementById('decHUField').value = decHU;
-  const colorMap = {
-    bgColor:'--page',
-    calcColor:'--calc',
-    displayColor:'--display-bg',
-    btnColor:'--btn',
-    btnTextColor:'--btn-text',
-    opColor:'--btn-op',
-    displayTextColor:'--display-text',
-    exprBgColor:'--expr-bg',
-    exprTextColor:'--expr-text'
-  };
-  Object.keys(colorMap).forEach(id=>{
-    if(localStorage[id])
-      document.documentElement.style.setProperty(colorMap[id], localStorage[id]);
-  });
-}
-*/
 function loadSettings() {
     const savedSettings = JSON.parse(localStorage.getItem('settings')) || {};
 
-    // Зареждаме числените стойности
-    document.getElementById('rateInput').value = savedSettings.rate !== undefined ? savedSettings.rate : 1.95583;
-    document.getElementById('decField').value = savedSettings.dec !== undefined ? savedSettings.dec : 2;
-    document.getElementById('decHUField').value = savedSettings.decHU !== undefined ? savedSettings.decHU : 2;
+    // Зареждаме и прилагаме числените стойности
+    RATE = savedSettings.rate !== undefined ? savedSettings.rate : 1.95583;
+    dec = savedSettings.dec !== undefined ? savedSettings.dec : 2;
+    decHU = savedSettings.decHU !== undefined ? savedSettings.decHU : 5;
+
+    document.getElementById('rateInput').value = RATE;
+    document.getElementById('decField').value = dec;
+    document.getElementById('decHUField').value = decHU;
 
     // Зареждаме цветовете
-    ['bgColor', 'calcColor', 'displayColor', 'btnColor', 'btnTextColor', 'opColor', 'displayTextColor', 'exprBgColor', 'exprTextColor'].forEach(id => {
-        const color = savedSettings[id] || getComputedStyle(document.documentElement)
-            .getPropertyValue({bgColor: '--page', calcColor: '--calc', displayColor: '--display-bg',
-            btnColor: '--btn', btnTextColor: '--btn-text', opColor: '--btn-op',
-            displayTextColor: '--display-text', exprBgColor: '--expr-bg', exprTextColor: '--expr-text'}[id]).trim();
-
-        document.getElementById(id).value = color;
-        document.documentElement.style.setProperty(
-            {bgColor: '--page', calcColor: '--calc', displayColor: '--display-bg',
-            btnColor: '--btn', btnTextColor: '--btn-text', opColor: '--btn-op',
-            displayTextColor: '--display-text', exprBgColor: '--expr-bg', exprTextColor: '--expr-text'}[id],
-            color
-        );
-    });
-}
-
-/*['bgColor','calcColor','displayColor','btnColor','btnTextColor','opColor','displayTextColor','exprBgColor','exprTextColor'].forEach(id=>{
-  document.getElementById(id)?.addEventListener('input',e=>{
-    const propMap={
-      bgColor:'--page',calcColor:'--calc',displayColor:'--display-bg',
-      btnColor:'--btn',btnTextColor:'--btn-text',opColor:'--btn-op',
-      displayTextColor:'--display-text',exprBgColor:'--expr-bg',exprTextColor:'--expr-text'
+    const colorMap = {
+        bgColor: '--page',
+        calcColor: '--calc',
+        displayColor: '--display-bg',
+        exprBgColor: '--expr-bg',
+        displayTextColor: '--display-text',
+        exprTextColor: '--expr-text',
+        btnColor: '--btn',
+        opColor: '--btn-op',
+        cColor: '--btn-c',
+        delColor: '--btn-del',
+        btnTextColor: '--btn-text'
     };
-    document.documentElement.style.setProperty(propMap[id],e.target.value);
-    localStorage.setItem(id,e.target.value);
-  });
-});
-
-['rateInput','decField','decHUField'].forEach(id=>{
-  document.getElementById(id)?.addEventListener('input',e=>{
-    const keyMap = {rateInput:'rate',decField:'dec',decHUField:'decHU'};
-    const value = e.target.value;
-    localStorage.setItem(keyMap[id], value);
-    if (keyMap[id] === 'rate') RATE = parseFloat(value);
-    if (keyMap[id] === 'dec') dec = parseInt(value, 10);
-    if (keyMap[id] === 'decHU') decHU = parseInt(value, 10);
-  });
-});
-
-function loadHistory(){ // взима израза, а не резултата
-  getHistory().then(list=>{
-    historyList.innerHTML='';
-    list.forEach(h=>{
-      const btn=document.createElement('button');
-      btn.textContent=h.expr;
-      btn.onclick=()=>{expr=h.expr.split(' = ')[0];upd();toggleHistory();};
-      historyList.appendChild(btn);
+    Object.keys(colorMap).forEach(id => {
+        const cssVar = colorMap[id];
+        const color = savedSettings[id] || getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+        document.getElementById(id).value = color;
+        document.documentElement.style.setProperty(cssVar, color);
     });
-  });
 }
-
-*/
 
 function loadHistory(){
   getHistory().then(list=>{
@@ -657,17 +613,9 @@ function loadHistory(){
 
 /* ---------- INIT ---------- */
 window.addEventListener('load',()=>{
-  decHU = parseInt(localStorage.getItem('decHU') || 2, 10);
-  dec = parseInt(localStorage.getItem('dec') || 2, 10);
-  
-  /*document.getElementById('decHURange').value = decHU;
-  document.getElementById('decHUVal').textContent = decHU;
-  document.getElementById('decRange').value = dec;
-  document.getElementById('decVal').textContent = dec;*/
-
-  if(localStorage.dec) dec=+localStorage.dec;
-  if(localStorage.rate) RATE=parseFloat(localStorage.rate);
-  loadSettings();upd();updateMem();
+  loadSettings();
+  upd();
+  updateMem();
 });
 
 /*document.getElementById('decHURange').addEventListener('input', e=>{
