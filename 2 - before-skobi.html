@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="theme-color" content="#1e293b"/>
   <link rel="shortcut icon" type="image/png" href="KimiFav.png" />
-  <link rel="manifest" href="kimimanif.json"/>
+  <!--link rel="manifest" href="kimimanif.json"-->
 
   <style>
     html {
@@ -208,11 +208,11 @@
       height: 1.2em;
     }
   </style>
-  <script>
+  <!--script>
       if('serviceWorker' in navigator){
           navigator.serviceWorker.register('kimisw.js');
       }
-  </script>
+  </script-->
 </head>
 
 <body>
@@ -668,42 +668,59 @@ function numClick(ev,k){
 }
 
 // Добавяме обработчик за клавишни сабития - Lumo made
-document.addEventListener('keydown', (event) => {
+document.addEventListener('keydown', function(event) {
     const key = event.key;
-    const settingsVisible = document.getElementById('settings').style.display === 'flex';
-    const historyVisible = document.getElementById('history').style.display === 'flex';
-
-    // Escape винаги работи за затваряне на модални прозорци
-    if (key === 'Escape') {
-        if (settingsVisible) toggleSettings();
-        if (historyVisible) toggleHistory();
-        return;
-    }
-
-    // Блокираме другите клавиши, ако има отворен модален прозорец
-    if (settingsVisible || historyVisible) {
-        return;
-    }
-
-    // Предотвратяваме стандартното поведение, ако е нужно
-    if (['Enter', '/', '*', '(', ')'].includes(key)) {
-        event.preventDefault();
-    }
-
-    const keyMap = {
-        'Enter': '=',
-        'Backspace': '⌫',
-        'Delete': '⌫',
-        ',': ',', '.': ',',
-        'c': 'C', 'C': 'C',
-        '(': '(', ')': ')',
-        '%': '%'
-    };
-
-    if (keyMap[key]) {
-        act(keyMap[key]);
-    } else if ("0123456789+-*/".includes(key)) {
-        act(key);
+    switch (key) {
+        case 'Escape': // Затваряне на модалите
+            toggleSettings();
+            toggleHistory();
+            break;
+        case 'Enter': // Пресмятане
+            act('=');
+            break;
+        case 'Backspace': // Изтриване
+            act('⌫');
+            break;
+        case 'Delete': // Изтриване
+            act('⌫');
+            break;
+        case 'c': // Изтриване на всичко
+        case 'C': // Изтриване на всичко
+            if (event.ctrlKey) {
+                act('C');
+            }
+            break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        case '0':
+            act(key);
+            break;
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+            act(key);
+            break;
+        case '%':
+            act('%');
+            break;
+        case '=':
+            act('=');
+            break;
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            // Обработка на стрелки за движение в текста
+            break;
+        default:
+            // Игнорираме други клавиши
+            break;
     }
 });
 </script>

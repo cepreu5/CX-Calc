@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Евро конвертор</title>
+    <style>
+        :root {
+            --bg-color: #e0f7fa; /* Светло ментово зелено */
+            --lev-text-color: #00acc1; /* Ярко тюркоазено */
+            --eur-text-color: #ec407a; /* Ярко розово */
+            --border-color: #ccc;            
+            --modal-bg-color: transparent; /* Премахваме замъгляването */
+            --lev-input-bg-color: #e0f2f1; /* Много светло тюркоазено */
+            --eur-input-bg-color: #fce4ec; /* Много светло розово */
+            --container-bg-color: #fffde7; /* Много светло жълто/крем */
+            --settings-label-color: #7e57c2; /* Средно лилаво */
+            --container-margin-top: 5vh; /* Default container margin-top */
+            --modal-content-bg: #fff;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center; /* За хоризонтално центриране при flex-direction: column */
+            /* align-items: center; -- Премахваме вертикалното центриране от body */
+            margin: 0;
+            background-color: var(--bg-color);
+            transition: background-color 0.3s ease;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .converter-container {
+            background-color: var(--container-bg-color);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 450px;
+            box-sizing: border-box;
+            margin-top: var(--container-margin-top);
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .currency-input {
+            width: 100%;
+            padding: 15px 50px 15px 50px; /* Увеличено padding-left за символа на валутата и padding-right за бутона "x" */
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 48px; /* Базов размер на шрифта */
+            text-align: right;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+            -moz-appearance: textfield; /* Firefox */
+
+            /* Допълнения за адаптивен шрифт */
+            white-space: nowrap; /* Предотвратява пренасянето на текста */
+            overflow: hidden;    /* Скрива преливащия текст */
+            text-overflow: clip; /* Отрязва преливащия текст, вместо да добавя елипси */
+            min-width: 0; /* Важно за flex контейнери, за да позволи свиване */
+        }
+
+        .currency-input::placeholder {
+            font-size: 48px; /* Осигурява, че плейсхолдърът съответства на първоначалния размер на шрифта */
+            color: #ccc; /* Цвят на плейсхолдъра, може да се промени при нужда */
+        }
+
+        .currency-input::-webkit-outer-spin-button,
+        .currency-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .currency-input.lev {
+            color: var(--lev-text-color);
+            background-color: var(--lev-input-bg-color);
+        }
+
+        .currency-input.eur {
+            color: var(--eur-text-color);
+            background-color: var(--eur-input-bg-color);
+        }
+
+        .clear-button {
+            position: absolute;
+            right: 15px;
+            top: 50%; /* Добавено за вертикално центриране */
+            transform: translateY(-50%); /* Добавено за вертикално центриране */
+            background: none;
+            border: none;
+            font-size: 2em; /* Увеличен размер на символа */
+            cursor: pointer;
+            /* padding: 5px; -- Премахваме padding, за да контролираме размера с width/height */
+            width: 1.2em;  /* Задаваме ширина, относителна на font-size на бутона */
+            height: 1.2em; /* Задаваме височина, относителна на font-size на бутона */
+            padding: 0;    /* Нулираме padding */
+            border-radius: 50%;
+            transition: background-color 0.2s ease; /* Премахната color transition, тъй като се управлява от JS */
+            display: flex; /* Добавено за центриране на съдържанието */
+            align-items: center; /* Добавено за центриране на съдържанието */
+            justify-content: center; /* Добавено за центриране на съдържанието */
+            line-height: 1; /* Помага за вертикалното центриране на текста */
+        }
+
+        .currency-label {
+            position: absolute;
+            left: 15px;
+            font-size: 1.2em;
+            color: #888;
+            pointer-events: none;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .bottom-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            flex-grow: 1;
+        }
+
+        .action-button.secondary {
+            background-color: #6c757d;
+        }
+
+        .action-button:hover {
+            background-color: #0056b3;
+        }
+        .action-button.secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: var(--modal-bg-color); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--modal-content-bg);
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        /* Specific background for history modal content to match container */
+        #historyModal .modal-content {
+            background-color: var(--container-bg-color);
+        }
+
+        /* Specific background for settings modal content to match container */
+        #settingsModal .modal-content {
+            background-color: var(--container-bg-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: var(--settings-label-color); /* Използваме същата променлива като за етикетите */
+        }
+
+        .close-button {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        #historyList {
+            max-height: 300px;
+            overflow-y: auto;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        #historyList li {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1em;
+            color: #555;
+            background-color:rgb(193, 193, 194); /* По-светъл нюанс на сивото за нечетни редове */
+        }
+
+        #historyList li:last-child {
+            border-bottom: none;
+        }
+
+        #historyList li:nth-child(even) {
+            background-color:rgb(209, 211, 212); /* Малко по-тъмен нюанс на сивото за четни редове */
+        }
+
+        .settings-grid {
+            display: grid;
+            /* Две колони с еднаква ширина за основните блокове */
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .settings-grid label {
+            /*font-weight: bold;*/
+            color: var(--settings-label-color);
+        }
+
+        /* Стил за select елемента, когато е на цял ред */
+        .settings-grid > select[style*="grid-column: 1 / -1"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .color-preview-container {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 48px;
+            min-height: 38px; /* Приблизителна височина за два реда color pickers */
+            line-height: 38px; /* За вертикално центриране */
+            box-sizing: border-box;
+        }
+
+        .input-color-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Разстояние между редовете с color picker */
+            justify-content: center; /* Центриране на редовете вертикално */
+            height: 100%; /* Опитваме се да запълни височината на клетката */
+        }
+
+        .input-color-settings > div { /* Всеки ред: color picker + label */
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Разстояние между color picker и етикета */
+        }
+
+        .settings-grid input[type="number"] {
+            height: 30px;
+            padding: 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        /* Custom Color Picker Styles */
+        .color-preview {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .color-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; 
+            top: 0; 
+            right: 0; 
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .color-modal.active { 
+            display: flex; 
+        }
+
+        .color-modal-content {
+            background: var(--container-bg-color);
+            border-radius: 12px;
+            padding: 16px;
+            min-width: 220px;
+            max-width: 95vw;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 40px);
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: transform 0.1s, border 0.1s;
+            box-sizing: border-box;
+        }
+
+        .color-option.selected {
+            border: 1px solid #222;
+            transform: scale(1.5);
+        }
+
+.custom-color-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+}
+
+.custom-color-input {
+    width: 120px;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 14px;
+    text-align: center;
+    box-sizing: border-box;
+    height: 32px;
+}
+
+.custom-color-input:focus {
+    outline: none;
+    border-color: #3485fd;
+}
+
+.custom-color-preview {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+        .coin-animation-container {
+            display: flex;
+            justify-content: space-between; /* Разполага монетите в двата края */
+            align-items: center;
+            width: 100%; /* Заема цялата налична ширина */
+            max-width: 450px; /* Същата максимална ширина като основния контейнер (.converter-container) */
+            height: 120px; /* Височината може да остане същата или да се коригира при нужда */
+            margin: 0 auto 15px auto; /* Центриране и отстояние отдолу */
+            position: relative; /* За позициониране на монетите */
+            overflow: hidden; /* За да не се виждат извън контейнера при движение */
+            cursor: pointer; /* За да показва, че е интерактивно */
+        }
+
+        .coin {
+            width: 100px; /* Размер на монетата */
+            height: 100px; /* Размер на монетата */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: absolute;
+            transition: transform 10s ease-in-out; /* Продължителност на движението */
+        }
+
+        #coin-bgn {
+            background-image: url('BGN.png');
+            left: 0; 
+            /* animation: spin-cw 4s linear infinite paused; -- Премахваме, управлява се от JS */
+        }
+
+        #coin-eur {
+            background-image: url('EUR.png');
+            right: 0; 
+            /* animation: spin-ccw 4s linear infinite paused; -- Премахваме, управлява се от JS */
+            z-index: 1; /* За да е над BGN монетата при сливане */
+        }
+
+        @keyframes spin-cw {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-ccw {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .converter-container {
+                padding: 20px;
+            }
+
+            .currency-input {
+                font-size: 48px; /* Адаптивният шрифт ще го променя */
+                padding: 12px 45px 12px 50px; /* Увеличено padding-left за символа на валутата */
+            }
+
+            .clear-button {
+                font-size: 1.5em; /* Увеличен размер и за по-малки екрани */
+            }
+
+            .action-button {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+            }
+
+            .modal-header h2 {
+                font-size: 1.3em;
+            }
+            .close-button {
+                font-size: 24px;
+            }
+            #historyList li {
+                font-size: 1em;
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="animationContainer" class="coin-animation-container">
+        <div id="coin-bgn" class="coin"></div>
+        <div id="coin-eur" class="coin"></div>
+    </div>
+
+    <div class="converter-container">
+        <div class="input-group">
+            <input type="text" id="levInput" class="currency-input lev" placeholder="" inputmode="decimal">
+            <span id="levLabel" class="currency-label">лв.</span>
+            <button class="clear-button" data-target="levInput">&times;</button>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="eurInput" class="currency-input eur" placeholder="" inputmode="decimal">
+            <span id="eurLabel" class="currency-label">€</span>
+            <button class="clear-button" data-target="eurInput">&times;</button>
+        </div>
+
+        <div class="bottom-buttons">
+            <button id="historyButton" class="action-button">История</button>
+            <button id="recallButton" class="action-button secondary">Предишни</button>
+            <button id="settingsButton" class="action-button">Настройки</button>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>История на изчисленията</h2>
+                <span class="close-button" data-modal="historyModal">&times;</span>
+            </div>
+            <ul id="historyList">
+            </ul>
+            <div class="modal-footer" style="margin-top: 15px; display: flex; gap: 10px;">
+                <button id="clearHistoryButton" class="action-button secondary" style="flex-grow: 1;">Изчисти историята</button>
+                <button id="closeHistoryModalButton" class="action-button" style="flex-grow: 1;">Затвори</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Настройки</h2>
+                <span class="close-button" data-modal="settingsModal">&times;</span>
+            </div>
+            <div class="modal-header">
+            <h2>Обменен курс BGN/EUR: 1.95583</h2>
+            </div>
+            <div class="settings-grid">
+                <!-- ЛВ Настройки -->
+                <div id="levPreview" class="color-preview-container">123,45</div>
+                <div class="input-color-settings">
+                    <div>
+                        <div class="color-preview" data-setting="levInputBgColor"></div>
+                        <label>Фон лв.</label>
+                    </div>
+                    <div>
+                        <div class="color-preview" data-setting="levTextColor"></div>
+                        <label>Шрифт лв.</label>
+                    </div>
+                </div>
+
+                <!-- ЕВРО Настройки -->
+                <div id="eurPreview" class="color-preview-container">123,45</div>
+                <div class="input-color-settings">
+                    <div>
+                        <div class="color-preview" data-setting="eurInputBgColor"></div>
+                        <label>Фон €</label>
+                    </div>
+                    <div>
+                        <div class="color-preview" data-setting="eurTextColor"></div>
+                        <label>Шрифт €</label>
+                    </div>
+                </div>
+
+                <!-- Общи настройки за фон -->
+                <label>Основен фон:</label>
+                <div class="color-preview" data-setting="bgColor" style="justify-self: start;"></div>
+
+                <label>Фон на панела:</label>
+                <div class="color-preview" data-setting="containerBgColor" style="justify-self: start;"></div>
+
+                <label>Шрифт на етикети:</label>
+                <div class="color-preview" data-setting="settingsLabelColor" style="justify-self: start;"></div>
+
+                <!-- Настройка за отстояние на контейнера -->
+                <label for="containerMarginTop">Отместване отгоре (vh):</label>
+                <input type="number" id="containerMarginTop" min="0" max="50" step="1" style="width: 40px; padding-left: 5px;">
+
+                <!-- Настройка за активно поле -->
+                <label>Активно поле:</label>
+                <select id="defaultActiveField" style="height: 30px; width: 40px; border-radius: 5px;">
+                    <option value="lev">лв.</option>
+                    <option value="eur">€</option>
+                </select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button id="saveSettings" class="action-button">Запази настройките</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Color Picker Modal
+    <div class="color-modal" id="colorDialog">
+        <div class="color-modal-content">
+            <div class="color-grid" id="colorGrid"></div>
+        </div>
+    </div>  -->
+
+    <!--div class="color-modal" id="colorDialog">
+    <div class="color-modal-content">
+        <div class="color-grid" id="colorGrid"></div>
+        <div class="custom-color-section">
+            <input type="text" 
+                   class="custom-color-input" 
+                   id="customColorInput" 
+                   placeholder="#ff0000" 
+                   maxlength="7">
+            <div class="custom-color-preview" id="customColorPreview"></div>
+        </div>
+    </div>
+</div-->
+
+    <div class="color-modal" id="colorDialog">
+        <div class="color-modal-content">
+            <div class="color-grid" id="colorGrid"></div>
+            <div class="custom-color-section">
+                <input type="text" 
+                    class="custom-color-input" 
+                    id="customColorInput" 
+                    placeholder="#ff0000" 
+                    maxlength="7">
+                <div class="custom-color-preview" id="customColorPreview"></div>
+                <button class="action-button" id="closeColorModal">Затвори</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const EXCHANGE_RATE = 1.95583;
+        const MAX_HISTORY_ITEMS = 30;
+        const levInput = document.getElementById('levInput');
+        const eurInput = document.getElementById('eurInput');
+        const historyButton = document.getElementById('historyButton');
+        const recallButton = document.getElementById('recallButton');
+        const levLabel = document.getElementById('levLabel');
+        const eurLabel = document.getElementById('eurLabel');
+        const settingsButton = document.getElementById('settingsButton');
+        const clearButtons = document.querySelectorAll('.clear-button');
+        const clearHistoryButton = document.getElementById('clearHistoryButton');
+        const historyModal = document.getElementById('historyModal');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeButtons = document.querySelectorAll('.close-button');
+        const historyList = document.getElementById('historyList');
+        const closeHistoryModalButton = document.getElementById('closeHistoryModalButton');
+        const defaultActiveFieldSelect = document.getElementById('defaultActiveField');
+        const saveSettingsButton = document.getElementById('saveSettings');
+        const levPreview = document.getElementById('levPreview');
+        const containerMarginTopInput = document.getElementById('containerMarginTop');
+        const eurPreview = document.getElementById('eurPreview');
+        const coinBgn = document.getElementById('coin-bgn');
+        const coinEur = document.getElementById('coin-eur');
+        let history = [];
+        let recallIndex = -1; // -1 means no recall started, 0 is the last item
+
+        const defaultSettings = {
+            /*bgColor: '#e0f7fa',
+            containerBgColor: '#fffde7',
+            levTextColor: '#00acc1',
+            eurTextColor: '#ec407a',
+            levInputBgColor: '#e0f2f1',
+            eurInputBgColor: '#fce4ec',
+            defaultActiveField: 'lev',
+            settingsLabelColor: '#7e57c2',
+            containerMarginTop: '1' // Стойността е в vh, но се съхранява като стринг*/
+            
+            bgColor: "#002C5F",
+            containerBgColor: "#0000ff",
+            containerMarginTop: "1",
+            defaultActiveField: "lev",
+            eurInputBgColor: "#ff00cc",
+            eurTextColor: "#000000",
+            levInputBgColor: "#ccff00",
+            levTextColor: "#000000",
+            settingsLabelColor: "#fafafa"            
+        };
+
+        // Палитра
+        const palette = [
+            "#002C5F", "#0000ff", "#ccff00", "#ff00cc", "#E7CCB1", "#2C6B96", "#B5DCDD", "#CE9E5B",
+            "#F1DE7D", "#C9AB3A", "#D5D5D3", "#242718", "#5598AF", "#86B6C3", "#E6CB4F", "#DF3C22",
+            "#469D8B", "#E8AE3C", "#EA8933", "#73BAD3", "#EBEAB5", "#E0D145", "#C7E1EB", "#A6EBFD",
+            "#F1E3F5", "#E5DAF5", "#CDCAF3", "#989CED", "#E1E1E1", "#ECE8E6", "#D6CFCD", "#ABA5A3",
+            "#E9BC84", "#EB6E6C", "#541E1B", "#C97644", "#988836", "#E12E4B", "#F8DDA7", "#89C4A0",
+            "#DD364C", "#EE8070", "#F9D6C0", "#F8D147", "#E8E9EE", "#EFD200", "#F57550", "#B0E785",
+            "#F5D54A", "#CABDAF", "#357560", "#384727", "#527462", "#3A887C", "#D5DCDC", "#C0C49B",
+            "#7D8D87", "#B87F45", "#CBC497", "#9EB45B", "#D3B73E", "#A3A47A", "#89A68F", "#8B341F"
+            
+            /* "#3485fd", "#002C5F", "#00AFD8", "#5B1F69", "#FF5F1F", "#ff00e2",
+            "#ff0000", "#ff6600", "#ffcc00", "#ffff00", "#ccff00", "#66ff00",
+            "#00ff00", "#00ff66", "#00ffcc", "#00ffff", "#00ccff", "#0066ff",
+            "#0000ff", "#6600ff", "#cc00ff", "#ff00cc", "#ff0066", "#000000",
+            "#222222", "#444444", "#888888", "#cccccc", "#ffffff", "#f8f8fa",
+            "#e0f7fa", "#fffde7", "#00acc1", "#ec407a", "#e0f2f1", "#fce4ec", */
+        ];
+
+        let currentSetting = null;
+        let settings = {};
+        /*let settings = {
+                    bgColor: '#e0f7fa',
+                    containerBgColor: '#fffde7',
+                    levTextColor: '#00acc1',
+                    eurTextColor: '#ec407a',
+                    levInputBgColor: '#e0f2f1',
+                    eurInputBgColor: '#fce4ec',
+                    defaultActiveField: 'lev',
+                    settingsLabelColor: '#7e57c2',
+                    containerMarginTop: '1' // Стойността е в vh, но се съхранява като стринг
+        };*/
+
+        // Бутон затвори
+        document.getElementById('closeColorModal').addEventListener('click', () => {
+            document.getElementById('colorDialog').classList.remove('active');
+        });
+
+        // Затваряне с ESC клавиш (бонус функционалност)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('colorDialog').classList.contains('active')) {
+                document.getElementById('colorDialog').classList.remove('active');
+            }
+        });
+
+        // Функция за валидиране на hex цвят
+        function isValidHexColor(hex) {
+            return /^#[0-9A-Fa-f]{6}$/.test(hex);
+        }
+
+        // Функция за нормализиране на hex цвят
+        function normalizeHex(hex) {
+            hex = hex.trim();
+            if (!hex.startsWith('#')) {
+                hex = '#' + hex;
+            }
+            return hex.toUpperCase();
+        }
+
+        // Custom color input обработка
+        const customColorInput = document.getElementById('customColorInput');
+        const customColorPreview = document.getElementById('customColorPreview');
+
+        customColorInput.addEventListener('input', (e) => {
+            let value = normalizeHex(e.target.value);
+            
+            if (isValidHexColor(value)) {
+                customColorPreview.style.background = value;
+                customColorPreview.style.border = '2px solid #222';
+                
+                // Премахване на селекцията от grid-а
+                colorGrid.querySelectorAll('.color-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+            } else {
+                customColorPreview.style.background = 'transparent';
+                customColorPreview.style.border = '1px solid #ccc';
+            }
+        });
+
+        // Клик върху custom color preview за прилагане
+        customColorPreview.addEventListener('click', () => {
+            const customColor = normalizeHex(customColorInput.value);
+            if (isValidHexColor(customColor) && currentSetting) {
+                settings[currentSetting] = customColor;
+                document.querySelector(`[data-setting="${currentSetting}"]`).style.background = customColor;
+                applySettings();
+                document.getElementById('colorDialog').classList.remove('active');
+            }
+        });
+
+        // Разширяване на съществуващата логика за отваряне на modal-а
+        document.querySelectorAll('.color-preview').forEach(preview => {
+            const settingKey = preview.dataset.setting;
+            preview.style.background = settings[settingKey];
+            preview.addEventListener('click', () => {
+                currentSetting = settingKey;
+                // Селектиране в grid-а
+                colorGrid.querySelectorAll('.color-option').forEach(opt => {
+                    opt.classList.toggle('selected', opt.dataset.color.toLowerCase() === settings[currentSetting].toLowerCase());
+                });
+                // Попълване на custom input с текущия цвят
+                customColorInput.value = settings[currentSetting];
+                customColorPreview.style.background = settings[currentSetting];
+                customColorPreview.style.border = '2px solid #222';
+                document.getElementById('colorDialog').classList.add('active');
+            });
+        });
+
+        function handleClearHistory() {
+            history = [];
+            saveHistoryToStorage();
+            updateHistoryList();
+        }
+
+        function formatNumber(num) {
+            if (isNaN(num)) return '';
+            // .toFixed(2) correctly rounds to 2 decimal places and ensures two decimal digits.
+            // Example: 123 -> "123.00", 123.4 -> "123.40", 123.456 -> "123.46"
+            return num.toFixed(2).replace('.', ',');
+        }
+
+      function groupByThree(str, dec) {
+          let cleanedStr = str.replace(/\s+/g, ""); // Премахваме интервалите
+          let parts = cleanedStr.split(","); // Разделяме цялата и десетичната част
+          let wholePart = parts[0]; // Цялата част от числото
+          if (wholePart == "") wholePart = "0"; // Ако няма цяла част, връщаме празен низ
+          let decimalPart = parts.length > 1 ? "," + parts[1] : ""; // Десетичната част (ако я има)
+          let result = [];
+          for (let i = wholePart.length; i > 0; i -= 3) {
+              let start = Math.max(i - 3, 0);
+              result.unshift(wholePart.slice(start, i)); // Запазваме правилния ред
+          }
+          if (dec) if (decimalPart == "" || decimalPart == ",") decimalPart = ",00"
+          else if (decimalPart.length == 2) decimalPart += "0"; // Ако има само една цифра след запетаята, добавяме нула
+          return result.join(" ") + decimalPart; // Свързваме групите и добавяме десетичната част
+      }
+
+        function parseNumber(str) {
+            if (!str) return NaN;
+            return parseFloat(str.replace(',', '.'));
+        }
+
+        function updateColorPreviews() {
+            if (levPreview && settings.levInputBgColor && settings.levTextColor) {
+                levPreview.style.backgroundColor = settings.levInputBgColor;
+                levPreview.style.color = settings.levTextColor;
+            }
+            if (eurPreview && settings.eurInputBgColor && settings.eurTextColor) {
+                eurPreview.style.backgroundColor = settings.eurInputBgColor;
+                eurPreview.style.color = settings.eurTextColor;
+            }
+        }
+
+        function applySettings() {
+            document.documentElement.style.setProperty('--bg-color', settings.bgColor);
+            document.documentElement.style.setProperty('--container-bg-color', settings.containerBgColor);
+            document.documentElement.style.setProperty('--lev-text-color', settings.levTextColor);
+            document.documentElement.style.setProperty('--eur-text-color', settings.eurTextColor);
+            document.documentElement.style.setProperty('--lev-input-bg-color', settings.levInputBgColor);
+            document.documentElement.style.setProperty('--eur-input-bg-color', settings.eurInputBgColor);
+            document.documentElement.style.setProperty('--settings-label-color', settings.settingsLabelColor);
+            document.documentElement.style.setProperty('--container-margin-top', settings.containerMarginTop + 'vh');
+            // Apply text color to currency labels
+            levLabel.style.color = settings.levTextColor;
+            eurLabel.style.color = settings.eurTextColor;
+            // Apply text color to clear buttons
+            clearButtons.forEach(button => {
+                const targetId = button.dataset.target;
+                if (targetId === 'levInput') {
+                    button.style.color = settings.levTextColor;
+                } else if (targetId === 'eurInput') {
+                    button.style.color = settings.eurTextColor;
+                }
+            });
+            // Update settings modal inputs
+            defaultActiveFieldSelect.value = settings.defaultActiveField;
+            containerMarginTopInput.value = settings.containerMarginTop;
+            // Update color previews
+            document.querySelectorAll('.color-preview').forEach(preview => {
+                const settingKey = preview.dataset.setting;
+                if (settingKey && settings[settingKey]) {
+                    preview.style.background = settings[settingKey];
+                }
+            });
+            updateColorPreviews(); // Актуализираме визуализациите
+            // Set initial focus based on default active field, without triggering copy
+            if (settings.defaultActiveField === 'lev') {
+                levInput.focus();
+            } else {
+                eurInput.focus();
+            }
+        }
+
+        function loadSettings() {
+            const savedSettings = JSON.parse(localStorage.getItem('currencyConverterSettings'));
+            settings = savedSettings ? { ...defaultSettings, ...savedSettings } : { ...defaultSettings };
+            return settings;
+        }
+
+        function saveSettings() {
+            localStorage.setItem('currencyConverterSettings', JSON.stringify(settings));
+        }
+
+        function loadHistory() {
+            const savedHistory = JSON.parse(localStorage.getItem('currencyConverterHistory'));
+            history = savedHistory || [];
+        }
+
+        function saveHistoryToStorage() {
+            localStorage.setItem('currencyConverterHistory', JSON.stringify(history));
+        }
+
+        function addHistoryEntry(levValue, eurValue) {
+            const entry = `${groupByThree(formatNumber(levValue))} лв. = ${groupByThree(formatNumber(eurValue))} €`;
+            history.unshift(entry); // Add to the beginning
+            if (history.length > MAX_HISTORY_ITEMS) {
+                history.pop(); // Remove the oldest entry if over limit
+            }
+            saveHistoryToStorage();
+        }
+
+        function updateHistoryList() {
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'Няма запазена история.';
+                historyList.appendChild(li);
+                return;
+            }
+            history.forEach(entry => {
+                const li = document.createElement('li');
+                li.textContent = entry;
+                historyList.appendChild(li);
+            });
+        }
+
+        /**
+         * Adjusts the font size of an input element to fit its content within the field.
+         * @param {HTMLInputElement} inputElement The input element to adjust.
+         */
+        function adjustFontSize(inputElement) {
+            const THEORETICAL_MAX_FONT_SIZE = 48; // Трябва да съответства на базовия CSS font-size за полетата
+            const minAllowedFontSize = 14; // Minimum font size to prevent illegibility
+            // Започваме с прилагане на най-големия желан размер на шрифта
+            inputElement.style.fontSize = THEORETICAL_MAX_FONT_SIZE + 'px';
+            // clientWidth е вътрешната ширина на елемента, включваща padding.
+            // scrollWidth е ширината на съдържанието на елемента (включително невидимото поради преливане), също включваща padding.
+            // Ако scrollWidth > clientWidth, съдържанието (с padding) е по-широко от видимата вътрешна област (с padding), което означава преливане.
+            const clientWidth = inputElement.clientWidth;
+            // Ако елементът не е рендиран или няма реална ширина,
+            // и има съдържание, връщаме към минималния размер на шрифта.
+            // Ако няма съдържание, цикълът по-долу няма да се изпълни, ако scrollWidth е 0.
+            if (clientWidth <= 0 && inputElement.value !== "") {
+                inputElement.style.fontSize = minAllowedFontSize + 'px'; // Fallback
+                return;
+            }
+            let currentFontSize = THEORETICAL_MAX_FONT_SIZE;
+            // Намаляваме размера на шрифта, ако съдържанието (плюс padding) прелива clientWidth
+            while (inputElement.scrollWidth > clientWidth && currentFontSize > minAllowedFontSize) {
+                currentFontSize--;
+                inputElement.style.fontSize = currentFontSize + 'px';
+            }
+        }
+
+        // --- Event Handlers ---
+
+        function convertFromLevToEur() {
+            let levValue = parseNumber(levInput.value);
+            if (isNaN(levValue)) {
+                eurInput.value = ''; // Изчистваме целевото поле, ако изходното е невалидно
+            } else {
+                let eurValue = levValue / EXCHANGE_RATE;
+                eurInput.value = groupByThree(formatNumber(eurValue));
+                addHistoryEntry(levValue, eurValue);
+            }
+            recallIndex = -1; // Reset recall index on new calculation
+            adjustFontSize(levInput); // Адаптираме шрифта на изходното поле
+            adjustFontSize(eurInput); // Адаптираме шрифта на целевото поле
+        }
+
+        function convertFromEurToLev() {
+            let eurValue = parseNumber(eurInput.value);
+            if (isNaN(eurValue)) {
+                levInput.value = ''; // Изчистваме целевото поле, ако изходното е невалидно
+            } else {
+                let levValue = eurValue * EXCHANGE_RATE;
+                levInput.value = groupByThree(formatNumber(levValue));
+                // За историята, винаги записваме като (BGN, EUR).
+                // При конвертиране от EUR към LEV, levValue е BGN, eurValue е EUR.
+                addHistoryEntry(levValue, eurValue);
+            }
+            recallIndex = -1; // Reset recall index on new calculation
+            adjustFontSize(eurInput); // Адаптираме шрифта на изходното поле
+            adjustFontSize(levInput); // Адаптираме шрифта на целевото поле
+        }
+
+        function handleInput(event) {
+            let value = event.target.value;
+            // Allow only digits, comma, and dot
+            value = value.replace(/[^0-9.,]/g, '');
+            // Replace multiple dots/commas with a single one
+            value = value.replace(/([.,])(?=.*[.,])/g, '');
+            // Ensure only one decimal separator
+            const parts = value.split(/[.,]/);
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            // Format number with two decimal places on blur if it's a valid number
+            // Removed direct formatting on input to allow partial input like "12."
+            // Formatting will happen on conversion or focus out
+            event.target.value = value;
+            recallIndex = -1; // Reset recall index on manual input
+            // Font size adjustment is handled by the event listener now
+        }
+
+        function handleFocus(event) {
+            const input = event.target;
+            adjustFontSize(input);
+        }
+
+        function handleBlur(event) {
+            const input = event.target;
+            let num = parseNumber(input.value);
+            if (!isNaN(num)) {
+                // Reformat on blur to ensure two decimal places if it's a valid number
+                input.value = formatNumber(num);
+                adjustFontSize(input); // Adjust font size after formatting
+            } else if (input.value === '') {
+                input.value = ''; // Keep empty if not a number and cleared
+            }
+        }
+
+        function clearInput(targetId) {
+            const targetInput = document.getElementById(targetId);
+            targetInput.value = '';
+            if (targetId === 'levInput') {
+                eurInput.value = '';
+            } else {
+                levInput.value = '';
+            }
+            recallIndex = -1; // Reset recall index on clear
+            // Адаптираме шрифта и на двете полета, независимо кое е изчистено,
+            // тъй като изгледът и на двете може да се нуждае от актуализация.
+            adjustFontSize(levInput);
+            targetInput.focus(); // Връщаме фокуса към изчистеното поле
+            adjustFontSize(eurInput);
+        }
+
+        function handleRecall() {
+            if (history.length === 0) {
+                levInput.value = '';
+                eurInput.value = '';
+                adjustFontSize(levInput);
+                adjustFontSize(eurInput);
+                return;
+            }
+            recallIndex = (recallIndex + 1) % history.length;
+            const entry = history[recallIndex];
+            // Parse the entry: "XXX,XX лв. = YY,YY €"
+            const parts = entry.split(' = ');
+            if (parts.length === 2) {
+                const levPart = parts[0].replace(' лв.', '');
+                const eurPart = parts[1].replace(' €', '');
+                levInput.value = levPart;
+                eurInput.value = eurPart;
+                adjustFontSize(levInput); // Adjust font size after recall
+                adjustFontSize(eurInput); // Adjust font size after recall
+            }
+        }
+
+        function saveAndApplySettings() {
+            saveSettings(settings);
+            applySettings(settings);
+            settingsModal.style.display = 'none';
+        }
+
+        function startCoinAnimation() {
+            if (!coinBgn || !coinEur) return;
+            const animationContainer = document.getElementById('animationContainer');
+            if (!animationContainer) return;
+            // Текущата анимация на движение се управлява от CSS transition върху 'transform' свойството.
+            // Изчакваме кратко, за да се гарантира, че елементите са рендирани и имат размери.
+            setTimeout(() => {
+                const containerWidth = animationContainer.clientWidth;
+                const coinWidth = 100; // Ширината на монетата, както е дефинирана в CSS (.coin)
+                // Движим BGN монетата към центъра (малко преди него, за да се припокрие)
+                // Изчисляваме необходимата транслация, така че левият край на BGN монетата
+                // и левият край на EUR монетата (след нейната транслация) да се срещнат в центъра.
+                // Позицията, до която трябва да стигне левият край на всяка монета, е (containerWidth - coinWidth) / 2.
+                const translationX = (containerWidth - coinWidth) / 2;
+                coinBgn.style.transform = `translateX(${translationX}px)`;
+                // Движим EUR монетата към центъра (малко преди него, за да се припокрие)
+                // EUR монетата е позиционирана с 'right: 0', така че нейната транслация трябва да е отрицателна.
+                coinEur.style.transform = `translateX(-${translationX}px)`;
+            }, 100);
+        }
+
+        // --- Initial Load and Event Listeners ---
+
+        containerMarginTopInput.addEventListener('input', () => {
+            document.documentElement.style.setProperty('--container-margin-top', containerMarginTopInput.value + 'vh');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentSettings = loadSettings();
+            applySettings(currentSettings); // This also sets initial focus
+            loadHistory();
+            // Initial font size adjustment for both fields based on their (potentially empty) content
+            adjustFontSize(levInput);
+            adjustFontSize(eurInput);
+            // Стартираме анимацията на монетите при зареждане
+            startCoinAnimation();
+            // Добавяме event listener към контейнера на анимацията за рестартиране при клик
+            const animationContainerElement = document.getElementById('animationContainer');
+            if (animationContainerElement) {
+                animationContainerElement.addEventListener('click', () => {
+                    if (coinBgn && coinEur) {
+                        // 1. Временно премахваме transition-а, за да "щракнат" монетите в начална позиция
+                        coinBgn.style.transition = 'none';
+                        coinEur.style.transition = 'none';
+                        // 2. Нулираме позициите
+                        coinBgn.style.transform = 'translateX(0px)';
+                        coinEur.style.transform = 'translateX(0px)';
+                        // 3. Форсираме reflow, за да се приложат промените без transition
+                        // Четенето на offsetHeight е често използван трик за това
+                        void coinBgn.offsetHeight;
+                        void coinEur.offsetHeight;
+                        // 4. Възстановяваме transition-а, като премахваме inline стила,
+                        // така че CSS правилото от класа .coin отново да е активно
+                        coinBgn.style.removeProperty('transition');
+                        coinEur.style.removeProperty('transition');
+                        // 5. Рестартираме анимацията
+                        startCoinAnimation();
+                    }
+                });
+            }
+        });
+
+/*
+        // Input change events for live formatting and dynamic conversion
+        levInput.addEventListener('input', (event) => {
+            const inputField = event.target;
+            const originalValue = inputField.value;
+            const originalCursorPos = inputField.selectionStart;
+            // Проверяваме дали потребителят е въвел десетичен разделител
+            const justEnteredSeparator = originalValue.endsWith(',') || originalValue.endsWith('.');
+            handleInput(event); // Почиства въведената стойност
+            let valueAfterSanitize = inputField.value;
+            let num = parseNumber(valueAfterSanitize);
+            let newFormattedValue = '';
+            if (valueAfterSanitize === "") {
+                newFormattedValue = "";
+            } else if (justEnteredSeparator) {
+                // Потребителят е въвел/запазил десетичен разделител
+                // valueAfterSanitize ще бъде нещо като "123," или ","
+                if (isNaN(num) && (valueAfterSanitize === "," || valueAfterSanitize === ".")) { // Само разделител
+                    newFormattedValue = "0,";
+                } else {
+                    // Число, последвано от разделител, напр. "123,"
+                    // Премахваме последния символ (разделителя) и добавяме стандартизирана запетая
+                    newFormattedValue = valueAfterSanitize.slice(0, -1) + ",";
+                }
+            } else if (!isNaN(num)) {
+                newFormattedValue = formatNumber(num);
+            } else {
+                newFormattedValue = "";
+            }
+            inputField.value = newFormattedValue;
+            // Позициониране на курсора:
+            if (justEnteredSeparator && newFormattedValue.includes(',')) {
+                // Позиционираме курсора след запетаята
+                const commaPosition = newFormattedValue.indexOf(',');
+                inputField.setSelectionRange(commaPosition + 1, commaPosition + 1);
+            } else {
+                // За други случаи опитваме да запазим относителната позиция на курсора
+                let targetPos;
+                if (newFormattedValue.length === 0) {
+                    targetPos = 0;
+                } else if (originalCursorPos <= newFormattedValue.length) {
+                    targetPos = originalCursorPos;
+                } else {
+                    targetPos = newFormattedValue.length;
+                }
+                inputField.setSelectionRange(targetPos, targetPos);
+            }
+            convertFromLevToEur(); // Динамично конвертиране
+        });
+
+        eurInput.addEventListener('input', (event) => {
+            const inputField = event.target;
+            const originalValue = inputField.value;
+            const originalCursorPos = inputField.selectionStart;
+            // Проверяваме дали потребителят е въвел десетичен разделител
+            const justEnteredSeparator = originalValue.endsWith(',') || originalValue.endsWith('.');
+            handleInput(event); // Почиства въведената стойност
+            let valueAfterSanitize = inputField.value;
+            let num = parseNumber(valueAfterSanitize);
+            let newFormattedValue = '';
+            if (valueAfterSanitize === "") {
+                newFormattedValue = "";
+            } else if (justEnteredSeparator) {
+                // Потребителят е въвел/запазил десетичен разделител
+                // valueAfterSanitize ще бъде нещо като "123," или ","
+                if (isNaN(num) && (valueAfterSanitize === "," || valueAfterSanitize === ".")) { // Само разделител
+                    newFormattedValue = "0,";
+                } else {
+                    // Число, последвано от разделител, напр. "123,"
+                    // Премахваме последния символ (разделителя) и добавяме стандартизирана запетая
+                    newFormattedValue = valueAfterSanitize.slice(0, -1) + ",";
+                }
+            } else if (!isNaN(num)) {
+                newFormattedValue = formatNumber(num);
+            } else {
+                newFormattedValue = "";
+            }
+            inputField.value = newFormattedValue;
+            // Позициониране на курсора:
+            if (justEnteredSeparator && newFormattedValue.includes(',')) {
+                // Позиционираме курсора след запетаята
+                const commaPosition = newFormattedValue.indexOf(',');
+                inputField.setSelectionRange(commaPosition + 1, commaPosition + 1);
+            } else {
+                // За други случаи опитваме да запазим относителната позиция на курсора
+                let targetPos;
+                if (newFormattedValue.length === 0) {
+                    targetPos = 0;
+                } else if (originalCursorPos <= newFormattedValue.length) {
+                    targetPos = originalCursorPos;
+                } else {
+                    targetPos = newFormattedValue.length;
+                }
+                
+                inputField.setSelectionRange(targetPos, targetPos);
+            }
+            convertFromEurToLev(); // Динамично конвертиране
+        }); 
+        // Focus event for copying to clipboard
+        levInput.addEventListener('focus', handleFocus);
+        eurInput.addEventListener('focus', handleFocus);
+        // Blur event for formatting to two decimal places
+        levInput.addEventListener('blur', handleBlur);
+        eurInput.addEventListener('blur', handleBlur);
+        // Clear buttons
+        clearButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                clearInput(event.target.dataset.target);
+            });
+        });
+*/
+
+        clearButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                clearInput(event.target.dataset.target);
+            });
+        });
+
+        function handleCurrencyInput(inputField, convertFunction) {
+            const originalValue = inputField.value;
+            const originalCursorPos = inputField.selectionStart;
+            // Проверяваме дали потребителят е въвел десетичен разделител
+            const justEnteredSeparator = originalValue.endsWith(',') || originalValue.endsWith('.');
+            handleInput({ target: inputField }); // Почиства въведената стойност
+            let valueAfterSanitize = inputField.value;
+            let num = parseNumber(valueAfterSanitize);
+            let newFormattedValue = '';
+            if (valueAfterSanitize === "") {
+                newFormattedValue = "";
+            } else if (justEnteredSeparator) {
+                if (isNaN(num) && (valueAfterSanitize === "," || valueAfterSanitize === ".")) {
+                    newFormattedValue = "0,";
+                } else {
+                    newFormattedValue = valueAfterSanitize.slice(0, -1) + ",";
+                }
+            } else if (!isNaN(num)) {
+                newFormattedValue = formatNumber(num);
+            } else {
+                newFormattedValue = "";
+            }
+            // Проверка: ако курсорът е след втория десетичен знак, игнорираме въведената цифра
+            if (newFormattedValue.includes(',')) {
+                const decimalPart = newFormattedValue.split(',')[1];
+                if (decimalPart && decimalPart.length >= 2 && originalCursorPos > newFormattedValue.indexOf(',') + 2) {
+                    newFormattedValue = originalValue; // Възстановяваме предишната стойност, игнорирайки новото въвеждане
+                }
+            }
+            
+                // Ограничаване до 2 десетични знака
+            if (newFormattedValue.includes(',')) {
+                const parts = newFormattedValue.split(',');
+                if (parts[1] && parts[1].length > 2) {
+                    newFormattedValue = parts[0] + ',' + parts[1].slice(0, 2); // Изрязваме допълнителните знаци
+                }
+            }
+            inputField.value = newFormattedValue;
+
+            // Позициониране на курсора
+            if (justEnteredSeparator && newFormattedValue.includes(',')) {
+                const commaPosition = newFormattedValue.indexOf(',');
+                inputField.setSelectionRange(commaPosition + 1, commaPosition + 1);
+            } else {
+                let targetPos;
+                if (newFormattedValue.length === 0) {
+                    targetPos = 0;
+                } else if (originalCursorPos <= newFormattedValue.length) {
+                    targetPos = originalCursorPos;
+                } else {
+                    targetPos = newFormattedValue.length;
+                }
+                inputField.setSelectionRange(targetPos, targetPos);
+            }
+            convertFunction(); // Динамично конвертиране
+        }
+
+        // Добавяне на обработката на събитията
+        levInput.addEventListener('input', (event) => handleCurrencyInput(event.target, convertFromLevToEur));
+        eurInput.addEventListener('input', (event) => handleCurrencyInput(event.target, convertFromEurToLev));
+/**/
+
+        // History button
+        historyButton.addEventListener('click', () => {
+            updateHistoryList();
+            historyModal.style.display = 'flex';
+        });
+        
+        // Clear History button
+        if (clearHistoryButton) {
+            clearHistoryButton.addEventListener('click', handleClearHistory);
+        }
+
+        if (closeHistoryModalButton) {
+            closeHistoryModalButton.addEventListener('click', () => historyModal.style.display = 'none');
+        }
+
+        // Recall button
+        recallButton.addEventListener('click', handleRecall);
+
+        // Settings button
+        settingsButton.addEventListener('click', () => {
+            // Load current settings into the modal before opening
+            const savedSettings = loadSettings(); // За настройки, които не се обновяват на живо, и за стойности по подразбиране
+            // За цветовете с динамичен предварителен преглед, взимаме текущо приложените стойности
+            const computedStyle = getComputedStyle(document.documentElement);
+            const currentAppliedBgColor = computedStyle.getPropertyValue('--bg-color').trim();
+            const currentAppliedContainerBgColor = computedStyle.getPropertyValue('--container-bg-color').trim();
+            const currentAppliedContainerMarginTopRaw = computedStyle.getPropertyValue('--container-margin-top').trim();
+            const currentAppliedContainerMarginTopVH = 
+            currentAppliedContainerMarginTopRaw.endsWith('vh') ? currentAppliedContainerMarginTopRaw.slice(0, -2) : savedSettings.containerMarginTop;
+            const currentAppliedSettingsLabelColor = computedStyle.getPropertyValue('--settings-label-color').trim();
+            defaultActiveFieldSelect.value = savedSettings.defaultActiveField;
+            updateColorPreviews(); // Показваме актуалните визуализации при отваряне
+            settingsModal.style.display = 'flex';
+        });
+
+        // Save settings button
+        saveSettingsButton.addEventListener('click', saveAndApplySettings);
+
+        // Close modal buttons
+        closeButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                document.getElementById(event.target.dataset.modal).style.display = 'none';
+            });
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (event) => {
+            if (event.target === historyModal) {
+                historyModal.style.display = 'none';
+            }
+            if (event.target === settingsModal) {
+                settingsModal.style.display = 'none';
+            }
+        });
+
+        // Adjust font size on window resize
+        window.addEventListener('resize', () => {
+            adjustFontSize(levInput);
+            adjustFontSize(eurInput);
+        });
+
+        // Създаване на color grid
+        const colorGrid = document.getElementById('colorGrid');
+        palette.forEach(color => {
+          const div = document.createElement('div');
+          div.className = 'color-option';
+          div.style.background = color;
+          div.dataset.color = color;
+          colorGrid.appendChild(div);
+        });
+
+        // Логика за color picker
+        document.querySelectorAll('.color-preview').forEach(preview => {
+          // Инициализация с текущия цвят от settings
+          const settingKey = preview.dataset.setting;
+          preview.style.background = settings[settingKey];
+          preview.addEventListener('click', () => {
+            currentSetting = settingKey;
+            colorGrid.querySelectorAll('.color-option').forEach(opt => {
+              opt.classList.toggle('selected', opt.dataset.color.toLowerCase() === settings[currentSetting].toLowerCase());
+            });
+            document.getElementById('colorDialog').classList.add('active');
+          });
+        });
+
+        /*colorGrid.addEventListener('click', e => {
+          const option = e.target.closest('.color-option');
+          if (option && currentSetting) {
+            settings[currentSetting] = option.dataset.color;
+            document.querySelector(`[data-setting="${currentSetting}"]`).style.background = option.dataset.color;
+            applySettings(); // твоята функция, която оцветява елементите на основния изглед
+            document.getElementById('colorDialog').classList.remove('active');
+          }
+        });*/
+        
+colorGrid.addEventListener('click', e => {
+    const option = e.target.closest('.color-option');
+    if (option && currentSetting) {
+        const selectedColor = option.dataset.color;
+        
+        settings[currentSetting] = selectedColor;
+        document.querySelector(`[data-setting="${currentSetting}"]`).style.background = selectedColor;
+        
+        // Обновяване на custom input
+        customColorInput.value = selectedColor;
+        customColorPreview.style.background = selectedColor;
+        
+        applySettings();
+        document.getElementById('colorDialog').classList.remove('active');
+    }
+});
+
+        document.getElementById('colorDialog').addEventListener('click', e => {
+          if (e.target === e.currentTarget) {
+            e.currentTarget.classList.remove('active');
+          }
+        });
+    </script>
+</body>
+</html>

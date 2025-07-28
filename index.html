@@ -53,7 +53,7 @@
             <ul id="historyList">
             </ul>
             <div class="modal-footer" style="margin-top: 15px; display: flex; gap: 10px;">
-                <button id="clearHistoryButton" class="action-button secondary" style="flex-grow: 1;">Изчисти историята</button>
+                <button id="clearHistoryButton" class="action-button secondary" style="flex-grow: 1;">Изтрий</button>
                 <button id="closeHistoryModalButton" class="action-button" style="flex-grow: 1;">Затвори</button>
             </div>
         </div>
@@ -632,7 +632,10 @@
     }
 
     function updateDisplays(userInput, formattedUserInput, keyPressed) {
-        const isOperation = /[+\-*/]/.test(userInput.slice(1));
+        // Проверяваме дали низът съдържа оператори или скоби.
+        // slice(1) се използва, за да се позволи въвеждането на отрицателно число в началото.
+        // Скобите се проверяват в целия низ, защото те винаги означават израз.
+        const isOperation = /[+\-*/]/.test(userInput.slice(1)) || userInput.includes('(') || userInput.includes(')');
         const [activeDisplay, passiveDisplay] = levMode ? [displaylv, display] : [display, displaylv];
         const conversionFn = levMode ? convertFromLevToEur : convertFromEurToLev;
         // Осветяване на активния дисплей
@@ -684,8 +687,11 @@
         const newActiveValue = levMode
             ? displaylv.textContent
             : display.textContent;
-        userInput = newActiveValue
-            .replace(/\s/g, ''); // премахване на интервали
+        userInput = newActiveValue.replace(/\s/g, ''); // премахване на интервали
+        // Ако стойността е цяло число, форматирано с ",00", премахваме десетичната част.
+        if (userInput.endsWith(',00')) {
+            userInput = userInput.slice(0, -3);
+        }
         console.log("Променен режим - userInput:", userInput);
         updateDisplays(userInput, userInput.replace(/\*/g, "×").replace(/\//g, "÷"), 'L');
     }
@@ -694,6 +700,14 @@
         let open = 0;
         for (const c of str) if (c === '(') open++; else if (c === ')') open--;
         return str + ')'.repeat(Math.max(0, open));
+    }
+
+    function addImplicitMultiplication(expression) {
+        // 3( -> 3*( | )3 -> )*3 | )( -> )*(
+        return expression
+            .replace(/(\d)(?=\()/g, '$1*')   // Digit followed by (
+            .replace(/(?<=\))(\d)/g, '*$1')   // Digit preceded by )
+            .replace(/\)\(/g, ')*(');        // A ) followed by a (
     }
 
     function appendNumber(value) {
@@ -723,7 +737,7 @@
                     .replace(/\*/g, "×")
                     .replace(/\//g, "÷")
                     .replace(/,/g, '.');
-                    formattedInput = balanceBrackets(formattedInput);
+                    formattedInput = addImplicitMultiplication(balanceBrackets(formattedInput));
                     // console.log("1-Изчисляване на:", formattedInput);
                     let result = eval(formattedInput);
                     result = parseFloat(result).toFixed(2);
@@ -766,7 +780,7 @@
                     .replace(/\*/g, "×")
                     .replace(/\//g, "÷")
                     .replace(/,/g, '.');
-                    formattedInput = balanceBrackets(formattedInput);
+                    formattedInput = addImplicitMultiplication(balanceBrackets(formattedInput));
                     console.log("2-Изчисляване на:", formattedInput);
                     let result = eval(formattedInput);
                     userInput = parseFloat(result).toFixed(2).replace(/\./g, ',') + value;
@@ -791,6 +805,9 @@
             let eurValue = parseNumber(display.textContent);
             if (levValue !== "" && eurValue !== "") addHistoryEntry(oldUserInput, levValue, eurValue);
         }
+        if (userInput.endsWith(',00')) {
+            userInput = userInput.slice(0, -3);
+        }        
         console.log("userInput = ", userInput);
     }
 
@@ -1127,13 +1144,17 @@
     }
 
     function handleCalculatorInteraction(event, options = {}) {
+        // Ако е активен модален прозорец, прекратяваме всякаква обработка на калкулатора.
+        // Това е централизирана проверка, която решава проблема с "пропадането" на кликове за всички модали.
+        if (modalIsActive) {
+            return;
+        }
+
         let interactionHandled = false;
         const { keyWidth, keyHeight } = getKeyDimensions();
         keys.forEach(key => {
             if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
-                // Прескачане при активен модал
                 interactionHandled = true;
-                if (modalIsActive && event.type === "click") return;
                 const keyValue = key.value;
                 // Обработка на специални клавиши
                 if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '€') {
@@ -1199,7 +1220,7 @@
                                        event.clientY < containerRect.top ||
                                        event.clientY > containerRect.bottom;
             if (isOutsideContainer) {
-                if (confirm('Сигурни ли сте, че искате да изтриете всички запазени настройки и данни?')) {
+                if (confirm('Сигурни ли сте, че искате да върнете първоначалните настройки?')) {
                     localStorage.removeItem('MainPointsO');
                     localStorage.removeItem('appSettings');
                     console.log('Всички запазени настройки (MainPointsO, appSettings) са изтрити.');
@@ -1259,15 +1280,19 @@
             if (showWarning && showRateWarningEnabled) {
                 const warning = document.getElementById('exchangeRateWarning');
                 warning.style.display = 'flex';
+                modalIsActive = true; // Блокираме калкулатора
+
                 document.getElementById('exchangeRateChangeBtn').onclick = function() {
                     // Връщаме курса по подразбиране и запазваме в новата структура
                     const settings = JSON.parse(localStorage.getItem('appSettings')) || defaultSettings;
                     settings.exchangeRate = defaultSettings.exchangeRate;
                     localStorage.setItem('appSettings', JSON.stringify(settings));
+                    modalIsActive = false; // Освобождаваме преди презареждане
                     location.reload(); // Презареждаме, за да се приложи
                 };
                 document.getElementById('exchangeRateConfirmBtn').onclick = function() {
                     warning.style.display = 'none';
+                    modalIsActive = false; // Освобождаваме калкулатора
                 };
             }
             // Визуализираме заредената памет
@@ -1300,32 +1325,42 @@
     document.addEventListener('DOMContentLoaded', () => {
         // Затваряне на модал с ESC клавиш
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' || e.key === 'Esc') {
+            const key = e.key;
+
+            // Escape винаги работи за затваряне на модални прозорци
+            if (key === 'Escape' || key === 'Esc') {
                 historyModal.style.display = 'none';
                 settingsModal.style.display = 'none';
                 modalIsActive = false;
-            } else if (e.key >= '0' && e.key <= '9') {
-                appendNumber(e.key);
-            } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
-                appendNumber(e.key);
-            } else if (e.key === 'Enter' || e.key === '=') {
-                appendNumber('=');
-                e.preventDefault(); // Предотвратява стандартното поведение на Enter (напр. изпращане на форма)
-            } else if (e.key === 'Backspace') {
-                appendNumber('B');
-            } else if (e.key === '%') {
+                return;
+            }
+
+            // Блокираме другите клавиши, ако има отворен модален прозорец
+            if (modalIsActive) {
+                return;
+            }
+
+            // Предотвратяваме стандартното поведение, ако е нужно
+            if (['Enter', '/', '*', '(', ')'].includes(key)) {
+                e.preventDefault();
+            }
+
+            // Специална обработка за '%'
+            if (key === '%') {
                 if ((/[+\-*/]$/.test(userInput))) return;
-                console.log("Before %: ", userInput);
                 userInput = userInput.replace(',', '.');
                 userInput = eval(userInput);
-                userInput = (parseFloat(userInput) / 100)
-                    .toFixed(2)
-                    .replace('.', ',');
+                userInput = (parseFloat(userInput) / 100).toFixed(2).replace('.', ',');
                 appendNumber("=");
-            } else if (e.key === ',' || e.key === '.') {
-                appendNumber(',');
-            } else if (e.key === 'c' || e.key === 'C') {
-                appendNumber('C');
+                return;
+            }
+
+            const keyMap = { 'Enter': '=', '=': '=', 'Backspace': 'B', 'Delete': 'B', ',': ',', '.': ',', 'c': 'C', 'C': 'C', '(': '(', ')': ')' };
+
+            if (keyMap[key]) {
+                appendNumber(keyMap[key]);
+            } else if ("0123456789+-*/".includes(key)) {
+                appendNumber(key);
             }
         });
         loadHistory();
