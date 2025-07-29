@@ -59,11 +59,11 @@
         const container = document.body;
         // Изчистване на предишните маркери
        noOverlay();
-        // Клавиши 
+        // Клавиши
         keys.forEach(key => {
             const keyElement = document.createElement("div");
             keyElement.className = "overlay-marker";
-            keyElement.style.position = "fixed";// "absolute";
+            keyElement.style.position = "absolute";
             keyElement.style.left = `${key.x}px`;
             keyElement.style.top = `${key.y}px`;
             keyElement.style.width = `${MainPoints.KeySize.x}px`;
