@@ -1,11 +1,13 @@
 {
   "name": "CX-Calc",
   "short_name": "CX-Calc",
-  "start_url": "/CX-Calc/index.html",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#BFB8B4",
   "theme_color": "#BFB8B4",
-  "orientation": "portrait",
   "prefer_related_applications": false,
   "icons": [
     {
@@ -27,6 +29,12 @@
       "purpose": "any maskable"
     },
     {
+      "src": "Calc144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
       "src": "Calc192.png",
       "sizes": "192x192",
       "type": "image/png",
@@ -39,4 +47,7 @@
       "purpose": "any maskable"
     }
   ]
+}
+{
+  "description": "CX-Calc - калкулатор за бързо конвертиране от една валута в друга с интуитивен интерфейс и възможности за настройки."
 }
