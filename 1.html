@@ -63,7 +63,9 @@
             outline: none;
             box-sizing: border-box;
             transition: border-color 0.3s ease;
-            -moz-appearance: textfield; /* Firefox */
+            -webkit-appearance: none; /* Премахва стандартния стил за Safari/Chrome */
+            -moz-appearance: none;    /* Премахва стандартния стил за Firefox */
+            appearance: none;         /* Стандартен начин за премахване на стила */
 
             /* Допълнения за адаптивен шрифт */
             white-space: nowrap; /* Предотвратява пренасянето на текста */
