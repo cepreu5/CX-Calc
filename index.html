@@ -2,53 +2,620 @@
 <html lang="bg">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CX Меню</title>
   <style>
+    /* --- Дефиниция на цветови променливи --- */
+    [data-theme="light"] {
+      --bg-color: #f0f2f5;
+      --panel-bg-color: #ffffff;
+      --text-color: #333333;
+      --heading-color: #1a1a1a;
+      --panel-border-color: #e0e0e0;
+      --panel-shadow-color: rgba(0, 0, 0, 0.08);
+      --item-shadow-color: rgba(0, 0, 0, 0.09);
+      --item-shadow-hover-color: rgba(0, 0, 0, 0.12);
+      --link-hover-color: #1e64c8;
+      --item-bg-color-calc: #f8f9fa;
+      --item-bg-color-extractor: #f8f9fa;
+      --item-bg-color-consumption: #f8f9fa;
+      --item-border-color: #dee2e6;
+      --item-text-color-calc: var(--text-color);
+      --item-text-color-extractor: var(--text-color);
+      --item-text-color-consumption: var(--text-color);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --panel-bg-color: #1e1e1e;
+      --text-color: #e0e0e0;
+      --heading-color: #ffffff;
+      --item-bg-color-calc: #2c2c2c;
+      --item-bg-color-extractor: #2c2c2c;
+      --item-bg-color-consumption: #2c2c2c;
+      --item-text-color-calc: var(--text-color);
+      --item-text-color-extractor: var(--text-color);
+      --item-text-color-consumption: var(--text-color);
+      --item-border-color: #424242;
+      --panel-border-color: #333333;
+      --panel-shadow-color: rgba(0, 0, 0, 0.3);
+      --item-shadow-color: rgba(0, 0, 0, 0.2);
+      --item-shadow-hover-color: rgba(0, 0, 0, 0.3);
+      --link-hover-color: #64b5f6;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background: #fafafa;
+      background: var(--bg-color);
+      color: var(--text-color);
       text-align: center;
-    }
-    nav {
-      margin: 50px auto;
-      display: inline-block;
-      padding: 25px 35px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.09);
-    }
-    ul {
-      list-style: none;
-      padding: 0;
+      padding: 20px;
       margin: 0;
+      transition: background-color 0.3s, color 0.3s;
     }
-    li {
-      margin: 20px 0;
+
+    .main-panel {
+      background: var(--panel-bg-color);
+      border: 1px solid var(--panel-border-color);
+      border-radius: 16px;
+      padding: 30px 40px 60px; /* Повече padding отдолу за бутоните */
+      margin: 20px auto;
+      max-width: 700px;
+      box-shadow: 0 8px 25px var(--panel-shadow-color);
+      transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+      position: relative; /* За позициониране на вътрешни елементи */
     }
-    a {
-      text-decoration: none;
-      color: #1e64c8;
-      font-size: 1.3em;
-      transition: color 0.2s;
-    }
-    a:hover {
-      color: #3a2fc8;
-      text-decoration: underline;
-    }
+
     h1 {
       margin-bottom: 40px;
-      color: #333;
+      color: var(--heading-color);
+      font-size: 2em;
+    }
+
+    .grid-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px; /* Разстояние между елементите */
+      flex-wrap: wrap; /* Позволява пренасяне на нов ред при малки екрани */
+    }
+
+    .grid-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between; /* Подравнява текста в долната част */
+      align-items: center;
+      text-decoration: none;
+      color: var(--text-color);
+      border: 1px solid var(--item-border-color);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px var(--item-shadow-color);
+      transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s, border-color 0.3s, color 0.3s;
+      width: 160px;
+      position: relative; /* Позиционираме fav-иконата спрямо този елемент */
+    }
+
+    #grid-item-calc {
+      background: var(--item-bg-color-calc);
+    }
+
+    #grid-item-extractor {
+      background: var(--item-bg-color-extractor);
+    }
+
+    #grid-item-consumption {
+      background: var(--item-bg-color-consumption);
+    }
+
+    #grid-item-calc span {
+      color: var(--item-text-color-calc);
+    }
+
+    #grid-item-extractor span {
+      color: var(--item-text-color-extractor);
+    }
+
+    #grid-item-consumption span {
+      color: var(--item-text-color-consumption);
+    }
+
+    .grid-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 15px var(--item-shadow-hover-color);
+      color: var(--link-hover-color);
+    }
+
+    .main-icon-container {
+      height: 100px; /* Задаваме еднаква височина на "слота" за иконата */
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .grid-item-main-icon {
+      /* Иконата се мащабира, за да се побере, без да надвишава контейнера */
+      max-width: 100px;
+      max-height: 100px;
+    }
+
+    .grid-item-title {
+      display: flex;
+      align-items: center;
+      /* justify-content и gap вече не са нужни, тъй като иконата е преместена */
+    }
+
+    .title-favicon {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 20px;
+      height: 20px;
+      z-index: 1; /* Гарантира, че иконата е над други елементи, ако се застъпят */
+    }
+
+    .grid-item-title span {
+      font-size: 1.2em;
+      font-weight: 500;
+    }
+
+    #theme-switcher {
+      position: absolute; /* Променено от fixed */
+      top: 20px;
+      right: 20px;
+      background: var(--panel-bg-color);
+      border: 1px solid #999999;
+      color: var(--text-color);
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: background-color 0.3s, color 0.3s, transform 0.2s;
+      z-index: 1000;
+    }
+    #theme-switcher:hover {
+      transform: scale(1.1);
+    }
+
+    #settings-trigger {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: transparent;
+      border: 1px solid #999999;
+      color: var(--text-color);
+      opacity: 0.6;
+      cursor: pointer;
+      /* Задаваме еднакви размери за перфектен кръг */
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      transition: opacity 0.2s, background-color 0.2s, transform 0.2s;
+      font-size: 1.5rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #settings-trigger:hover {
+      opacity: 1;
+      background-color: rgba(128, 128, 128, 0.1);
+      transform: rotate(45deg);
+    }
+
+    /* --- Модален прозорец за настройки --- */
+    #settings-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none; /* Показва се с JS */
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background: var(--panel-bg-color);
+      color: var(--text-color);
+      padding: 25px 30px;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      transition: color 0.3s;
+      width: 90%;
+      max-width: 400px;
+      animation: modal-appear 0.3s ease-out;
+    }
+    @keyframes modal-appear {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-content h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: var(--heading-color);
+      transition: color 0.3s; /* Преход за цвета на заглавието */
+      text-align: left;
+    }
+    .color-settings-grid {
+      display: grid;
+      gap: 15px;
+    }
+    .color-setting {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .color-setting label {
+      font-size: 1rem;
+    }
+    .color-setting input[type="color"] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 40px;
+      height: 28px;
+      background-color: transparent;
+      border: 2px solid white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .color-setting input[type="color"]::-webkit-color-swatch {
+      border-radius: 4px;
+      border: none;
+    }
+    .color-setting input[type="color"]::-moz-color-swatch {
+      border-radius: 4px;
+      border: none;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 25px;
+      border-top: 1px solid var(--panel-border-color);
+      padding-top: 15px;
+    }
+    .modal-buttons button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--panel-border-color);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background-color 0.2s, border-color 0.2s;
+      background-color: transparent;
+      color: var(--text-color);
+    }
+    .modal-buttons button:hover {
+      background-color: rgba(128, 128, 128, 0.1);
+    }
+
+    .settings-io-section {
+      margin-top: 20px;
+      border-top: 1px solid var(--panel-border-color);
+      padding-top: 15px;
+      transition: border-color 0.3s;
+    }
+
+    .settings-io-section label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 500;
+      text-align: left;
+    }
+
+    .settings-io-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    #settings-json {
+      flex-grow: 1;
+      resize: vertical;
+      background-color: #333333; /* Тъмно сив фон */
+      color: #ffffff; /* Бял шрифт */
+      border: 1px solid #555555; /* Рамка с добър контраст */
+      border-radius: 6px;
+      padding: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    .io-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .io-buttons button {
+      width: 35px;
+      height: 35px;
+      padding: 0;
+      font-size: 1.5rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 </head>
 <body>
-  <h1>Моля, изберете:</h1>
-  <nav>
-    <ul>
-      <li><a href="https://cupteu5.github.io/CX-Extractor/" target="_blank">CX-Extractor</a></li>
-      <li><a href="https://cupteu5.github.io/CX-Calc/" target="_blank">CX-Calc</a></li>
-      <li><a href="https://cupteu5.github.io/CX-Consumption/" target="_blank">CX-Consumption</a></li>
-    </ul>
-  </nav>
+  <div class="main-panel">
+    <button id="theme-switcher" title="Превключи темата"></button>
+    <h1>Моля, изберете:</h1>
+    <div class="grid-container">
+      <a href="https://cx-sites.online/cx-calc" target="_blank" class="grid-item" id="grid-item-calc">
+        <img src="cx-calc/CalcFav.png" alt="" class="title-favicon">
+        <div class="main-icon-container">
+          <img src="Calculator100.png" alt="CX-Calc икона" class="grid-item-main-icon">
+        </div>
+        <div class="grid-item-title">
+          <span>CX-Calc</span>
+        </div>
+      </a>
+      <a href="https://cupteu5.github.io/CX-Extractor/" target="_blank" class="grid-item" id="grid-item-extractor">
+        <img src="ExtFav.png" alt="" class="title-favicon">
+        <div class="main-icon-container">
+          <img src="Extractor100.png" alt="CX-Extractor икона" class="grid-item-main-icon">
+        </div>
+        <div class="grid-item-title">
+          <span>CX-Extractor</span>
+        </div>
+      </a>
+      <a href="https://cupteu5.github.io/CX-Consumption/" target="_blank" class="grid-item" id="grid-item-consumption">
+        <img src="ConsFav.png" alt="" class="title-favicon">
+        <div class="main-icon-container">
+          <img src="Consumption100.png" alt="CX-Consumption икона" class="grid-item-main-icon">
+        </div>
+        <div class="grid-item-title">
+          <span>CX-Consumption</span>
+        </div>
+      </a>
+    </div>
+    <button id="settings-trigger" title="Настройки на цветовете">⚙️</button>
+  </div>
+
+  <!-- Модален прозорец за настройки на цветовете -->
+  <div id="settings-modal">
+    <div class="modal-content">
+      <h2>Настройки на цветовете</h2>
+      <div class="color-settings-grid">
+        <div class="color-setting">
+          <label for="bg-color-picker">Фон на страницата</label>
+          <input type="color" id="bg-color-picker" data-css-var="--bg-color">
+        </div>
+        <div class="color-setting">
+          <label for="panel-bg-color-picker">Фон на панела</label>
+          <input type="color" id="panel-bg-color-picker" data-css-var="--panel-bg-color">
+        </div>
+        <div class="color-setting">
+          <label for="item-bg-color-calc-picker">Фон на CX-Calc</label>
+          <input type="color" id="item-bg-color-calc-picker" data-css-var="--item-bg-color-calc">
+        </div>
+        <div class="color-setting">
+          <label for="item-bg-color-extractor-picker">Фон на CX-Extractor</label>
+          <input type="color" id="item-bg-color-extractor-picker" data-css-var="--item-bg-color-extractor">
+        </div>
+        <div class="color-setting">
+          <label for="item-bg-color-consumption-picker">Фон на CX-Consumption</label>
+          <input type="color" id="item-bg-color-consumption-picker" data-css-var="--item-bg-color-consumption">
+        </div>
+        <div class="color-setting">
+          <label for="item-text-color-calc-picker">Текст на CX-Calc</label>
+          <input type="color" id="item-text-color-calc-picker" data-css-var="--item-text-color-calc">
+        </div>
+        <div class="color-setting">
+          <label for="item-text-color-extractor-picker">Текст на CX-Extractor</label>
+          <input type="color" id="item-text-color-extractor-picker" data-css-var="--item-text-color-extractor">
+        </div>
+        <div class="color-setting">
+          <label for="item-text-color-consumption-picker">Текст на CX-Consumption</label>
+          <input type="color" id="item-text-color-consumption-picker" data-css-var="--item-text-color-consumption">
+        </div>
+        <div class="color-setting">
+          <label for="heading-color-picker">Цвят на заглавие</label>
+          <input type="color" id="heading-color-picker" data-css-var="--heading-color">
+        </div>
+        <div class="color-setting">
+          <label for="text-color-picker">Цвят на текст</label>
+          <input type="color" id="text-color-picker" data-css-var="--text-color">
+        </div>
+      </div>
+      <div class="settings-io-section">
+        <label for="settings-json">Импорт / Експорт на настройки</label>
+        <div class="settings-io-controls">
+          <textarea id="settings-json" rows="1" spellcheck="false" placeholder="Поставете JSON с настройки тук..."></textarea>
+          <div class="io-buttons">
+            <button id="import-settings-button" title="Приложи настройките от полето">↑</button>
+            <button id="export-settings-button" title="Покажи текущите настройки в полето">↓</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button id="reset-colors-button">Нулирай</button>
+        <button id="close-settings-button">Затвори</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const themeSwitcher = document.getElementById('theme-switcher');
+    const docElement = document.documentElement; // Променяме атрибута на <html>
+
+    // --- Логика за настройки на цветовете ---
+    const settingsTrigger = document.getElementById('settings-trigger');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettingsButton = document.getElementById('close-settings-button');
+    const resetColorsButton = document.getElementById('reset-colors-button');
+    const colorPickers = document.querySelectorAll('.color-setting input[type="color"]');
+    const settingsJsonTextarea = document.getElementById('settings-json');
+    const importSettingsButton = document.getElementById('import-settings-button');
+    const exportSettingsButton = document.getElementById('export-settings-button');
+
+    function getContrastColor(hex) {
+        if (!hex) return '#111111';
+        if (hex.startsWith('#')) hex = hex.slice(1);
+        if (hex.length === 3) hex = hex.split('').map(char => char + char).join('');
+        
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+
+        // Формула за яркост (luminance)
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5 ? '#111111' : '#f1f1f1';
+    }
+
+    function applyModalContrast() {
+        const modalContent = document.querySelector('.modal-content');
+        const modalButtons = modalContent.querySelectorAll('.modal-buttons button');
+        const modalButtonContainer = modalContent.querySelector('.modal-buttons');
+        const settingsIoSection = modalContent.querySelector('.settings-io-section');
+
+        // Вземаме цвета на фона на панела, който е същият като на модала
+        const panelBgColor = getComputedStyle(docElement).getPropertyValue('--panel-bg-color').trim();
+        const contrastColor = getContrastColor(panelBgColor);
+        const borderColor = getContrastColor(contrastColor) === '#111111' ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.25)';
+
+        // Прилагаме контрастния цвят на текста
+        modalContent.style.color = contrastColor;
+        // Заглавието и основният текст вече се управляват от CSS променливи,
+        // но за елементите вътре в модала, които не ги ползват, задаваме цвета директно.
+        
+        // Прилагаме контрастен цвят на бутоните и рамките
+        modalButtons.forEach(btn => {
+            btn.style.color = contrastColor;
+            btn.style.borderColor = borderColor;
+        });
+        
+        modalButtonContainer.style.borderTopColor = borderColor;
+        if (settingsIoSection) settingsIoSection.style.borderTopColor = borderColor;
+    }
+
+    function populateSettingsTextarea() {
+        const currentTheme = docElement.dataset.theme;
+        const savedColors = localStorage.getItem(`customColors_${currentTheme}`);
+        const formattedJson = savedColors ? JSON.stringify(JSON.parse(savedColors), null, 2) : '{}';
+        settingsJsonTextarea.value = formattedJson;
+    }
+
+    exportSettingsButton.addEventListener('click', populateSettingsTextarea);
+
+    importSettingsButton.addEventListener('click', () => {
+        const jsonString = settingsJsonTextarea.value;
+        if (!jsonString.trim()) {
+            alert('Полето е празно. Поставете настройките, които искате да приложите.');
+            return;
+        }
+        try {
+            const parsedSettings = JSON.parse(jsonString);
+            if (typeof parsedSettings !== 'object' || parsedSettings === null || Array.isArray(parsedSettings)) {
+                throw new Error('Невалиден формат. Настройките трябва да са JSON обект.');
+            }
+
+            const currentTheme = docElement.dataset.theme;
+            localStorage.setItem(`customColors_${currentTheme}`, JSON.stringify(parsedSettings));
+            
+            loadCustomColors(currentTheme);
+            applyModalContrast();
+            alert('Настройките са приложени успешно!');
+        } catch (error) {
+            alert(`Грешка при прилагане на настройките:\n${error.message}\n\nМоля, проверете съдържанието на полето.`);
+        }
+    });
+
+    // Отваряне/затваряне на модала
+    settingsTrigger.addEventListener('click', () => {
+        settingsModal.style.display = 'flex';
+        applyModalContrast();
+        populateSettingsTextarea();
+    });
+    closeSettingsButton.addEventListener('click', () => settingsModal.style.display = 'none');
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) settingsModal.style.display = 'none';
+    });
+
+    const loadCustomColors = (theme) => {
+        // Първо нулираме всички inline стилове, за да се върнем към тези от CSS
+        colorPickers.forEach(picker => {
+            docElement.style.removeProperty(picker.dataset.cssVar);
+        });
+
+        const savedColors = JSON.parse(localStorage.getItem(`customColors_${theme}`)) || {};
+        colorPickers.forEach(picker => {
+            const cssVar = picker.dataset.cssVar;
+            const savedColor = savedColors[cssVar];
+            
+            if (savedColor) {
+                docElement.style.setProperty(cssVar, savedColor);
+                picker.value = savedColor;
+            } else {
+                const defaultColor = getComputedStyle(docElement).getPropertyValue(cssVar).trim();
+                picker.value = defaultColor;
+            }
+        });
+    };
+
+    colorPickers.forEach(picker => {
+        picker.addEventListener('input', (e) => {
+            const cssVar = e.target.dataset.cssVar;
+            const newColor = e.target.value;
+            docElement.style.setProperty(cssVar, newColor);
+            
+            // Ако променяме фона на панела, веднага обновяваме контраста на модала
+            if (cssVar === '--panel-bg-color') {
+                applyModalContrast();
+            }
+            
+            const currentTheme = docElement.dataset.theme;
+            const savedColors = JSON.parse(localStorage.getItem(`customColors_${currentTheme}`)) || {};
+            savedColors[cssVar] = newColor;
+            localStorage.setItem(`customColors_${currentTheme}`, JSON.stringify(savedColors));
+        });
+    });
+
+    resetColorsButton.addEventListener('click', () => {
+        const currentTheme = docElement.dataset.theme;
+        localStorage.removeItem(`customColors_${currentTheme}`);
+        loadCustomColors(currentTheme);
+        applyModalContrast(); // Прилагаме контраста след нулиране
+    });
+
+    // --- Логика за смяна на темата (модифицирана) ---
+    const setTheme = (theme) => {
+      docElement.dataset.theme = theme;
+      themeSwitcher.textContent = theme === 'dark' ? '☀️' : '🌙';
+      localStorage.setItem('theme', theme);
+      loadCustomColors(theme);
+      // Изчакваме CSS да се приложи преди да изчислим контраста
+      setTimeout(() => {
+        applyModalContrast();
+        populateSettingsTextarea();
+      }, 50); 
+    };
+
+    // Проверяваме за запазена тема или предпочитания на системата
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    
+    setTheme(initialTheme);
+
+    themeSwitcher.addEventListener('click', () => {
+      const currentTheme = docElement.dataset.theme;
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+    });
+  </script>
 </body>
 </html>
