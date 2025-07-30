@@ -23,11 +23,15 @@
       --item-text-color-calc: var(--text-color);
       --item-text-color-extractor: var(--text-color);
       --item-text-color-consumption: var(--text-color);
+      --modal-button-bg: #e9ecef;
+      --modal-button-hover-bg: #dee2e6;
     }
 
     [data-theme="dark"] {
       --bg-color: #121212;
       --panel-bg-color: #1e1e1e;
+      --panel-border-color: #999999;
+      --panel-shadow-color: rgba(0, 0, 0, 0.3);
       --text-color: #e0e0e0;
       --heading-color: #ffffff;
       --item-bg-color-calc: #2c2c2c;
@@ -37,11 +41,11 @@
       --item-text-color-extractor: var(--text-color);
       --item-text-color-consumption: var(--text-color);
       --item-border-color: #424242;
-      --panel-border-color: #333333;
-      --panel-shadow-color: rgba(0, 0, 0, 0.3);
       --item-shadow-color: rgba(0, 0, 0, 0.2);
       --item-shadow-hover-color: rgba(0, 0, 0, 0.3);
       --link-hover-color: #64b5f6;
+      --modal-button-bg: #343a40;
+      --modal-button-hover-bg: #495057;
     }
 
     body {
@@ -66,10 +70,19 @@
       position: relative; /* За позициониране на вътрешни елементи */
     }
 
-    h1 {
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 40px;
+    }
+
+    h1 {
+      margin: 0;
       color: var(--heading-color);
       font-size: 2em;
+      flex-grow: 1;
+      text-align: center;
     }
 
     .grid-container {
@@ -161,9 +174,7 @@
     }
 
     #theme-switcher {
-      position: absolute; /* Променено от fixed */
-      top: 20px;
-      right: 20px;
+      position: static;
       background: var(--panel-bg-color);
       border: 1px solid #999999;
       color: var(--text-color);
@@ -184,13 +195,10 @@
     }
 
     #settings-trigger {
-      position: absolute;
-      top: 20px;
-      left: 20px;
+      position: static;
       background: transparent;
       border: 1px solid #999999;
       color: var(--text-color);
-      opacity: 0.6;
       cursor: pointer;
       /* Задаваме еднакви размери за перфектен кръг */
       width: 45px;
@@ -239,11 +247,19 @@
       to { opacity: 1; transform: scale(1); }
     }
     .modal-content h2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-top: 0;
       margin-bottom: 20px;
       color: var(--heading-color);
       transition: color 0.3s; /* Преход за цвета на заглавието */
       text-align: left;
+    }
+    #modal-theme-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
     }
     .color-settings-grid {
       display: grid;
@@ -253,6 +269,28 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    .color-input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hex-input {
+      width: 80px;
+      padding: 5px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      text-align: center;
+      text-transform: uppercase;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border: 1px solid var(--item-border-color);
+      border-radius: 5px;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+    .hex-input:focus {
+      outline: 2px solid var(--link-hover-color);
+      outline-offset: 1px;
     }
     .color-setting label {
       font-size: 1rem;
@@ -291,12 +329,30 @@
       cursor: pointer;
       font-size: 0.9rem;
       font-weight: 500;
-      transition: background-color 0.2s, border-color 0.2s;
-      background-color: transparent;
+      transition: background-color 0.2s, border-color 0.2s, color 0.3s;
+      background-color: var(--modal-button-bg);
       color: var(--text-color);
     }
     .modal-buttons button:hover {
-      background-color: rgba(128, 128, 128, 0.1);
+      background-color: var(--modal-button-hover-bg);
+    }
+
+    .settings-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0 15px;
+    }
+    .settings-divider span {
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .settings-divider hr {
+      width: 100%;
+      border: none;
+      border-top: 1px solid currentColor;
+      margin: 0;
+      transition: border-color 0.3s;
     }
 
     .settings-io-section {
@@ -320,7 +376,8 @@
 
     #settings-json {
       flex-grow: 1;
-      resize: vertical;
+      /* resize: vertical; */ /* Премахваме, за да имаме фиксирана височина */
+      height: 92px; /* Височина, съобразена с 3-те бутона */
       background-color: #333333; /* Тъмно сив фон */
       color: #ffffff; /* Бял шрифт */
       border: 1px solid #555555; /* Рамка с добър контраст */
@@ -334,12 +391,12 @@
     .io-buttons {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
     }
 
     .io-buttons button {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 28px;
       padding: 0;
       font-size: 1.5rem;
       line-height: 1;
@@ -347,12 +404,18 @@
       align-items: center;
       justify-content: center;
     }
+    #copy-settings-button {
+        font-size: 1.2rem; /* Леко намаляваме емоджито, за да изглежда по-добре */
+    }
   </style>
 </head>
 <body>
   <div class="main-panel">
-    <button id="theme-switcher" title="Превключи темата"></button>
-    <h1>Моля, изберете:</h1>
+    <div class="panel-header">
+      <button id="theme-switcher" title="Превключи темата"></button>
+      <h1>Моля, изберете:</h1>
+      <button id="settings-trigger" title="Настройки на цветовете">⚙️</button>
+    </div>
     <div class="grid-container">
       <a href="https://cx-sites.online/cx-calc" target="_blank" class="grid-item" id="grid-item-calc">
         <img src="cx-calc/CalcFav.png" alt="" class="title-favicon">
@@ -363,17 +426,17 @@
           <span>CX-Calc</span>
         </div>
       </a>
-      <a href="https://cupteu5.github.io/CX-Extractor/" target="_blank" class="grid-item" id="grid-item-extractor">
+      <a href="Extractor.html" class="grid-item" id="grid-item-extractor">
         <img src="ExtFav.png" alt="" class="title-favicon">
         <div class="main-icon-container">
           <img src="Extractor100.png" alt="CX-Extractor икона" class="grid-item-main-icon">
         </div>
         <div class="grid-item-title">
-          <span>CX-Extractor</span>
+          <span>CX&#8209;Extractor</span>
         </div>
       </a>
       <a href="https://cupteu5.github.io/CX-Consumption/" target="_blank" class="grid-item" id="grid-item-consumption">
-        <img src="ConsFav.png" alt="" class="title-favicon">
+        <img src="GasFav.png" alt="" class="title-favicon">
         <div class="main-icon-container">
           <img src="Consumption100.png" alt="CX-Consumption икона" class="grid-item-main-icon">
         </div>
@@ -382,62 +445,104 @@
         </div>
       </a>
     </div>
-    <button id="settings-trigger" title="Настройки на цветовете">⚙️</button>
   </div>
 
   <!-- Модален прозорец за настройки на цветовете -->
   <div id="settings-modal">
     <div class="modal-content">
-      <h2>Настройки на цветовете</h2>
+      <h2>
+        <span>Настройки на цветовете</span>
+        <span id="modal-theme-icon"></span>
+      </h2>
       <div class="color-settings-grid">
         <div class="color-setting">
           <label for="bg-color-picker">Фон на страницата</label>
-          <input type="color" id="bg-color-picker" data-css-var="--bg-color">
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="bg-color-picker" data-css-var="--bg-color">
+          </div>
         </div>
         <div class="color-setting">
           <label for="panel-bg-color-picker">Фон на панела</label>
-          <input type="color" id="panel-bg-color-picker" data-css-var="--panel-bg-color">
-        </div>
-        <div class="color-setting">
-          <label for="item-bg-color-calc-picker">Фон на CX-Calc</label>
-          <input type="color" id="item-bg-color-calc-picker" data-css-var="--item-bg-color-calc">
-        </div>
-        <div class="color-setting">
-          <label for="item-bg-color-extractor-picker">Фон на CX-Extractor</label>
-          <input type="color" id="item-bg-color-extractor-picker" data-css-var="--item-bg-color-extractor">
-        </div>
-        <div class="color-setting">
-          <label for="item-bg-color-consumption-picker">Фон на CX-Consumption</label>
-          <input type="color" id="item-bg-color-consumption-picker" data-css-var="--item-bg-color-consumption">
-        </div>
-        <div class="color-setting">
-          <label for="item-text-color-calc-picker">Текст на CX-Calc</label>
-          <input type="color" id="item-text-color-calc-picker" data-css-var="--item-text-color-calc">
-        </div>
-        <div class="color-setting">
-          <label for="item-text-color-extractor-picker">Текст на CX-Extractor</label>
-          <input type="color" id="item-text-color-extractor-picker" data-css-var="--item-text-color-extractor">
-        </div>
-        <div class="color-setting">
-          <label for="item-text-color-consumption-picker">Текст на CX-Consumption</label>
-          <input type="color" id="item-text-color-consumption-picker" data-css-var="--item-text-color-consumption">
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="panel-bg-color-picker" data-css-var="--panel-bg-color">
+          </div>
         </div>
         <div class="color-setting">
           <label for="heading-color-picker">Цвят на заглавие</label>
-          <input type="color" id="heading-color-picker" data-css-var="--heading-color">
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="heading-color-picker" data-css-var="--heading-color">
+          </div>
         </div>
         <div class="color-setting">
           <label for="text-color-picker">Цвят на текст</label>
-          <input type="color" id="text-color-picker" data-css-var="--text-color">
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="text-color-picker" data-css-var="--text-color">
+          </div>
         </div>
       </div>
+      <div class="settings-divider">
+        <span>CX-Calc</span><hr>
+      </div>
+        <div class="color-setting">
+          <label for="item-bg-color-calc-picker">Фон</label>
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="item-bg-color-calc-picker" data-css-var="--item-bg-color-calc">
+          </div>
+        </div>
+        <div class="color-setting">
+          <label for="item-text-color-calc-picker">Текст</label>
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="item-text-color-calc-picker" data-css-var="--item-text-color-calc">
+          </div>
+        </div>
+      <div class="settings-divider">
+        <span>CX&#8209;Extractor</span><hr>
+      </div>
+        <div class="color-setting">
+          <label for="item-bg-color-extractor-picker">Фон</label>
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="item-bg-color-extractor-picker" data-css-var="--item-bg-color-extractor">
+          </div>
+        </div>
+        <div class="color-setting">
+          <label for="item-text-color-extractor-picker">Текст</label>
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="item-text-color-extractor-picker" data-css-var="--item-text-color-extractor">
+          </div>
+        </div>
+      <div class="settings-divider">
+        <span>CX-Consumption</span><hr>
+      </div>
+        <div class="color-setting">
+          <label for="item-bg-color-consumption-picker">Фон</label>
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="item-bg-color-consumption-picker" data-css-var="--item-bg-color-consumption">
+          </div>
+        </div>
+        <div class="color-setting">
+          <label for="item-text-color-consumption-picker">Текст</label>
+          <div class="color-input-group">
+            <input type="text" class="hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="item-text-color-consumption-picker" data-css-var="--item-text-color-consumption">
+          </div>
+        </div>
       <div class="settings-io-section">
-        <label for="settings-json">Импорт / Експорт на настройки</label>
+        <label for="settings-json">Импорт/Експорт на настройки</label>
         <div class="settings-io-controls">
           <textarea id="settings-json" rows="1" spellcheck="false" placeholder="Поставете JSON с настройки тук..."></textarea>
           <div class="io-buttons">
             <button id="import-settings-button" title="Приложи настройките от полето">↑</button>
             <button id="export-settings-button" title="Покажи текущите настройки в полето">↓</button>
+            <button id="copy-settings-button" title="Копирай настройките">📋</button>
           </div>
         </div>
       </div>
@@ -461,6 +566,7 @@
     const settingsJsonTextarea = document.getElementById('settings-json');
     const importSettingsButton = document.getElementById('import-settings-button');
     const exportSettingsButton = document.getElementById('export-settings-button');
+    const copySettingsButton = document.getElementById('copy-settings-button');
 
     function getContrastColor(hex) {
         if (!hex) return '#111111';
@@ -498,8 +604,8 @@
             btn.style.borderColor = borderColor;
         });
         
-        modalButtonContainer.style.borderTopColor = borderColor;
-        if (settingsIoSection) settingsIoSection.style.borderTopColor = borderColor;
+        modalButtonContainer.style.borderTopColor = contrastColor;
+        if (settingsIoSection) settingsIoSection.style.borderTopColor = contrastColor;
     }
 
     function populateSettingsTextarea() {
@@ -534,6 +640,20 @@
         }
     });
 
+    copySettingsButton.addEventListener('click', () => {
+        const jsonString = settingsJsonTextarea.value;
+        if (!jsonString.trim()) {
+            alert('Полето е празно. Няма какво да се копира.');
+            return;
+        }
+        navigator.clipboard.writeText(jsonString).then(() => {
+            alert('Настройките са копирани в клипборда!');
+        }).catch(err => {
+            console.error('Грешка при копиране: ', err);
+            alert('Неуспешно копиране. Моля, копирайте текста ръчно.');
+        });
+    });
+
     // Отваряне/затваряне на модала
     settingsTrigger.addEventListener('click', () => {
         settingsModal.style.display = 'flex';
@@ -563,6 +683,11 @@
                 const defaultColor = getComputedStyle(docElement).getPropertyValue(cssVar).trim();
                 picker.value = defaultColor;
             }
+            // Синхронизираме и текстовото поле
+            const textInput = picker.closest('.color-input-group').querySelector('.hex-input');
+            if (textInput) {
+                textInput.value = picker.value.toUpperCase();
+            }
         });
     };
 
@@ -572,6 +697,12 @@
             const newColor = e.target.value;
             docElement.style.setProperty(cssVar, newColor);
             
+            // Синхронизираме текстовото поле
+            const textInput = e.target.closest('.color-input-group').querySelector('.hex-input');
+            if (textInput) {
+                textInput.value = newColor.toUpperCase();
+            }
+
             // Ако променяме фона на панела, веднага обновяваме контраста на модала
             if (cssVar === '--panel-bg-color') {
                 applyModalContrast();
@@ -591,10 +722,42 @@
         applyModalContrast(); // Прилагаме контраста след нулиране
     });
 
+    // --- Логика за синхронизация на HEX полетата ---
+    const hexInputs = document.querySelectorAll('.hex-input');
+    hexInputs.forEach(textInput => {
+        // При промяна на текстовото поле
+        textInput.addEventListener('change', (e) => {
+            let value = e.target.value.trim().toUpperCase();
+            if (value.length > 0 && !value.startsWith('#')) {
+                value = '#' + value;
+            }
+            
+            // Валидация на HEX кода
+            if (/^#[0-9A-F]{6}$/i.test(value)) {
+                const colorInput = e.target.closest('.color-input-group').querySelector('input[type="color"]');
+                if (colorInput) {
+                    colorInput.value = value.toLowerCase();
+                    // Задействаме ръчно 'input' събитието на цветния елемент, за да се изпълни неговата логика
+                    colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            } else {
+                // Ако кодът е невалиден, връщаме старата стойност от цветния елемент
+                const colorInput = e.target.closest('.color-input-group').querySelector('input[type="color"]');
+                e.target.value = colorInput.value.toUpperCase();
+            }
+        });
+        // Удобство: селектираме целия текст при фокус
+        textInput.addEventListener('focus', (e) => e.target.select());
+    });
+
     // --- Логика за смяна на темата (модифицирана) ---
     const setTheme = (theme) => {
       docElement.dataset.theme = theme;
       themeSwitcher.textContent = theme === 'dark' ? '☀️' : '🌙';
+
+      const modalIcon = document.getElementById('modal-theme-icon');
+      if (modalIcon) modalIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
+
       localStorage.setItem('theme', theme);
       loadCustomColors(theme);
       // Изчакваме CSS да се приложи преди да изчислим контраста
@@ -615,6 +778,12 @@
       const currentTheme = docElement.dataset.theme;
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
       setTheme(newTheme);
+    });
+
+    document.getElementById('modal-theme-icon').addEventListener('click', () => {
+        const currentTheme = docElement.dataset.theme;
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
     });
   </script>
 </body>
