@@ -208,14 +208,10 @@
       height: 1.2em;
     }
   </style>
-  <script>
-      if('serviceWorker' in navigator){
-          navigator.serviceWorker.register('kimisw.js');
-      }
-  </script>
 </head>
 
 <body>
+<div id="install-bar" style="display: none; position: fixed; bottom: 0; width: 100%; background: #333; color: white; padding: 1em; text-align: center; z-index: 1000; font-size: 1rem; box-shadow: 0 -2px 5px rgba(0,0,0,0.2);"><span style="margin-right: 1em;">Инсталирай приложението за офлайн достъп?</span><button id="install-button" style="margin-left: 1em; padding: 0.5em 1em; cursor: pointer; border-radius: 5px; border: none; background: #4CAF50; color: white;">Инсталирай</button><button id="dismiss-button" style="margin-left: 0.5em; padding: 0.5em 1em; cursor: pointer; border-radius: 5px; border: none; background: #555; color: white;">Не, благодаря</button></div>
 <div id="calcWrap">
   <div id="calc">
     <div id="expr" contenteditable="false" spellcheck="false"></div>
@@ -705,6 +701,55 @@ document.addEventListener('keydown', (event) => {
     } else if ("0123456789+-*/".includes(key)) {
         act(key);
     }
+});
+
+// PWA Service Worker & Install Logic
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw-2.js')
+        .then((reg) => console.log('SW-2: Service worker registered.', reg))
+        .catch((err) => console.error('SW-2: Service worker registration failed:', err));
+}
+
+let deferredPrompt;
+
+// Проверяваме дали потребителят вече е отказал инсталацията
+if (localStorage.getItem('kimiPwaInstallDeclined') !== 'true') {
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installBar = document.getElementById('install-bar');
+        if (installBar) {
+            installBar.style.display = 'block';
+        }
+    });
+}
+
+const installButton = document.getElementById('install-button');
+if (installButton) {
+    installButton.addEventListener('click', async () => {
+        const installBar = document.getElementById('install-bar');
+        if (installBar) installBar.style.display = 'none';
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+    });
+}
+
+const dismissButton = document.getElementById('dismiss-button');
+if (dismissButton) {
+    dismissButton.addEventListener('click', () => {
+        document.getElementById('install-bar').style.display = 'none';
+        localStorage.setItem('kimiPwaInstallDeclined', 'true');
+        deferredPrompt = null;
+    });
+}
+
+window.addEventListener('appinstalled', () => {
+    if (document.getElementById('install-bar')) document.getElementById('install-bar').style.display = 'none';
+    deferredPrompt = null;
+    console.log('PWA was installed');
 });
 </script>
 </body>

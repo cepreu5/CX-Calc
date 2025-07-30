@@ -10,11 +10,12 @@ const ASSETS = [
   'history.js',
   'status.js',
   'fontcalc.js',
-  'CalculatorF.png',
+  'Calculator.png',
   'CalcFav.png',
   'Calc32.png',
   'Calc48.png',
   'Calc120.png',
+  'Calc144.png',
   'Calc192.png',
   'Calc512.png',
   'manifest.webmanifest'

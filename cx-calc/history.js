@@ -73,6 +73,7 @@
     }
 
     function historyOpen() {
+        noOverlay();
         updateHistoryList();
         historyModal.style.display = 'flex';
         modalIsActive = true;
