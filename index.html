@@ -241,6 +241,8 @@
       width: 90%;
       max-width: 400px;
       animation: modal-appear 0.3s ease-out;
+      max-height: 90vh; /* Ограничаваме височината, за да се побере на екрана */
+      overflow-y: auto; /* Добавяме скрол, ако съдържанието е по-голямо */
     }
     @keyframes modal-appear {
       from { opacity: 0; transform: scale(0.9); }
@@ -406,6 +408,47 @@
     }
     #copy-settings-button {
         font-size: 1.2rem; /* Леко намаляваме емоджито, за да изглежда по-добре */
+    }
+
+    /* --- Responsive Design for Mobile --- */
+    @media (max-width: 768px) {
+        body {
+            padding: 10px;
+        }
+
+        .main-panel {
+            padding: 20px;
+            margin: 10px auto;
+        }
+
+        .panel-header {
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            font-size: 1.6em;
+        }
+
+        .grid-container {
+            gap: 15px;
+        }
+
+        .grid-item {
+            width: 130px; /* Леко намаляваме ширината */
+            padding: 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .grid-container {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .grid-item {
+            width: 80%;
+            max-width: 280px;
+        }
     }
   </style>
 </head>
