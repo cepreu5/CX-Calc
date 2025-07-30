@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CX-Consumption</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px 40px; /* Намален вертикален padding, за да се избегне скролиране */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #333333;
+      /* linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); */
+      color: #f0f2f5;
+      box-sizing: border-box;
+    }
+
+    .container {
+      text-align: center;
+      width: 100%;
+    }
+
+    /* Нов контейнер за подреждане на съдържанието */
+    .content-wrapper {
+      display: flex;
+      align-items: center; /* Вертикално центриране на картината и панела */
+      gap: 40px; /* Разстояние между тях */
+    }
+
+    .extractor-image {
+      flex-shrink: 0; /* Предотвратява смаляването на изображението */
+      height: auto;
+      margin-bottom: 0; /* Премахнат margin, използваме gap */
+      /* Сянка, която създава "glow" ефект 
+      filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3)); */
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .extractor-image:hover {
+        transform: scale(1.05);
+    }
+
+    .info-panel {
+      position: relative; /* За позициониране на бутона */
+      /* Модерен "glassmorphism" ефект rgba(255, 255, 255, 0.1); */
+      background:
+      linear-gradient(135deg, #3c3b5f 0%, #5c6bc0 100%);
+      /* linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      linear-gradient(135deg, #2c3e50 0%, #00bcd4 100%);
+      linear-gradient(135deg, #1a2a3a 0%, #4c6a92 100%);
+      linear-gradient(135deg, #ff9800 0%, #e53935 100%);
+      linear-gradient(135deg, #ff9800 0%, #e53935 100%);
+      linear-gradient(135deg, #d35400 0%, #e08e6d 100%);
+      linear-gradient(135deg, #f44336 0%, #ffe0b2 100%);
+      */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px); /* За Safari */
+      border-radius: 16px;
+      /* Увеличен padding отдолу, за да има място за бутона */
+      padding: 30px 40px 80px 40px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      flex-grow: 1; /* Панелът да заеме оставащото място */
+      text-align: left;
+    }
+
+    .info-panel h2 {
+      margin-top: 0;
+      font-size: 1.8em;
+      font-weight: 600;
+      color: #eeeeee;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .info-panel p {
+      font-size: 1.1em;
+      line-height: 1.6;
+      color: #e0e6f0;
+    }
+
+    .back-button {
+        position: absolute;
+        bottom: 30px;
+        right: 40px;
+        padding: 10px 20px;
+        background-color: #c6af1a;
+        color: #eeeeee;
+        text-decoration: none;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: background-color 0.2s, color 0.2s, transform 0.2s;
+    }
+
+    .back-button:hover {
+        background-color: #ffffff;
+        color: #3a3a3a;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive дизайн за по-малки екрани */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px; /* Намаляваме общия padding на страницата */
+      }
+
+      .content-wrapper {
+        flex-direction: column; /* Елементите се подреждат вертикално */
+        gap: 10px; /* Намаляваме още разстоянието между елементите */
+      }
+
+      .extractor-image {
+        width: auto;
+        height: auto; /* Запазваме пропорциите */
+        transition: none; /* Премахваме анимациите на мобилни */
+      }
+
+      .extractor-image:hover {
+          transform: none; /* Премахваме ефекта при посочване */
+      }
+
+      .info-panel {
+          padding: 10px 15px 65px; /* Намаляваме още отстоянията вътре в панела */
+      }
+
+      .back-button {
+          bottom: 15px; /* Коригираме позицията на бутона */
+          right: 15px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="content-wrapper">
+      <img src="Consumption.png" alt="CX-Consumption" class="extractor-image">
+
+      <div class="info-panel">
+        <h2>Какво е CX&#8209;Consumption?</h2>
+        <p>
+          <strong>CX&#8209;Consumption</strong> е интелигентен инструмент за автоматизирано водене на разходите за гориво. 
+        </p>
+        <p>
+          Според избрания автомобил, показанията за изминатите километри се задават в километри или мили. Има опция за 
+          въвеждане на изминати километри след последното зареждане на гориво или текущо показание на километража за общо 
+          изминати километри:
+        </p>
+        <img src="Consumption-2.png" width="250px" height="auto" alt="CX-Consumption-2">
+        <p>
+           (в този случай изминатите километри от последното зареждане се изчисляват автоматично, 
+          защото програмата помни данните 
+          за показанието на километража).
+        <p>
+          След като се въведе зареденото количество гориво
+          и цена на литър (или обща цена на зареждане), CX&#8209;Consumption изчислява разхода на гориво. 
+          Всички данни се съхраняват в електронна таблица в Google Drive (незадължително условие), 
+          което позволява лесен 
+          достъп и последваща обработка, обобщаване, графично представяне и т. н.
+        </p>
+        <p>
+        </p>
+        <a href="index.html" class="back-button">← Обратно към менюто</a>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
