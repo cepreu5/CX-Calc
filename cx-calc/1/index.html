@@ -1105,119 +1105,15 @@
                     }
                 });
             }
-        });
 
-/*
-        // Input change events for live formatting and dynamic conversion
-        levInput.addEventListener('input', (event) => {
-            const inputField = event.target;
-            const originalValue = inputField.value;
-            const originalCursorPos = inputField.selectionStart;
-            // Проверяваме дали потребителят е въвел десетичен разделител
-            const justEnteredSeparator = originalValue.endsWith(',') || originalValue.endsWith('.');
-            handleInput(event); // Почиства въведената стойност
-            let valueAfterSanitize = inputField.value;
-            let num = parseNumber(valueAfterSanitize);
-            let newFormattedValue = '';
-            if (valueAfterSanitize === "") {
-                newFormattedValue = "";
-            } else if (justEnteredSeparator) {
-                // Потребителят е въвел/запазил десетичен разделител
-                // valueAfterSanitize ще бъде нещо като "123," или ","
-                if (isNaN(num) && (valueAfterSanitize === "," || valueAfterSanitize === ".")) { // Само разделител
-                    newFormattedValue = "0,";
-                } else {
-                    // Число, последвано от разделител, напр. "123,"
-                    // Премахваме последния символ (разделителя) и добавяме стандартизирана запетая
-                    newFormattedValue = valueAfterSanitize.slice(0, -1) + ",";
-                }
-            } else if (!isNaN(num)) {
-                newFormattedValue = formatNumber(num);
-            } else {
-                newFormattedValue = "";
-            }
-            inputField.value = newFormattedValue;
-            // Позициониране на курсора:
-            if (justEnteredSeparator && newFormattedValue.includes(',')) {
-                // Позиционираме курсора след запетаята
-                const commaPosition = newFormattedValue.indexOf(',');
-                inputField.setSelectionRange(commaPosition + 1, commaPosition + 1);
-            } else {
-                // За други случаи опитваме да запазим относителната позиция на курсора
-                let targetPos;
-                if (newFormattedValue.length === 0) {
-                    targetPos = 0;
-                } else if (originalCursorPos <= newFormattedValue.length) {
-                    targetPos = originalCursorPos;
-                } else {
-                    targetPos = newFormattedValue.length;
-                }
-                inputField.setSelectionRange(targetPos, targetPos);
-            }
-            convertFromLevToEur(); // Динамично конвертиране
-        });
-
-        eurInput.addEventListener('input', (event) => {
-            const inputField = event.target;
-            const originalValue = inputField.value;
-            const originalCursorPos = inputField.selectionStart;
-            // Проверяваме дали потребителят е въвел десетичен разделител
-            const justEnteredSeparator = originalValue.endsWith(',') || originalValue.endsWith('.');
-            handleInput(event); // Почиства въведената стойност
-            let valueAfterSanitize = inputField.value;
-            let num = parseNumber(valueAfterSanitize);
-            let newFormattedValue = '';
-            if (valueAfterSanitize === "") {
-                newFormattedValue = "";
-            } else if (justEnteredSeparator) {
-                // Потребителят е въвел/запазил десетичен разделител
-                // valueAfterSanitize ще бъде нещо като "123," или ","
-                if (isNaN(num) && (valueAfterSanitize === "," || valueAfterSanitize === ".")) { // Само разделител
-                    newFormattedValue = "0,";
-                } else {
-                    // Число, последвано от разделител, напр. "123,"
-                    // Премахваме последния символ (разделителя) и добавяме стандартизирана запетая
-                    newFormattedValue = valueAfterSanitize.slice(0, -1) + ",";
-                }
-            } else if (!isNaN(num)) {
-                newFormattedValue = formatNumber(num);
-            } else {
-                newFormattedValue = "";
-            }
-            inputField.value = newFormattedValue;
-            // Позициониране на курсора:
-            if (justEnteredSeparator && newFormattedValue.includes(',')) {
-                // Позиционираме курсора след запетаята
-                const commaPosition = newFormattedValue.indexOf(',');
-                inputField.setSelectionRange(commaPosition + 1, commaPosition + 1);
-            } else {
-                // За други случаи опитваме да запазим относителната позиция на курсора
-                let targetPos;
-                if (newFormattedValue.length === 0) {
-                    targetPos = 0;
-                } else if (originalCursorPos <= newFormattedValue.length) {
-                    targetPos = originalCursorPos;
-                } else {
-                    targetPos = newFormattedValue.length;
-                }
-                
-                inputField.setSelectionRange(targetPos, targetPos);
-            }
-            convertFromEurToLev(); // Динамично конвертиране
-        }); 
-        // Focus event for copying to clipboard
-        levInput.addEventListener('focus', handleFocus);
-        eurInput.addEventListener('focus', handleFocus);
-        // Blur event for formatting to two decimal places
-        levInput.addEventListener('blur', handleBlur);
-        eurInput.addEventListener('blur', handleBlur);
-        // Clear buttons
-        clearButtons.forEach(button => {
-            button.addEventListener('click', (event) => {
-                clearInput(event.target.dataset.target);
+            // Запазваме стойността преди промяна, за да можем да засичаме изтриване на запетая
+            [levInput, eurInput].forEach(input => {
+                input.addEventListener('keydown', (e) => {
+                    e.target.dataset.valueBeforeKeydown = e.target.value;
+                });
             });
+        
         });
-*/
 
         clearButtons.forEach(button => {
             button.addEventListener('click', (event) => {
