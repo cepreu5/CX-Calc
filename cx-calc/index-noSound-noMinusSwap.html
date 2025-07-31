@@ -146,11 +146,9 @@
                         <input type="number" id="statussizeY" data-key="StatusSize" data-prop="y">
 
                         <!-- New setting for calculator bottom offset -->
-                        <label for="calcBottomOffset">Поле отдолу/Звук:</label>
-                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
-                            <input type="number" id="calcBottomOffset" min="0" max="500" value="0" style="width: 60px;">
-                            <input type="checkbox" id="soundEffectsCheckbox" checked>
-                        </div>
+                        <label for="calcBottomOffset">Поле отдолу:</label>
+                        <input type="number" id="calcBottomOffset" min="0" max="500" value="0">
+
                     </div>
                 </div>
             </div>
@@ -178,7 +176,38 @@
       </div>
     </div>    
 
-<audio id="clickSound" src="click.wav" preload="auto"></audio>
+    <!--div id="install-bar" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:3000; align-items:center; justify-content:center;">
+      <div style="background:#fff; color:#b00; padding:32px 24px; border-radius:12px; box-shadow:0 2px 16px #0003; max-width:90vw; text-align:center;">
+        <div style="font-size:1.2em; margin-bottom:18px;">
+          <img src="Calc48.png" alt="СХ Евро калкулатор">
+          <b>СХ Евро калкулатор</b><br><br>
+          Има възможност да инсталирате калкулатора, така че да може да го стартирате без връзка с интернет.<br>
+          Ако изберете <b>[Отказ]</b> няма да виждате това предложение повече.
+        </div>
+        <div style="display:flex; gap:20px; justify-content:center;">
+          <button id="install" class="action-button">Инсталиране (20)</button>
+          <button id="dismiss" class="action-button secondary">Отказ</button>
+        </div>
+      </div>
+    </div-->    
+
+    <!--div id="install-bar" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:3000; display:flex; align-items:center; justify-content:center;">
+    <div style="background:#fff; color:#333; padding:32px 28px; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,0.2); max-width:600px; width:90vw; text-align:center; font-family:sans-serif;">
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px;">
+        <img src="Calc48.png" alt="СХ Евро калкулатор" style="width:48px; height:48px;">
+        <div style="font-size:1.5em; font-weight:bold; color:#b00;">СХ Евро калкулатор</div>
+        </div>
+        <div style="font-size:1.1em; margin-bottom:24px; line-height:1.5;">
+            Има възможност да инсталирате калкулатора, така че да може да го стартирате без връзка с интернет.<br>
+            След нулиране на брояча ще може да го изпробвате и да решите дали да го инсталирате при следващо стартиране.<br>
+            Ако изберете <b>Отказ</b>, няма повече да виждате това предложение.
+        </div>
+        <div style="display:flex; gap:20px; justify-content:center;">
+            <button id="install" style="background:#b00; color:#fff; border:none; padding:12px 24px; border-radius:8px; font-size:1em; cursor:pointer; transition:0.3s;">Инсталиране (30)</button>
+            <button id="dismiss" style="background:#ccc; color:#333; border:none; padding:12px 24px; border-radius:8px; font-size:1em; cursor:pointer; transition:0.3s;">Отказ</button>
+        </div>
+    </div>
+    </div-->
 
 <script src="status.js"></script>
 <script src="calc.js"></script>
@@ -197,7 +226,6 @@
     var CURRENCY_LEV_SYMBOL = 'лв'; // Валутен символ за лев
     var showRateWarningEnabled = true; // Флаг за разрешение на предупреждението
     var showWarning = false; // Флаг за показване на предупреждение за курса
-    var soundEffectsEnabled = true; // Флаг за звукови ефекти
 
     var screenWidth = window.innerWidth;
     var imageWidth, imageHeight, aspectRatioW, aspectRatioH;
@@ -236,7 +264,6 @@
         exchangeRate: 1.95583,
         currencySymbol: '€',
         currencyLevSymbol: 'лв',
-        soundEffectsEnabled: true,
         showRateWarningEnabled: true,
         calcMem: [0, 0, 0, 0],
         calcBottomOffset: 0,
@@ -276,7 +303,6 @@
             currencySymbol: document.getElementById('currencySymbolInput').value.trim() || defaultSettings.currencySymbol,
             currencyLevSymbol: document.getElementById('currencyLevSymbolInput').value.trim() || defaultSettings.currencyLevSymbol,
             showRateWarningEnabled: document.getElementById('rateWarningCheckbox').checked,
-            soundEffectsEnabled: document.getElementById('soundEffectsCheckbox').checked,
             calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
             calcMem: Mem,
@@ -342,11 +368,6 @@
       if (rateWarningCheckbox) {
           rateWarningCheckbox.checked = showRateWarningEnabled;
       }
-      // Попълни soundEffectsCheckbox
-      const soundCheckbox = document.getElementById('soundEffectsCheckbox');
-      if (soundCheckbox) {
-          soundCheckbox.checked = soundEffectsEnabled;
-      }
     }
 
     function loadSettings() {
@@ -360,7 +381,6 @@
         CURRENCY_SYMBOL = settings.currencySymbol;
         CURRENCY_LEV_SYMBOL = settings.currencyLevSymbol;
         showRateWarningEnabled = settings.showRateWarningEnabled;
-        soundEffectsEnabled = settings.soundEffectsEnabled;
         Mem = settings.calcMem;
         calcBottom = settings.calcBottomOffset;
         // Задаваме активния дисплей при стартиране според запазената стойност
@@ -390,6 +410,87 @@
             console.log("Заредени и допълнени MainPointsO от loadSettings():");
         }
     }
+
+/*
+    function saveLayoutSettings() {
+        let reloadNeeded = false;
+        // Проверка за промяна на позиционните параметри (MainPoints)
+        for (const key in MainPointsO) {
+            if (MainPointsO.hasOwnProperty(key)) {
+                const obj = MainPointsO[key];
+                if (typeof obj === 'object' && obj !== null) {
+                    for (const prop in obj) {
+                        if (obj.hasOwnProperty(prop)) {
+                            const inputId = key.toLowerCase() + prop.toUpperCase();
+                            const inputElement = document.getElementById(inputId);
+                            if (inputElement && !isNaN(parseFloat(inputElement.value))) {
+                                const newValue = parseFloat(inputElement.value);
+                                // Сравняваме с действащата стойност в MainPoints
+                                if (
+                                    MainPoints[key] &&
+                                    typeof MainPoints[key][prop] !== "undefined" &&
+                                    MainPoints[key][prop] !== newValue
+                                ) {
+                                    reloadNeeded = true;
+                                }
+                                obj[prop] = newValue; // присвояване към MainPointsO
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Запази и приложи символа за валута
+        const currencySymbolInput = document.getElementById('currencySymbolInput');
+        if (currencySymbolInput) {
+            const newSymbol = currencySymbolInput.value.trim();
+            // Запазваме само ако не е празно
+            if (newSymbol) {
+                CURRENCY_SYMBOL = newSymbol;
+                document.getElementById('currency').textContent = CURRENCY_SYMBOL;
+                localStorage.setItem('CURRENCY_SYMBOL', CURRENCY_SYMBOL);
+            }
+        }
+
+        // Запазваме настройката за предупреждението
+        const rateWarningCheckbox = document.getElementById('rateWarningCheckbox');
+        if (rateWarningCheckbox) {
+            showRateWarningEnabled = rateWarningCheckbox.checked;
+            localStorage.setItem('showRateWarningEnabled', showRateWarningEnabled);
+        }
+
+        localStorage.setItem('MainPointsO', JSON.stringify(MainPointsO));
+        // Запази exchangeRate
+        const exchangeRateInput = document.getElementById('exchangeRateInput');
+        if (exchangeRateInput) {
+            const rate = parseFloat(exchangeRateInput.value);
+            if (!isNaN(rate) && rate > 0) {
+                EXCHANGE_RATE = rate;
+                // Запази в localStorage
+                localStorage.setItem('EXCHANGE_RATE', EXCHANGE_RATE);
+                // Обнови и в заглавието
+                const exchangeRateValue = document.getElementById('exchangeRateValue');
+                if (exchangeRateValue) {
+                    exchangeRateValue.textContent = EXCHANGE_RATE;
+                }
+            }
+        }
+        // Проверка за промяна на calcBottom
+        const calcBottomOffsetInput = document.getElementById('calcBottomOffset');
+        if (calcBottomOffsetInput && !isNaN(parseInt(calcBottomOffsetInput.value, 10))) {
+            const px = parseInt(calcBottomOffsetInput.value, 10);
+            if (typeof calcBottom !== "undefined" && calcBottom !== px) {
+                reloadNeeded = true;
+            }
+            document.documentElement.style.setProperty('--calc-bottom-offset', px + 'px');
+            localStorage.setItem('calcBottomOffset', px);
+        }
+        // Презареждане само ако има промяна в позиционните параметри
+        if (reloadNeeded) {
+            location.reload();
+        }
+    }
+*/
 
     function getImageSize() {
         if (calculator) {
@@ -442,8 +543,8 @@
     function getKeyValue(row, col) {
         const keyMap = [
             ["L", "€", "C", "B"],
-            ["7", "8", "9", "/"],
-            ["4", "5", "6", "*"],
+            ["7", "8", "9", "*"],
+            ["4", "5", "6", "/"],
             ["1", "2", "3", "-"],
             ["0", ",", "=", "+"]
         ];
@@ -746,17 +847,6 @@
                 .toFixed(2)
                 .replace('.', ',');
             appendNumber("=");
-        }
-    }
-
-    function playClickSound() {
-        if (soundEffectsEnabled) {
-            const clickSound = document.getElementById('clickSound');
-            if (clickSound) {
-                clickSound.currentTime = 0; // Rewind to the start
-                // .play() returns a promise which can be useful for debugging
-                clickSound.play().catch(error => console.warn("Audio play failed:", error));
-            }
         }
     }
 
@@ -1131,22 +1221,12 @@
                                        event.clientY > containerRect.bottom;
             if (isOutsideContainer) {
                 if (confirm('Сигурни ли сте, че искате да върнете първоначалните настройки?')) {
-                    // Добавяме и изтриване на историята при нулиране
-                    if (typeof clearHistory === 'function') {
-                        clearHistory();
-                        console.log('Историята е изтрита.');
-                    }
                     localStorage.removeItem('MainPointsO');
                     localStorage.removeItem('appSettings');
                     console.log('Всички запазени настройки (MainPointsO, appSettings) са изтрити.');
                     location.reload();
                 }
             }
-        }
-
-        // Пускаме звук, ако е имало валидно взаимодействие
-        if (interactionHandled) {
-            playClickSound();
         }
     }
 
