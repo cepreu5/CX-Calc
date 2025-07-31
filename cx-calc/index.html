@@ -178,8 +178,6 @@
       </div>
     </div>    
 
-<audio id="clickSound" src="click.wav" preload="auto"></audio>
-
 <script src="status.js"></script>
 <script src="calc.js"></script>
 <script src="history.js"></script>
@@ -198,6 +196,9 @@
     var showRateWarningEnabled = true; // Флаг за разрешение на предупреждението
     var showWarning = false; // Флаг за показване на предупреждение за курса
     var soundEffectsEnabled = true; // Флаг за звукови ефекти
+    // Променливи за Web Audio API за по-бърз звук
+    let audioContext;
+    let clickBuffer = null;
 
     var screenWidth = window.innerWidth;
     var imageWidth, imageHeight, aspectRatioW, aspectRatioH;
@@ -749,15 +750,29 @@
         }
     }
 
-    function playClickSound() {
-        if (soundEffectsEnabled) {
-            const clickSound = document.getElementById('clickSound');
-            if (clickSound) {
-                clickSound.currentTime = 0; // Rewind to the start
-                // .play() returns a promise which can be useful for debugging
-                clickSound.play().catch(error => console.warn("Audio play failed:", error));
-            }
+    // Инициализира Web Audio API за бързо възпроизвеждане на звуци
+    async function initAudio() {
+        if (!soundEffectsEnabled) return;
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // Изтегляме и декодираме аудио файла предварително
+            const response = await fetch('click.wav');
+            const arrayBuffer = await response.arrayBuffer();
+            clickBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            console.log("Аудио файлът е кеширан и готов за възпроизвеждане.");
+        } catch (e) {
+            console.error("Web Audio API не се поддържа или възникна грешка при инициализация.", e);
+            soundEffectsEnabled = false; // Деактивираме звука при грешка
         }
+    }
+
+    function playClickSound() {
+        if (!soundEffectsEnabled || !clickBuffer || !audioContext) return;
+        if (audioContext.state === 'suspended') audioContext.resume();
+        const source = audioContext.createBufferSource();
+        source.buffer = clickBuffer;
+        source.connect(audioContext.destination);
+        source.start(0);
     }
 
 /*
@@ -1183,6 +1198,7 @@
         try {
             calculator = document.querySelector(".calculator-img");
             loadSettings(); // Зарежда всички настройки от appSettings
+            initAudio();    // Инициализираме аудиото за бърза реакция
             // Прилагаме символа към елемента
             document.getElementById('currency').textContent = CURRENCY_SYMBOL;
             document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;

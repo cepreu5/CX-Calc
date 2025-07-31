@@ -10,7 +10,6 @@ const ASSETS = [
   'history.js',
   'status.js',
   'fontcalc.js',
-  'click.wav',
   'Calculator.png',
   'CalcFav.png',
   'Calc32.png',
