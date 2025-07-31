@@ -50,11 +50,10 @@ body.ready {
     display: block;
     margin: 0 auto;
 }
-/* нов стил за валутата */
+
 #currency, #currencyLev {
     position: absolute; /* Абсолютно позициониране спрямо контейнера */
     font-family: 'Arial', sans-serif;
-    /* font-size: 24px;  Размерът вече се задава динамично в calc.js */
     font-weight: bold;
     color: #d8d9d9;
     z-index: 200; /* Показва валутата над изображението */
@@ -90,9 +89,17 @@ body.ready {
     justify-content: flex-end; /* подравняване на текста вдясно */
     align-items: flex-end; /* поставяне на текста долу */
     background: rgba(255,255,255,0);
-    border: none;
     border-radius: 5px;
     height: 60px;
+    /* Добавяме плавен преход за по-добър ефект */
+    transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s;
+    border-bottom: 2px solid transparent; /* Запазва място и избягва "подскачане" на елемента */
+}
+
+.calculator-display.active-display {
+    background-color: rgba(201, 255, 5, 0.2);
+    box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.5);
+    border-bottom-color: #C9FF05; /* По-видим цвят за рамката */
 }
 
 .layout-settings-grid {
@@ -193,21 +200,6 @@ body.ready {
     font-size: 1.5em;
     color: var(--settings-label-color); /* Използваме същата променлива като за етикетите */
 }
-
-/*
-.close-button {
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: #000;
-    text-decoration: none;
-}
-*/
 
 #historyList {
     max-height: 500px; /* Максимална височина на списъка */

@@ -43,7 +43,6 @@
         measuringDiv.style.border = "none";
         measuringDiv.style.boxSizing = "border-box";
         document.body.appendChild(measuringDiv);
-
         // Определяме кой от двата текста е визуално по-широк, за да го използваме за измерване
         measuringDiv.style.fontSize = maxFontSize + "px"; // Измерваме с максималния шрифт
         measuringDiv.textContent = text1;
@@ -51,7 +50,6 @@
         measuringDiv.textContent = text2;
         const width2 = measuringDiv.scrollWidth;
         const widerText = width1 >= width2 ? text1 : text2;
-
         let fontSize = maxFontSize;
         while (fontSize >= minFontSize) {
             measuringDiv.style.fontSize = fontSize + "px";
@@ -71,5 +69,5 @@
 
     function resizeFont() {
         const height = display.clientHeight; // Взимаме височината на дисплея
-        display.style.fontSize = displaylv.style.fontSize = (height * 0.99) + 'px'; // 8% от височината
+        display.style.fontSize = displaylv.style.fontSize = (height * 0.99) + 'px'; // % от височината
     }

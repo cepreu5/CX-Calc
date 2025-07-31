@@ -1,6 +1,5 @@
     /*
-    * updateMemoryStatusDisplay: Променя цвета на фона на статус зоната,
-    * за да индикира дали съответният слот на паметта има стойност.
+    * updateMemoryStatusDisplay: Променя цвета на фона на статус зоната
     * Приема:
     *   - slot: Номер на слота на паметта (1, 2, 3).
     *   - hasValue: Булева стойност (true, ако има стойност; false, ако е изчистена).
@@ -28,7 +27,6 @@
             Mem[targetSlot] += value;
                 console.log(`M+ в Mem[${targetSlot}] → +${value} = [${Mem}]`);
                 updateMemoryStatusDisplay(targetSlot, true); // Променя фона на светлосин
-                //status.textContent = "operation";
                 setTimeout(() => {
                     updateMemoryStatusDisplay(targetSlot, false); // Връща оригиналния фон след х секунди
                 }, 300);
@@ -37,7 +35,6 @@
                 Mem[targetSlot] -= value;
                 console.log(`M− в Mem[${targetSlot}] → −${value} = [${Mem}]`);
                 updateMemoryStatusDisplay(targetSlot, true); // Променя фона на светлосин
-                //status.textContent = "operation";
                 setTimeout(() => {
                     updateMemoryStatusDisplay(targetSlot, false); // Връща оригиналния фон след х секунди
                 }, 300);
@@ -50,7 +47,6 @@
                 console.warn("❗ Непозната операция:", operation);
         }
         localStorage.setItem('CalcMem', JSON.stringify(Mem));
-    //function updateStatus(message, sArea) {
         const statusId = typeof targetSlot === "number" ? `statusArea${targetSlot}` : targetSlot;
         const status = document.getElementById(statusId);
         if (!status) {
@@ -60,8 +56,6 @@
         //console.log(`✔️ updateStatus(${statusId}):`, message);
         status.textContent = "M" + targetSlot;
         status.style.opacity = "1";
-    //}
-
     }
 
     // Действията за памет
@@ -91,14 +85,12 @@
         }
     }
 
-    //memoryShow: Временно показва стойността от даден слот на паметтав горния дисплей, без да го променя
+    //memoryShow: Временно показва стойността от даден слот на паметта в горния дисплей, без да го променя
     function memoryShow(slot) {
         if (Mem[slot] === undefined) {
-            console.warn(`ℹ️ Памет Mem[${slot}] е недефинирана.`);
+            console.warn(`Памет Mem[${slot}] е недефинирана.`);
             return;
         }
-        // const displaylv = document.getElementById('levInput'); // Това е input, така че value е ок
-        //const display = document.getElementById('eurInput'); // Добавяме референция към eurInput div
         const originalValue = displaylv.textContent; // Запазваме оригиналната стойност на levInput
         const originalEurValue = display.textContent; // Запазваме оригиналната стойност на eurInput (div)
         const originalBgColor = displaylv.style.backgroundColor;
@@ -113,8 +105,6 @@
         setTimeout(() => {
             display.textContent = originalEurValue;
             display.style.backgroundColor = originalEurBgColor;
-            // displayElement.value = originalValue; // Няма нужда да връщаме levInput, ако показваме в eurInput
-            // displayElement.style.backgroundColor = originalBgColor;
         }, 1000);
     }
 
@@ -145,8 +135,8 @@
     }
 
     function clearStatus(sArea) {
-    const statusId = typeof sArea === "number" ? `statusArea${sArea}` : sArea;
-    const status = document.getElementById(statusId);
-    if (!status) return;
-    status.style.opacity = "0";
+        const statusId = typeof sArea === "number" ? `statusArea${sArea}` : sArea;
+        const status = document.getElementById(statusId);
+        if (!status) return;
+        status.style.opacity = "0";
     }

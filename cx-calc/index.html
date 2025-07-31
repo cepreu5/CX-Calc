@@ -27,11 +27,6 @@
         <button id="dismiss" style="width: 150px;">Отказ</button>
     </div>
 
-    <!--div id="install-bar" style="position:fixed; top:0px; width:100%; z-index:1000; display:none;">
-        <button id="install" style="width: 30%;">Инсталиране (20)</button>
-        <button id="dismiss" style="width: 30%;">Отказ</button>
-    </div-->
-
     <div id="statusArea1" class="statusArea"></div>
     <div id="statusArea2" class="statusArea"></div>
     <div id="statusArea3" class="statusArea"></div>
@@ -182,6 +177,7 @@
 <script src="calc.js"></script>
 <script src="history.js"></script>
 <script src="fontcalc.js"></script>
+
 <script>
     const rows = 5;
     const cols = 4;
@@ -291,8 +287,6 @@
         location.reload();
     }
 
-
-    // New function to populate layout settings
     function populateLayoutSettings() {
       for (const key in MainPointsO) {
         if (MainPointsO.hasOwnProperty(key)) {
@@ -318,10 +312,6 @@
       if (exchangeRateInput) {
           exchangeRateInput.value = EXCHANGE_RATE;
       }
-      // Покажи и в заглавието
-      //const exchangeRateValue = document.getElementById('exchangeRateValue');
-      //if (exchangeRateValue) exchangeRateValue.textContent = EXCHANGE_RATE;
-
       const calcBottomOffsetInput = document.getElementById('calcBottomOffset');
       if (calcBottomOffsetInput) {
           // Вземи текущата стойност от CSS променливата или по подразбиране 100
@@ -355,7 +345,6 @@
         // Слива запазените настройки с тези по подразбиране, за да се гарантира, че всички ключове съществуват.
         // Запазените стойности имат предимство.
         const settings = { ...defaultSettings, ...savedSettings };
-
         // Прилага настройките към глобалните променливи на приложението
         EXCHANGE_RATE = settings.exchangeRate;
         CURRENCY_SYMBOL = settings.currencySymbol;
@@ -366,15 +355,12 @@
         calcBottom = settings.calcBottomOffset;
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
-
         // Прилага визуални настройки, които са нужни веднага при зареждане
         document.documentElement.style.setProperty('--calc-bottom-offset', `${calcBottom}px`);
-
         // Проверява дали да покаже предупреждение за курса, ако е различен от стандартния
         if (EXCHANGE_RATE !== defaultSettings.exchangeRate) {
             showWarning = true;
         }
-
         // Зареждане на MainPointsO от localStorage
         const savedMainPointsO = localStorage.getItem('MainPointsO');
         if (savedMainPointsO) {
@@ -433,10 +419,6 @@
         // Заменяме window.innerWidth с containerWidth
         aspectRatioW = imageWidth / imageWidthO; // aspectRatioW е съотношението на ширината на изображението към оригиналната ширина
         aspectRatioH = imageHeight / imageHeightO; // aspectRatioH е съотношението на височината на изображението към оригиналната височина
-        // padding на изображението в canvas, предполага се равен двустранно
-        //StartingPoint.x = ConstX * aspectRatioW + (containerWidth - imageWidth) / 2;
-        //StartingPoint.y = ConstY * aspectRatioH + (containerHeight - imageHeight); // (imageHeight / calculator.naturalHeight)
-        //console.log("StartingPoint.x = ", StartingPoint.x, "  StartingPoint.y = ", StartingPoint.y);
         console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
     }
 
@@ -453,8 +435,6 @@
 
     function formatNumber(num) {
         if (isNaN(num)) return '';
-        // .toFixed(2) correctly rounds to 2 decimal places and ensures two decimal digits.
-        // Example: 123 -> "123.00", 123.4 -> "123.40", 123.456 -> "123.46"
         return num.toFixed(2).replace('.', ',');
     }
 
@@ -465,7 +445,6 @@
     }
 
     function convertFromLevToEur(levStr) {
-        //levStr = levStr.replace(/\s+/g, ''); // Премахваме интервалите
         let levValue = parseNumber(levStr);
         if (isNaN(levValue)) {
             return ''; // Изчистваме целевото поле, ако изходното е невалидно
@@ -476,7 +455,6 @@
     }
 
     function convertFromEurToLev(eurStr) {
-        //eurStr = eurStr.replace(/\s+/g, ''); // Премахваме интервалите
         let eurValue = parseNumber(eurStr);
         if (isNaN(eurValue)) {
             return ''; // Изчистваме целевото поле, ако изходното е невалидно
@@ -500,7 +478,7 @@
         }
         // Conditional formatting of decimal part based on 'dec' flag
         if (dec) {
-            // If 'dec' is true, ensure two decimal places
+            // ensure two decimal places
             if (decimalPart === "" || decimalPart === ",") {
                 decimalPart = ",00";
             } else if (decimalPart.length === 2) {
@@ -539,10 +517,8 @@
         const [activeDisplay, passiveDisplay] = levMode ? [displaylv, display] : [display, displaylv];
         const conversionFn = levMode ? convertFromLevToEur : convertFromEurToLev;
         // Осветяване на активния дисплей
-        activeDisplay.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
-        activeDisplay.style.borderBottom = "2px solid #fff";
-        passiveDisplay.style.backgroundColor = "rgba(201, 255, 5, 0)";
-        passiveDisplay.style.borderBottom = "none";
+        activeDisplay.classList.add('active-display');
+        passiveDisplay.classList.remove('active-display');
         let activeDisplayText;
         if (userInput === "") { // Добавена проверка за празен userInput
             activeDisplayText = "";
@@ -712,11 +688,10 @@
     }
 
     function getKeyColumnIndex(key) {
-    const rect = calculator.getBoundingClientRect();
-    // const scaleX = rect.width / imageWidthO;
-    const colWidth = MainPoints.KeySize.x + MainPoints.KbdGaps.x;
-    const relativeX = (key.x - rect.left - MainPoints.Keys.x) / colWidth;
-    return Math.round(relativeX+1); // Връща 1, 2, 3 или 4
+        const rect = calculator.getBoundingClientRect();
+        const colWidth = MainPoints.KeySize.x + MainPoints.KbdGaps.x;
+        const relativeX = (key.x - rect.left - MainPoints.Keys.x) / colWidth;
+        return Math.round(relativeX+1); // Връща 1, 2, 3 или 4
     }
 
     function controlActions(key) {
@@ -750,7 +725,7 @@
         }
     }
 
-    // Инициализира Web Audio API за бързо възпроизвеждане на звуци
+    // Инициализира Web Audio API за бързо възпроизвеждане на звук
     async function initAudio() {
         if (!soundEffectsEnabled) return;
         try {
@@ -775,221 +750,15 @@
         source.start(0);
     }
 
-/*
-    document.addEventListener("click", function(event) {
-        if (modalIsActive) return; // ❌ за да не пропуска при кликване в модалния екран
-        const rect = calculator.getBoundingClientRect();
-        const scaleX = rect.width / imageWidthO;
-        const scaleY = rect.height / imageHeightO;
-        const keyWidth = MainPointsO.KeySize.x * scaleX;
-        const keyHeight = MainPointsO.KeySize.y * scaleY;
-        keys.forEach(key => {
-            const withinX = event.clientX >= key.x && event.clientX <= key.x + keyWidth;
-            const withinY = event.clientY >= key.y && event.clientY <= key.y + keyHeight;
-            if (withinX && withinY) {
-                if (event.ctrlKey && key.value === '€') {
-                    if (ovFlag) {noOverlay(); ovFlag = false;}
-                    settingsModal.style.display = 'flex';
-                    modalIsActive = true;
-                    populateLayoutSettings();
-                } else if (event.ctrlKey && key.value === 'B') {
-                    for (let i = 1; i < 4; i++) {
-                        Mem[i] = 0;
-                        clearStatus (i);
-                    }
-                    localStorage.setItem('CalcMem', JSON.stringify(Mem));
-                } else if (event.ctrlKey && key.value === '+') {
-                    if (!fullscrFlag) goFullscreen()
-                    else exitFullscreen();
-                    fullscrFlag = !fullscrFlag;
-                } else if (event.ctrlKey && key.value === '*') { */
-                    // if ((/[+\-*/]$/.test(userInput))) return;
-/*                    console.log("Before %: ", userInput);
-                    userInput = userInput.replace(',', '.');
-                    userInput = eval(userInput);
-                    userInput = (parseFloat(userInput) / 100)
-                      .toFixed(2)
-                      .replace('.', ',');
-                    appendNumber("=");
-                    // console.log("Ctrl+%: ", userInput);
-                }  else if (event.ctrlKey && key.value === '-') {*/
-                    //if ((/[+\-*/]$/.test(userInput))) return;
-/*                    if (userInput.startsWith("-")) {
-                        userInput = userInput.slice(1); // премахва първия символ "-"
-                    } else {
-                        userInput = "-" + userInput;    // добавя "-"
-                    }
-                    userInput = userInput.replace(',', '.');
-                    userInput = eval(userInput);
-                    userInput = (parseFloat(userInput))
-                      .toFixed(2)
-                      .replace('.', ',');
-                    appendNumber("=");
-                } else if (event.ctrlKey && isMemoryKey(key.value)) {
-                    const col = getKeyColumnIndex(key);
-                    executeMemoryAction(key.value, col);
-                    console.log("Натиснато:", key.value, "→ Колона:", col);
-                } else {
-                    appendNumber(key.value);
-                }
-            }
-        });
-        // Проверка за кликове върху статус зоните (само за слотове 1, 2, 3)
-        for (let i = 1; i <= 3; i++) {
-            const statusEl = document.getElementById(`statusArea${i}`);
-            if (statusEl && getComputedStyle(statusEl).opacity > 0) {
-                const statusRect = statusEl.getBoundingClientRect();
-                if (event.clientX >= statusRect.left && event.clientX <= statusRect.right &&
-                    event.clientY >= statusRect.top && event.clientY <= statusRect.bottom)  {
-                    if (event.ctrlKey) {
-                    memoryShow(i);
-                    console.log(`Ctrl+Клик върху статус зона ${i} за показване на памет.`);
-                    } else {
-                    memoryRecall(i);
-                    console.log(`Кликнато върху видима статус зона ${i} за извикване на памет.`);
-                    }// Извикваме паметта за съответния слот
-                    break; // Прекратяваме цикъла, ако е обработен клик
-                }
-            }
-        }
-    });
-
-    // 🧩 Улавя десен клик или дълъг тап (контекстно меню)
-    document.addEventListener("contextmenu", function(event) {
-        event.preventDefault(); // предотвратява появата на браузър менюто
-        const rect = calculator.getBoundingClientRect();
-        const scaleX = rect.width / imageWidthO;
-        const scaleY = rect.height / imageHeightO;
-        const keyWidth = MainPointsO.KeySize.x * scaleX;
-        const keyHeight = MainPointsO.KeySize.y * scaleY;
-        keys.forEach(key => {
-            if (event.clientX >= key.x && event.clientX <= key.x + keyWidth &&
-                event.clientY >= key.y && event.clientY <= key.y + keyHeight) {
-                // 👉 Добавяме условието от клавиатурния шорткът
-                if (key.value === '+') {
-                    if (!fullscrFlag) goFullscreen()
-                    else exitFullscreen();
-                    fullscrFlag = !fullscrFlag;
-                } else if (event.ctrlKey && key.value === 'B') {
-                    for (let i = 1; i < 4; i++) {
-                        Mem[i] = 0;
-                        clearStatus (i);
-                    }
-                    localStorage.setItem('CalcMem', JSON.stringify(Mem));
-                } else if (key.value === '*') { */
-                    //if ((/[+\-*/]$/.test(userInput))) return;
-/*                    console.log("Before %: ", userInput);
-                    userInput = userInput.replace(',', '.');
-                    userInput = eval(userInput);
-                    userInput = (parseFloat(userInput) / 100)
-                      .toFixed(2)
-                      .replace('.', ',');
-                    appendNumber("=");
-                    // console.log("Ctrl+%: ", userInput);
-                }  else if (key.value === '-') { */
-                    //if ((/[+\-*/]$/.test(userInput))) return;
-/*                    if (userInput.startsWith("-")) {
-                        userInput = userInput.slice(1); // премахва първия символ "-"
-                    } else {
-                        userInput = "-" + userInput;    // добавя "-"
-                    }
-                    userInput = userInput.replace(',', '.'); */
-                    // if ((/[+\-*/]$/.test(userInput))) return;
-/*                    userInput = eval(userInput);
-                    userInput = (parseFloat(userInput))
-                      .toFixed(2)
-                      .replace('.', ',');
-                    appendNumber("=");
-                } else if (key.value === '€') {
-                    if (ovFlag) {noOverlay(); ovFlag = false;}
-                    settingsModal.style.display = 'flex';
-                    modalIsActive = true;
-                    populateLayoutSettings();
-                } else if (isMemoryKey(key.value)) {
-                    const col = getKeyColumnIndex(key);
-                    executeMemoryAction(key.value, col);
-                }
-            }
-        });
-        // Проверка за кликове върху статус зоните (само за слотове 1, 2, 3)
-        for (let i = 1; i <= 3; i++) {
-            const statusEl = document.getElementById(`statusArea${i}`);
-            if (statusEl && getComputedStyle(statusEl).opacity > 0) {
-                const statusRect = statusEl.getBoundingClientRect();
-                if (event.clientX >= statusRect.left && event.clientX <= statusRect.right &&
-                    event.clientY >= statusRect.top && event.clientY <= statusRect.bottom) {
-                    memoryShow(i); // Извикваме паметта за съответния слот
-                    console.log(`Задържано върху статус зона ${i} за извикване на памет.`);
-                    break; // Прекратяваме цикъла, ако е обработен клик
-                }
-            }
-        }
-    });
-*/
-/*
-    function handleSpecialKey(keyValue, event) {
-        if (event.ctrlKey && keyValue === '€') {
-            if (ovFlag) { noOverlay(); ovFlag = false; }
-            settingsModal.style.display = 'flex';
-            modalIsActive = true;
-            populateLayoutSettings();
-        } else if (event.ctrlKey && keyValue === 'B') {
-            clearAllMemory();
-        } else if (event.ctrlKey && keyValue === '+') {
-            toggleFullscreen();
-        } else if (event.ctrlKey && keyValue === '*') {
-            const result = sanitizeAndEvaluateInput(userInput, 'percent');
-            if (result !== null) {
-                userInput = result;
-                appendNumber("=");
-            }
-        } else if (event.ctrlKey && keyValue === '-') {
-            const result = sanitizeAndEvaluateInput(userInput, 'negate');
-            if (result !== null) {
-                userInput = result;
-                appendNumber("=");
-            }
-        } else if (event.ctrlKey && isMemoryKey(keyValue)) {
-            const col = getKeyColumnIndex(keyValue);
-            executeMemoryAction(keyValue, col);
-        } else {
-            appendNumber(keyValue);
-        }
-    }
-*/
-/*
-    document.addEventListener("click", function(event) {
-        if (modalIsActive) return;
-        const { keyWidth, keyHeight } = getKeyDimensions();
-        keys.forEach(key => {
-            if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
-                handleSpecialKey(key.value, event);
-            }
-        });
-        handleStatusZones(event, event.ctrlKey);
-    });
-
-    document.addEventListener("contextmenu", function(event) {
-        event.preventDefault();
-        const { keyWidth, keyHeight } = getKeyDimensions();
-        keys.forEach(key => {
-            if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
-                handleSpecialKey(key.value, event);
-            }
-        });
-        handleStatusZones(event, false);
-    });
-*/
-
     function getKeyDimensions() {
-            const rect = calculator.getBoundingClientRect();
-            const scaleX = rect.width / imageWidthO;
-            const scaleY = rect.height / imageHeightO;
-            return {
-                keyWidth: MainPointsO.KeySize.x * scaleX,
-                keyHeight: MainPointsO.KeySize.y * scaleY
-            };
-        }
+        const rect = calculator.getBoundingClientRect();
+        const scaleX = rect.width / imageWidthO;
+        const scaleY = rect.height / imageHeightO;
+        return {
+            keyWidth: MainPointsO.KeySize.x * scaleX,
+            keyHeight: MainPointsO.KeySize.y * scaleY
+        };
+    }
 
     function isWithinKeyBounds(event, key, keyWidth, keyHeight) {
         return (
@@ -1070,7 +839,6 @@
 
     function handleCalculatorInteraction(event, options = {}) {
         // Ако е активен модален прозорец, прекратяваме всякаква обработка на калкулатора.
-        // Това е централизирана проверка, която решава проблема с "пропадането" на кликове за всички модали.
         if (modalIsActive) {
             return;
         }
@@ -1119,7 +887,6 @@
         if (handleStatusZones(event, event.ctrlKey || options.allowWithoutCtrl)) {
             interactionHandled = true;
         }
-
         // Обработка на клик върху дисплеите
         if (!interactionHandled) {
             const levDisplayEl = document.getElementById('levInput');
@@ -1135,7 +902,6 @@
                 interactionHandled = true;
             }
         }
-
         // Ако кликът е извън контейнера на калкулатора и е Ctrl+Click или задържане
         if (!interactionHandled && (event.ctrlKey || options.allowWithoutCtrl)) {
             const calculatorContainer = document.getElementById('calculatorContainer');
@@ -1158,8 +924,7 @@
                 }
             }
         }
-
-        // Пускаме звук, ако е имало валидно взаимодействие
+        // Звук, ако е имало валидно взаимодействие
         if (interactionHandled) {
             playClickSound();
         }
@@ -1173,7 +938,6 @@
         event.preventDefault(); // блокира контекстното меню
         handleCalculatorInteraction(event, { allowWithoutCtrl: true });
     });
-
 
     document.getElementById('saveSettings').addEventListener('click', function(e) {
         saveSettings();
@@ -1202,7 +966,6 @@
             // Прилагаме символа към елемента
             document.getElementById('currency').textContent = CURRENCY_SYMBOL;
             document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;
-
             // Основни изчисления
             getImageSize();
             getImageVisualSize();
@@ -1217,7 +980,6 @@
                 const warning = document.getElementById('exchangeRateWarning');
                 warning.style.display = 'flex';
                 modalIsActive = true; // Блокираме калкулатора
-
                 document.getElementById('exchangeRateChangeBtn').onclick = function() {
                     // Връщаме курса по подразбиране и запазваме в новата структура
                     const settings = JSON.parse(localStorage.getItem('appSettings')) || defaultSettings;
@@ -1240,20 +1002,6 @@
         } catch (err) {
             console.warn("⚠️ Грешка при инициализация:", err);
         }
-        /*/ Визуален ефект
-        const img = document.querySelector(".calculator-img");
-        if (img) {
-            img.classList.add("glow");
-            img.addEventListener("animationend", () => {
-                img.classList.remove("glow");
-            }, { once: true });
-            // Populate layout settings fields when the page loads (after MainPointsO is set)
-            populateLayoutSettings();
-            const settingsButton = document.getElementById('settingsButton'); // Assuming this button exists
-            if (settingsButton) {
-                settingsButton.addEventListener('click', populateLayoutSettings); // Populate when modal is opened
-            }
-        }*/
         // Показване на интерфейса
         document.body.classList.add("ready");
     });
@@ -1270,17 +1018,14 @@
                 modalIsActive = false;
                 return;
             }
-
             // Блокираме другите клавиши, ако има отворен модален прозорец
             if (modalIsActive) {
                 return;
             }
-
             // Предотвратяваме стандартното поведение, ако е нужно
             if (['Enter', '/', '*', '(', ')'].includes(key)) {
                 e.preventDefault();
             }
-
             // Специална обработка за '%'
             if (key === '%') {
                 if ((/[+\-*/]$/.test(userInput))) return;
@@ -1290,9 +1035,7 @@
                 appendNumber("=");
                 return;
             }
-
             const keyMap = { 'Enter': '=', '=': '=', 'Backspace': 'B', 'Delete': 'B', ',': ',', '.': ',', 'c': 'C', 'C': 'C', '(': '(', ')': ')' };
-
             if (keyMap[key]) {
                 appendNumber(keyMap[key]);
             } else if ("0123456789+-*/".includes(key)) {
@@ -1302,24 +1045,17 @@
         loadHistory();
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
-        // Проверка за инсталирано PWA
-        // const installBtn = document.getElementById('install');
         isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        //if (isStandalone) {
-        //   installBtn.style.display = 'none';
-        //}
     });
 
     // Следене на преоразмеряването на прозореца
     window.addEventListener("resize", function (e) {
         getImageVisualSize();
         scaleMainPoints(aspectRatioW, aspectRatioH);
-        const layout = calcNewCoordinates(); //@@ calculator, imageWidthO, imageHeightO
+        const layout = calcNewCoordinates();
         keys = layout.keys;
         displayCoords = layout.displayCoords;
-        //const { keys, displayCoords } = calcNewCoordinates();
         adjustFontSize(levInput, eurInput)
-        //resizeFont();
     })
 
     function showOv() {
@@ -1339,11 +1075,10 @@
         //e.preventDefault();
     }
 
-    /* // Деактивирано по време на разработка, за да се зарежда винаги от сървъра
+    // Деактивирай по време на разработка, за да не кешира и се зарежда винаги
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
-    }
-    */
+    
 
     let deferredPrompt;
     if (localStorage.getItem('pwaInstallDeclined') === 'true') {
@@ -1361,9 +1096,6 @@
             const interval = setInterval(() => {
                 countdown--;
                 installBtn.textContent = `Инсталиране (${String(countdown).padStart(2, '0')})`;
-                // const padded = countdown < 10 ? '0' + countdown : countdown;
-                // installBtn.textContent = `Инсталиране (${padded})`;
-                //installBtn.textContent = `Инсталиране (${countdown})`;
                 if (countdown <= 0) cleanup();
             }, 1000);
             const installHandler = () => {

@@ -358,7 +358,7 @@ const settingsToSave = [
     { id: 'exprBgColor', key: 'exprBgColor', type: 'color' },
     { id: 'exprTextColor', key: 'exprTextColor', type: 'color' }
 ];
-//Савина {"rate":1.95583,"dec":2,"decHU":5,"bgColor":"#8d918e","calcColor":"#b9b1b1","displayColor":"#639d0c","btnColor":"#45484a","btnTextColor":"#f1e904","opColor":"#e77b23","cColor":"#ee1b1b","delColor":"#e10e0e","displayTextColor":"#f0fc03","exprBgColor":"#336e02","exprTextColor":"#f5f0f0"}
+// {"rate":1.95583,"dec":2,"decHU":5,"bgColor":"#8d918e","calcColor":"#b9b1b1","displayColor":"#639d0c","btnColor":"#45484a","btnTextColor":"#f1e904","opColor":"#e77b23","cColor":"#ee1b1b","delColor":"#e10e0e","displayTextColor":"#f0fc03","exprBgColor":"#336e02","exprTextColor":"#f5f0f0"}
 
 /* ---------- UTILS ---------- */
 function toNum(str) {
@@ -429,7 +429,6 @@ function long(e,k){
 }
 
 function clearLong(){clearTimeout(longTimer);}
-
 /* ---------- DB ---------- */
 const dbName='calcDB',store='history';
 function openDB(){
@@ -440,6 +439,7 @@ function openDB(){
     req.onsuccess=()=>resolve(req.result);
   });
 }
+
 async function addHist(item){
   const db=await openDB();
   const tx=db.transaction(store,'readwrite');
@@ -449,6 +449,7 @@ async function addHist(item){
     if(advance>0) tx.objectStore(store).delete(advance);
   };
 }
+
 async function getHistory(){
   const db=await openDB();
   return new Promise(res=>{
@@ -494,7 +495,6 @@ function calc(){
         .replace(/(\d)(?=\()/g, '$1*')   // 3( -> 3*(
         .replace(/(?<=\))(\d)/g, '*$1')   // )3 -> )*3
         .replace(/\)\(/g, ')*(');         // )( -> )*(
-
     const res = round(Function('"use strict";return ('+processed.replace(/,/g,'.')+')')(), decHU);
     const txt = balanced + ' = ' + toStr(res, decHU);
     addHist({expr:txt,res});
@@ -577,16 +577,13 @@ function updateMem(){
 
 function loadSettings() {
     const savedSettings = JSON.parse(localStorage.getItem('settings')) || {};
-
     // Зареждаме и прилагаме числените стойности
     RATE = savedSettings.rate !== undefined ? savedSettings.rate : 1.95583;
     dec = savedSettings.dec !== undefined ? savedSettings.dec : 2;
     decHU = savedSettings.decHU !== undefined ? savedSettings.decHU : 5;
-
     document.getElementById('rateInput').value = RATE;
     document.getElementById('decField').value = dec;
     document.getElementById('decHUField').value = decHU;
-
     // Зареждаме цветовете
     const colorMap = {
         bgColor: '--page',
@@ -628,18 +625,6 @@ window.addEventListener('load',()=>{
   updateMem();
 });
 
-/*document.getElementById('decHURange').addEventListener('input', e=>{
-  decHU = +e.target.value;
-  localStorage.setItem('decHU', decHU);
-  document.getElementById('decHUVal').textContent = decHU;
-});
-
-document.getElementById('decRange').addEventListener('input', e=>{
-  dec = +e.target.value;
-  localStorage.setItem('dec', dec);
-  document.getElementById('decVal').textContent = dec;
-});*/
-
 // ---- Клавиш в комбинация ----
 function numClick(ev,k){
   if(ev.ctrlKey){
@@ -668,24 +653,20 @@ document.addEventListener('keydown', (event) => {
     const key = event.key;
     const settingsVisible = document.getElementById('settings').style.display === 'flex';
     const historyVisible = document.getElementById('history').style.display === 'flex';
-
     // Escape винаги работи за затваряне на модални прозорци
     if (key === 'Escape') {
         if (settingsVisible) toggleSettings();
         if (historyVisible) toggleHistory();
         return;
     }
-
     // Блокираме другите клавиши, ако има отворен модален прозорец
     if (settingsVisible || historyVisible) {
         return;
     }
-
     // Предотвратяваме стандартното поведение, ако е нужно
     if (['Enter', '/', '*', '(', ')'].includes(key)) {
         event.preventDefault();
     }
-
     const keyMap = {
         'Enter': '=',
         'Backspace': '⌫',
@@ -695,7 +676,6 @@ document.addEventListener('keydown', (event) => {
         '(': '(', ')': ')',
         '%': '%'
     };
-
     if (keyMap[key]) {
         act(keyMap[key]);
     } else if ("0123456789+-*/".includes(key)) {

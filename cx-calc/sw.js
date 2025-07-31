@@ -53,10 +53,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
-
   // Пропусни cross-origin заявки (напр. Google Fonts)
   if (url.origin !== location.origin) return;
-
   // Опитай се за мрежата, ако не успее – върни кешираното
   event.respondWith(
     caches.match(request)

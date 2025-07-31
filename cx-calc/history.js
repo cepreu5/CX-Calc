@@ -2,7 +2,6 @@
 
     function loadHistory() {
         const savedHistory = JSON.parse(localStorage.getItem('currencyConverterHistory'));
-        //history = savedHistory || [];
         // Филтрираме старите записи, които може да нямат 'operation' или 'result'
         history = savedHistory ? savedHistory.filter(record => record.operation && record.result) : [];
     }
@@ -66,7 +65,6 @@
 
     function handleClearHistory() {
         history = [];
-        //inputSessionId = Date.now(); // нова сесия
         saveHistoryToStorage();
         updateHistoryList();
         closeHistoryModalButton.click();
@@ -77,8 +75,6 @@
         updateHistoryList();
         historyModal.style.display = 'flex';
         modalIsActive = true;
-        //document.querySelector("#calculator").style.pointerEvents = "none";
-
     };
 
     // Clear History button
