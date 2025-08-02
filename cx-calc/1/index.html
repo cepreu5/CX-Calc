@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" type="image/png" href="KimiFav.png" />
-    <title>Евро конвертор</title>
+    <link rel="shortcut icon" type="image/png" href="Calc-1-Fav.png" />
+    <title>CX-Calc-1</title>
+    <link rel="manifest" href="Calc-1.json"/>
+
     <style>
         :root {
             --bg-color: #e0f7fa; /* Светло ментово зелено */
@@ -480,6 +482,12 @@
 </head>
 
 <body>
+    <div id="install-bar" style="display: none; position: fixed; bottom: 0; width: 100%; background: #333; color: white; padding: 1em; text-align: center; z-index: 1000; font-size: 1rem; box-shadow: 0 -2px 5px rgba(0,0,0,0.2);">
+    <span style="margin-right: 1em;">Инсталиране на приложението за офлайн достъп?</span>
+    <button id="install-button" style="margin-left: 1em; padding: 0.5em 1em; cursor: pointer; border-radius: 5px; border: none; background: #4CAF50; color: white;">Инсталиране</button>
+    <button id="dismiss-button" style="margin-left: 0.5em; padding: 0.5em 1em; cursor: pointer; border-radius: 5px; border: none; background: #555; color: white;">Отказ</button>
+    </div>
+
     <div id="animationContainer" class="coin-animation-container">
         <div id="coin-bgn" class="coin"></div>
         <div id="coin-eur" class="coin"></div>
@@ -659,6 +667,47 @@
         let currentSetting = null;
         let settings = {};
 
+        let deferredPrompt;
+        // Проверяваме дали потребителят вече е отказал инсталацията
+        if (localStorage.getItem('Calc1PwaInstallDeclined') !== 'true') {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                const installBar = document.getElementById('install-bar');
+                if (installBar) {
+                    installBar.style.display = 'block';
+                }
+            });
+        }
+
+        const installButton = document.getElementById('install-button');
+        if (installButton) {
+            installButton.addEventListener('click', async () => {
+                const installBar = document.getElementById('install-bar');
+                if (installBar) installBar.style.display = 'none';
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                deferredPrompt = null;
+            });
+        }
+
+        const dismissButton = document.getElementById('dismiss-button');
+        if (dismissButton) {
+            dismissButton.addEventListener('click', () => {
+                document.getElementById('install-bar').style.display = 'none';
+                localStorage.setItem('Calc1PwaInstallDeclined', 'true');
+                deferredPrompt = null;
+            });
+        }
+
+        window.addEventListener('appinstalled', () => {
+            if (document.getElementById('install-bar')) document.getElementById('install-bar').style.display = 'none';
+            deferredPrompt = null;
+            console.log('PWA was installed');
+        });
+
         // Бутон затвори
         document.getElementById('closeColorModal').addEventListener('click', () => {
             document.getElementById('colorDialog').classList.remove('active');
@@ -835,7 +884,10 @@
         }
 
         function addHistoryEntry(levValue, eurValue) {
-            const entry = `${groupByThree(formatNumber(levValue))} лв. = ${groupByThree(formatNumber(eurValue))} €`;
+            const entry = {
+                text: `${groupByThree(formatNumber(levValue))} лв. = ${groupByThree(formatNumber(eurValue))} €`,
+                timestamp: Date.now()
+            };
             history.unshift(entry); // Add to the beginning
             if (history.length > MAX_HISTORY_ITEMS) {
                 history.pop(); // Remove the oldest entry if over limit
@@ -853,7 +905,7 @@
             }
             history.forEach(entry => {
                 const li = document.createElement('li');
-                li.textContent = entry;
+                li.textContent = entry.text;
                 historyList.appendChild(li);
             });
         }
@@ -956,7 +1008,36 @@
             }
         }
 
+        function cleanupHistory() {
+            if (history.length < 2) return;
+
+            const TIME_THRESHOLD = 3000; // 3 секунди за групиране на записи
+            const newHistory = [];
+            
+            // Винаги пазим най-новия (последен) запис от току-що завършената сесия
+            if (history.length > 0) {
+                newHistory.push(history[0]);
+            }
+
+            // Итерираме през останалите записи, за да намерим края на предишната сесия
+            for (let i = 1; i < history.length; i++) {
+                const timeDiff = history[i - 1].timestamp - history[i].timestamp;
+                
+                // Ако разликата във времето е голяма, значи сме стигнали до запис от предишна сесия.
+                // Запазваме този запис и всички по-стари от него.
+                if (timeDiff > TIME_THRESHOLD) {
+                    newHistory.push(...history.slice(i));
+                    break; // Прекратяваме, тъй като сме добавили остатъка от историята
+                }
+                // Ако разликата е малка, записът е междинен и го пропускаме (не го добавяме в newHistory)
+            }
+
+            history = newHistory;
+            saveHistoryToStorage();
+        }
+
         function clearInput(targetId) {
+            cleanupHistory(); // Почистваме историята преди да изчистим полетата
             const targetInput = document.getElementById(targetId);
             targetInput.value = '';
             if (targetId === 'levInput') {
@@ -981,7 +1062,7 @@
                 return;
             }
             recallIndex = (recallIndex + 1) % history.length;
-            const entry = history[recallIndex];
+            const entry = history[recallIndex].text;
             // Parse the entry: "XXX,XX лв. = YY,YY €"
             const parts = entry.split(' = ');
             if (parts.length === 2) {
@@ -1265,6 +1346,17 @@
             e.currentTarget.classList.remove('active');
           }
         });
+    </script>
+
+    <script>
+        // Регистриране на Service Worker за PWA функционалност
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('Calc-1-sw.js')
+                    .then(registration => console.log('SW registered: ', registration))
+                    .catch(registrationError => console.log('SW registration failed: ', registrationError));
+            });
+        }
     </script>
 </body>
 </html>

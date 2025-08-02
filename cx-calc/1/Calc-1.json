@@ -1,0 +1,32 @@
+{
+  "name": "CX-Calc-1",
+  "short_name": "CX-Calc-1",
+  "description": "CX-Calc-1 - калкулатор за бързо конвертиране лев-евро, с възможности за настройки на интерфейса.",
+  "start_url": "/cx-calc/1/",
+  "scope": "/cx-calc/1/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#BFB8B4",
+  "theme_color": "#BFB8B4",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "Calc-1-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "Calc-1-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "Calc-1-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
