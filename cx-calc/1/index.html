@@ -575,8 +575,8 @@
                 <div class="color-preview" data-setting="settingsLabelColor" style="justify-self: start;"></div>
 
                 <!-- Настройка за отстояние на контейнера -->
-                <label for="containerMarginTop">Отместване отгоре (vh):</label>
-                <input type="number" id="containerMarginTop" min="0" max="50" step="1" style="width: 40px; padding-left: 5px;">
+                <label for="containerMarginTop" id="containerMarginTopLabel">Отместване отгоре:</label>
+                <input type="number" id="containerMarginTop" min="0" max="300" step="1" style="width: 60px; padding-left: 5px;">
 
                 <!-- Настройка за активно поле -->
                 <label>Активно поле:</label>
@@ -584,6 +584,10 @@
                     <option value="lev">лв.</option>
                     <option value="eur">€</option>
                 </select>
+
+                <!-- Настройка за анимация -->
+                <label for="animationCheckbox">Анимация:</label>
+                <input type="checkbox" id="animationCheckbox" checked style="justify-self: start;">
             </div>
             <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
                 <button id="saveSettings" class="action-button">Запази настройките</button>
@@ -635,14 +639,15 @@
 
         const defaultSettings = {
             bgColor: "#002C5F",
-            containerBgColor: "#0000ff",
-            containerMarginTop: "1",
+            containerBgColor: "#ffffff",
+            containerMarginTop: "20",
             defaultActiveField: "lev",
             eurInputBgColor: "#ff00cc",
             eurTextColor: "#000000",
             levInputBgColor: "#ccff00",
             levTextColor: "#000000",
-            settingsLabelColor: "#fafafa"            
+            settingsLabelColor: "#fafafa",
+            animationEnabled: true
         };
 
         // Палитра
@@ -832,7 +837,13 @@
             document.documentElement.style.setProperty('--lev-input-bg-color', settings.levInputBgColor);
             document.documentElement.style.setProperty('--eur-input-bg-color', settings.eurInputBgColor);
             document.documentElement.style.setProperty('--settings-label-color', settings.settingsLabelColor);
-            document.documentElement.style.setProperty('--container-margin-top', settings.containerMarginTop + 'vh');
+            document.documentElement.style.setProperty('--container-margin-top', settings.containerMarginTop + 'px');
+
+            const animationContainer = document.getElementById('animationContainer');
+            if (animationContainer) {
+                animationContainer.style.display = settings.animationEnabled ? 'flex' : 'none';
+            }
+
             // Apply text color to currency labels
             levLabel.style.color = settings.levTextColor;
             eurLabel.style.color = settings.eurTextColor;
@@ -856,12 +867,6 @@
                 }
             });
             updateColorPreviews(); // Актуализираме визуализациите
-            // Set initial focus based on default active field, without triggering copy
-            if (settings.defaultActiveField === 'lev') {
-                levInput.focus();
-            } else {
-                eurInput.focus();
-            }
         }
 
         function loadSettings() {
@@ -1076,9 +1081,47 @@
         }
 
         function saveAndApplySettings() {
-            saveSettings(settings);
-            applySettings(settings);
+            // Валидираме и записваме стойността за отместване.
+            const marginTopValue = parseInt(containerMarginTopInput.value, 10);
+            // Ако стойността е невалидна (празно поле), връщаме към стойността по подразбиране.
+            settings.containerMarginTop = !isNaN(marginTopValue) ? marginTopValue.toString() : defaultSettings.containerMarginTop;
+            settings.defaultActiveField = defaultActiveFieldSelect.value;
+            settings.animationEnabled = document.getElementById('animationCheckbox').checked;
+            saveSettings(); // This saves the global 'settings' object to localStorage
+            applySettings(); // This applies the updated settings visually
             settingsModal.style.display = 'none';
+        }
+
+        function updateMaxMargin() {
+            const screenHeight = window.innerHeight;
+            const animationContainer = document.getElementById('animationContainer');
+            const converterContainer = document.querySelector('.converter-container');
+            // Проверяваме дали чекбоксът е избран, за да определим дали анимацията е видима
+            const animationEnabled = document.getElementById('animationCheckbox').checked;
+            const animationHeight = animationEnabled ? animationContainer.offsetHeight : 0;
+            const converterHeight = converterContainer.offsetHeight;
+            const bodyPadding = 40; // 20px отгоре + 20px отдолу от CSS
+            let maxMargin = screenHeight - animationHeight - converterHeight - bodyPadding;
+            maxMargin = Math.max(0, Math.floor(maxMargin));
+            const marginTopLabel = document.getElementById('containerMarginTopLabel');
+            marginTopLabel.textContent = `Отместване отгоре (max ${maxMargin}):`;
+            containerMarginTopInput.max = maxMargin;
+
+            // Проверяваме дали текущата стойност надвишава новия максимум и я коригираме, ако е нужно.
+            const currentValue = parseInt(containerMarginTopInput.value, 10);
+            if (!isNaN(currentValue) && currentValue > maxMargin) {
+                containerMarginTopInput.value = maxMargin;
+                document.documentElement.style.setProperty('--container-margin-top', maxMargin + 'px');
+            }
+        }
+
+        function setInitialFocus() {
+            const fieldId = settings.defaultActiveField === 'lev' ? 'levInput' : 'eurInput';
+            const fieldToFocus = document.getElementById(fieldId);
+            if (fieldToFocus) {
+                fieldToFocus.focus();
+                console.log(`Initial focus set to ${fieldId}`);
+            }
         }
 
         function startCoinAnimation() {
@@ -1105,18 +1148,43 @@
         // --- Initial Load and Event Listeners ---
 
         containerMarginTopInput.addEventListener('input', () => {
-            document.documentElement.style.setProperty('--container-margin-top', containerMarginTopInput.value + 'vh');
+            const max = parseInt(containerMarginTopInput.max, 10);
+            let value = parseInt(containerMarginTopInput.value, 10);
+            if (!isNaN(value)) {
+                // Ако въведената стойност е по-голяма от максимално допустимата, коригираме я.
+                if (value > max) {
+                    containerMarginTopInput.value = max;
+                } 
+                // Ако въведената стойност е отрицателна, я правим 0.
+                else if (value < 0) {
+                    containerMarginTopInput.value = 0;
+                }
+            }
+            // Прилагаме стойността за предварителен преглед, като при празно поле използваме 0.
+            document.documentElement.style.setProperty('--container-margin-top', (containerMarginTopInput.value || 0) + 'px');
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            const currentSettings = loadSettings();
-            applySettings(currentSettings); // This also sets initial focus
+            document.getElementById('animationCheckbox').addEventListener('change', () => {
+                const animationContainer = document.getElementById('animationContainer');
+                if (animationContainer) {
+                    animationContainer.style.display = document.getElementById('animationCheckbox').checked ? 'flex' : 'none';
+                }
+                updateMaxMargin();
+            });
+
+            loadSettings();
+            applySettings();
             loadHistory();
             // Initial font size adjustment for both fields based on their (potentially empty) content
             adjustFontSize(levInput);
             adjustFontSize(eurInput);
-            // Стартираме анимацията на монетите при зареждане
-            startCoinAnimation();
+            // Стартираме анимацията на монетите при зареждане, само ако е разрешена
+            if (settings.animationEnabled) {
+                startCoinAnimation();
+            }
+            // Set initial focus to the default field
+            setInitialFocus();
             // Добавяме event listener към контейнера на анимацията за рестартиране при клик
             const animationContainerElement = document.getElementById('animationContainer');
             if (animationContainerElement) {
@@ -1259,16 +1327,15 @@
 
         // Settings button
         settingsButton.addEventListener('click', () => {
+            updateMaxMargin();
             // Load current settings into the modal before opening
             const savedSettings = loadSettings(); // За настройки, които не се обновяват на живо, и за стойности по подразбиране
             // За цветовете с динамичен предварителен преглед, взимаме текущо приложените стойности
             const computedStyle = getComputedStyle(document.documentElement);
             const currentAppliedBgColor = computedStyle.getPropertyValue('--bg-color').trim();
             const currentAppliedContainerBgColor = computedStyle.getPropertyValue('--container-bg-color').trim();
-            const currentAppliedContainerMarginTopRaw = computedStyle.getPropertyValue('--container-margin-top').trim();
-            const currentAppliedContainerMarginTopVH = 
-            currentAppliedContainerMarginTopRaw.endsWith('vh') ? currentAppliedContainerMarginTopRaw.slice(0, -2) : savedSettings.containerMarginTop;
             const currentAppliedSettingsLabelColor = computedStyle.getPropertyValue('--settings-label-color').trim();
+            document.getElementById('animationCheckbox').checked = savedSettings.animationEnabled;
             defaultActiveFieldSelect.value = savedSettings.defaultActiveField;
             updateColorPreviews(); // Показваме актуалните визуализации при отваряне
             settingsModal.style.display = 'flex';
@@ -1348,7 +1415,7 @@
         });
     </script>
 
-    <script>
+    <!--script>
         // Регистриране на Service Worker за PWA функционалност
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -1357,6 +1424,7 @@
                     .catch(registrationError => console.log('SW registration failed: ', registrationError));
             });
         }
-    </script>
+    </script-->
 </body>
 </html>
+ 
