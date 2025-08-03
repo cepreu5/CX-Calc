@@ -49,7 +49,7 @@
             <ul id="historyList">
             </ul>
             <div class="modal-footer" style="margin-top: 15px; display: flex; gap: 10px;">
-                <button id="clearHistoryButton" class="action-button secondary" style="flex-grow: 1;">Изтрий</button>
+                <button id="clearHistoryButton" class="action-button" style="flex-grow: 1;">Изтрий</button>
                 <button id="closeHistoryModalButton" class="action-button" style="flex-grow: 1;">Затвори</button>
             </div>
         </div>
@@ -154,7 +154,7 @@
                 <button id="ovBtnSettings" class="action-button"  style="margin-right: 20px;" 
                     onclick="showOv()">
                     Зони</button>
-                <button id="closeSettingsModalButton" class="action-button secondary" style="margin-right: 20px;">Затвори</button>
+                <button id="closeSettingsModalButton" class="action-button" style="margin-right: 20px;">Затвори</button>
                 <button id="saveSettings" class="action-button">Запис</button>
             </div>
         </div>
@@ -297,15 +297,6 @@
     const display = document.querySelector('#eurInput');
     var calculator = null; // Изображението на калкулатора
     var calcBottom = 0;
-    var EXCHANGE_RATE = 1.95583;
-    var CURRENCY_SYMBOL = '€'; // Валутен символ по подразбиране
-    var CURRENCY_LEV_SYMBOL = 'лв.'; // Валутен символ за лев
-    var showRateWarningEnabled = true; // Флаг за разрешение на предупреждението
-    var showWarning = false; // Флаг за показване на предупреждение за курса
-    var soundEffectsEnabled = false; // Флаг за звукови ефекти
-    // Променливи за Web Audio API за по-бърз звук
-    let audioContext;
-    let clickBuffer = null;
 
     var screenWidth = window.innerWidth;
     var imageWidth, imageHeight, aspectRatioW, aspectRatioH;
@@ -317,6 +308,10 @@
     var levMode = true, isStandalone = false; // Начален режим - лв.
     var MainPoints = {};
     let modalIsActive = false;
+    var showWarning = false; // Флаг за показване на предупреждение за курса
+    // Променливи за Web Audio API за по-бърз звук
+    let audioContext;
+    let clickBuffer = null;
 
     const MAX_HISTORY_ITEMS = 30;
     const historyButton = document.getElementById('historyButton');
@@ -344,14 +339,23 @@
     const defaultSettings = {
         exchangeRate: 1.95583,
         currencySymbol: '€',
-        currencyLevSymbol: 'лв',
-        soundEffectsEnabled: true,
+        currencyLevSymbol: 'лв.',
+        soundEffectsEnabled: false,
         showRateWarningEnabled: true,
         calcMem: [0, 0, 0, 0],
         calcBottomOffset: 0,
         initialDisplay: 'lev', // 'eur' или 'lev'
-        pwaInstallDeclined: false
+        pwaInstallDeclined: false,
+        calculatorSkin: 'Calculator0.png' // Скин по подразбиране
     };
+
+    // Инициализираме глобалните променливи директно от defaultSettings.
+    // Това създава единствен източник за стойностите по подразбиране.
+    var EXCHANGE_RATE = defaultSettings.exchangeRate;
+    var CURRENCY_SYMBOL = defaultSettings.currencySymbol;
+    var CURRENCY_LEV_SYMBOL = defaultSettings.currencyLevSymbol;
+    var showRateWarningEnabled = defaultSettings.showRateWarningEnabled;
+    var soundEffectsEnabled = defaultSettings.soundEffectsEnabled;
 
     function saveSettings() {
         // --- ЗАПИС НА НАСТРОЙКИТЕ ---
@@ -389,7 +393,8 @@
             calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
             calcMem: Mem,
-            pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined
+            pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
+            calculatorSkin: currentSettings.calculatorSkin || defaultSettings.calculatorSkin // Запазваме текущия скин
         };
         localStorage.setItem('appSettings', JSON.stringify(newAppSettings));
 
@@ -467,6 +472,12 @@
         calcBottom = settings.calcBottomOffset;
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
+
+        // Задаваме облика на калкулатора според запазената настройка
+        if (calculator && settings.calculatorSkin) {
+            calculator.src = settings.calculatorSkin;
+        }
+
         // Прилага визуални настройки, които са нужни веднага при зареждане
         document.documentElement.style.setProperty('--calc-bottom-offset', `${calcBottom}px`);
         // Проверява дали да покаже предупреждение за курса, ако е различен от стандартния
@@ -1123,69 +1134,64 @@
         e.preventDefault();
     });
 
-    window.addEventListener("load", async function () {
+    window.addEventListener("load", function() {
         try {
             calculator = document.querySelector(".calculator-img");
-            loadSettings(); // Зарежда всички настройки от appSettings
-            initAudio();    // Инициализираме аудиото за бърза реакция
-            // Прилагаме символа към елемента
-            document.getElementById('currency').textContent = CURRENCY_SYMBOL;
-            document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;
-            // Основни изчисления
+
+            // Изчисленията се правят ВЕДНЪГА, базирано на Calculator0.png,
+            // тъй като размерите на скиновете са идентични.
             getImageSize();
             getImageVisualSize();
             scaleMainPoints(aspectRatioW, aspectRatioH);
             const layout = calcNewCoordinates();
-            keys = layout.keys; // This needs to be updated after MainPointsO is potentially loaded
+            keys = layout.keys;
             displayCoords = layout.displayCoords;
             resizeFont();
-            appendNumber("C");
-            // Вземаме стойността от localStorage или използваме "lev" по подразбиране
-            const initialDisplay = localStorage.getItem("initialDisplay") || "lev";
-            // Избираме съответния елемент
-            const activeDisplayElement = initialDisplay === "lev"
-                ? document.getElementById("levdisplay")
-                : document.getElementById("display");
-            // Добавяме класа за визуално осветяване
-            if (activeDisplayElement) {
-                activeDisplayElement.classList.add("active-display");
-            }
+
+            // ЕДВА СЛЕД изчисленията, зареждаме настройките, които може да сменят скина.
+            loadSettings();
+            initAudio();
+
+            // Прилагаме символите за валута
+            document.getElementById('currency').textContent = CURRENCY_SYMBOL;
+            document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;
+
             // --- ПРЕДУПРЕЖДЕНИЕ ЗА КУРСА ---
             if (showWarning && showRateWarningEnabled) {
                 const warning = document.getElementById('exchangeRateWarning');
                 warning.style.display = 'flex';
-                modalIsActive = true; // Блокираме калкулатора
+                modalIsActive = true;
                 document.getElementById('exchangeRateChangeBtn').onclick = function() {
-                    // Връщаме курса по подразбиране и запазваме в новата структура
                     const settings = JSON.parse(localStorage.getItem('appSettings')) || defaultSettings;
                     settings.exchangeRate = defaultSettings.exchangeRate;
                     localStorage.setItem('appSettings', JSON.stringify(settings));
-                    modalIsActive = false; // Освобождаваме преди презареждане
-                    location.reload(); // Презареждаме, за да се приложи
+                    modalIsActive = false;
+                    location.reload();
                 };
                 document.getElementById('exchangeRateConfirmBtn').onclick = function() {
                     warning.style.display = 'none';
-                    modalIsActive = false; // Освобождаваме калкулатора
+                    modalIsActive = false;
                 };
             }
+
             // Визуализираме заредената памет
             for (let i = 1; i <= 3; i++) {
                 if (Mem[i] !== undefined && Mem[i] !== null && Mem[i] !== 0) {
-                    memoryAdd(i, "+"); // updateStatus ("M", i);
+                    memoryAdd(i, "+");
                 }
             }
         } catch (err) {
             console.warn("⚠️ Грешка при инициализация:", err);
         }
-        // Показване на интерфейса
+        // Показване на интерфейса и задаване на активен дисплей
         document.body.classList.add("ready");
+        appendNumber("C");
     });
 
     document.addEventListener('DOMContentLoaded', () => {
         // Затваряне на модал с ESC клавиш
         document.addEventListener('keydown', (e) => {
             const key = e.key;
-
             // Escape винаги работи за затваряне на модални прозорци
             if (key === 'Escape' || key === 'Esc') {
                 historyModal.style.display = 'none';
@@ -1222,6 +1228,7 @@
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
         isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        appendNumber("C");
     });
 
     // Следене на преоразмеряването на прозореца

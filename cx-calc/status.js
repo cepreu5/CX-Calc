@@ -88,8 +88,14 @@
     //memoryShow: Временно показва стойността от даден слот на паметта в горния дисплей, без да го променя
     function memoryShow(slot) {
         if (slot == 4) {
-            const calculator = document.getElementById("calculator");
-            calculator.src = calculator.src.includes("CalculatorA.png") ? "Calculator0.png" : "CalculatorA.png";
+            const calculatorEl = document.getElementById("calculator");
+            const newSkin = calculatorEl.src.includes("CalculatorA.png") ? "Calculator0.png" : "CalculatorA.png";
+            calculatorEl.src = newSkin;
+
+            // Запазваме новия скин в localStorage
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            settings.calculatorSkin = newSkin; // Запазваме името на файла
+            localStorage.setItem('appSettings', JSON.stringify(settings));
             return;
         }
         if (Mem[slot] === undefined) {
