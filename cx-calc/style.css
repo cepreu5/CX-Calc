@@ -1,8 +1,8 @@
 :root {
     --modal-bg-color: transparent; /* Премахваме замъгляването */
     --modal-content-bg: #BCB6B2;
-    --settings-label-color: #383838; /* Средно лилаво */
-    --container-bg-color: #BCB6B2;
+    --settings-label-color: #383838;
+    --container-bg-color: #b1aba6;
     --calc-bottom-offset: 0px; /* Отместване за долната част на калкулатора */
 }
 
@@ -243,53 +243,11 @@ body.ready {
   outline: 3px solid lime;
 }
 
-/*Styles for Help Modal
-#help-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-#help-table td {
-    padding: 8px 12px;
-    /~ border: 1px solid #ddd; ~/
-    vertical-align: middle;
-}
-#help-table .key-combo {
-    display: flex;
-    flex-direction: column;   /~ подрежда децата вертикално ~/
-    align-items: left;      /~ центрира по хоризонтала ~/
-    width: 40%;
-    white-space: nowrap;
-}
-
-#help-table .top-row {
-    display: flex;
-    align-items: center;      /~ вертикално центрира M+ и изображението ~/
-    gap: 8px;                 /~ разстояние между тях ~/
-}
-
-#help-table .bottom-row {
-    margin-top: 4px;          /~ малко разстояние от горния ред ~/
-}
-
-#help-table .key-desc {
-    font-size: 0.9em;
-    line-height: 1.4;
-}
-#help-table kbd {
-    background-color: #d4d4d4; border-radius: 3px; border: 1px solid #b4b4b4;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, .2), 0 2px 0 0 rgba(255, 255, 255, .7) inset;
-    color: #000; display: inline-block; font-size: 0.85em; font-weight: 700;
-    line-height: 1; padding: 4px 6px; white-space: nowrap; width: 30px;
-}
-.help-separator { border: none; border-top: 1px dashed #ccc; margin: 5px 0; }
-*/
-
 .help-modal-content {
     max-width: 600px;
     margin: auto;
     padding: 16px;
-    background: #BCB6B2;
+    background: #aca6a2;
     border-radius: 8px;
     font-family: sans-serif;
     font-size: 14px;

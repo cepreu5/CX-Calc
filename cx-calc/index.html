@@ -251,7 +251,8 @@
                             <div class="help-top-row"><strong>MR</strong> (Mem Recall)</div>
                             <div class="help-bottom-row"></div><img src="M123.png" alt="Memory" class="help-key-img"></div>
                         </td>
-                        <td class="help-key-desc"><strong>Клик</strong> Поставя стойността от памет 1, 2, 3 в активния дисплей.<br><strong>Ctrl+Клик</strong> Показва временно стойността от памет 1, 2, 3 в горния дисплей.</td>
+                        <td class="help-key-desc"><strong>Клик</strong> Поставя стойността от памет 1, 2 или 3 в активния дисплей.<br>
+                            <strong>Ctrl+Клик</strong> Показва временно стойността от памет 1, 2 или 3 в горния дисплей.</td>
                     </tr>
                     <tr>
                         <td class="help-key-combo">
@@ -263,7 +264,8 @@
                         <td class="help-key-combo">
                             <div class="help-top-row"><img src="Switch.png" alt="Switch" class="help-key-img"></div>
                         </td>
-                        <td class="help-key-desc"><strong>Клик</strong> Сменя активния дисплей.<br><strong>Ctrl+Клик</strong> Поставя числото от активния дисплей в другия и го прави активен.</td>
+                        <td class="help-key-desc"><strong>Клик</strong> Сменя активния дисплей.<br>
+                            <strong>Ctrl+Клик</strong> Поставя числото от активния дисплей в другия и го прави активен.</td>
                     </tr>
                     <tr>
                         <td class="help-key-combo">
@@ -1258,7 +1260,43 @@
 
     // Деактивирай по време на разработка, за да не кешира и се зарежда винаги
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+    navigator.serviceWorker.register('sw.js')
+        .then(reg => {
+        console.log('Service Worker регистриран:', reg);
+        navigator.serviceWorker.addEventListener('message', event => {
+            if (event.data?.type === 'NEW_VERSION_AVAILABLE') {
+            console.log('Налична е нова версия!');
+            // Създай визуално съобщение
+            const notice = document.createElement('div');
+            notice.textContent = 'Налична е нова версия. Страницата ще се презареди...';
+            notice.style.position = 'fixed';
+            notice.style.bottom = '20px';
+            notice.style.left = '50%';
+            notice.style.transform = 'translateX(-50%)';
+            notice.style.background = '#0078d4';
+            notice.style.color = '#fff';
+            notice.style.padding = '12px 20px';
+            notice.style.borderRadius = '6px';
+            notice.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+            notice.style.zIndex = '9999';
+            notice.style.fontFamily = 'sans-serif';
+            notice.style.opacity = '1';
+            notice.style.transition = 'opacity 1s ease-out';
+            document.body.appendChild(notice);
+            // Fade-out след 4 секунди
+            setTimeout(() => {
+                notice.style.opacity = '0';
+            }, 4000);
+            // Презареди след 5 секунди
+            setTimeout(() => {
+                window.location.reload();
+            }, 5000);
+            }
+        });
+        })
+        .catch(err => {
+        console.error('Грешка при регистрация на Service Worker:', err);
+        });
     }
 
     let deferredPrompt;
