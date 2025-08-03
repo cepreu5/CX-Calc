@@ -79,4 +79,10 @@ self.addEventListener('fetch', event => {
         return caches.match(OFFLINE_PAGE);
       })
   );
+  // обновява index.html
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/index.html'))
+    );
+  }
 });

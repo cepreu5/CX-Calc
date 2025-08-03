@@ -8,48 +8,6 @@
     <title>CX-Calc</title>
    	<link rel="shortcut icon" type="image/png" href="CalcFav.png" />
 	<link rel="stylesheet" href="style.css" />
-<style>
-    /* Styles for Help Modal */
-    #help-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-    #help-table td {
-        padding: 8px 12px;
-        /* border: 1px solid #ddd; */
-        vertical-align: middle;
-    }
-    #help-table .key-combo {
-    display: flex;
-    flex-direction: column;   /* подрежда децата вертикално */
-    align-items: left;      /* центрира по хоризонтала */
-    width: 40%;
-    white-space: nowrap;
-}
-
-    #help-table .top-row {
-        display: flex;
-        align-items: center;      /* вертикално центрира M+ и изображението */
-        gap: 8px;                 /* разстояние между тях */
-    }
-
-    #help-table .bottom-row {
-        margin-top: 4px;          /* малко разстояние от горния ред */
-    }
-
-    #help-table .key-desc {
-        font-size: 0.9em;
-        line-height: 1.4;
-    }
-    #help-table kbd {
-        background-color: #d4d4d4; border-radius: 3px; border: 1px solid #b4b4b4;
-        box-shadow: 0 1px 1px rgba(0, 0, 0, .2), 0 2px 0 0 rgba(255, 255, 255, .7) inset;
-        color: #000; display: inline-block; font-size: 0.85em; font-weight: 700;
-        line-height: 1; padding: 4px 6px; white-space: nowrap; width: 30px;
-    }
-    .help-separator { border: none; border-top: 1px dashed #ccc; margin: 5px 0; }
-</style>
 </head>
 <body>
     <div id="install-bar" style="
@@ -215,117 +173,114 @@
         </div>
       </div>
     </div>    
+<div id="helpModal" class="modal help-modal">
+    <div class="help-modal-overlay"></div>
+    <div class="help-modal-content">
+        <div class="help-modal-header">
+            <h3>Комбинацията <strong>Ctrl+Клик</strong> на мобилни устройства се постига чрез задържане на бутона.</h3>
+            <button class="help-close-button" id="closeHelpModalButtonTop" aria-label="Затвори">&times;</button>
+        </div>
 
-   <div id="helpModal" class="modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <!-- <h2>Помощ</h2> -->
-                <h3>Комбинацията <strong>Ctrl+Клик</strong> на мобилни устройства се постига чрез задържане на бутона.</h3>
-            </div>
-            <div class="help-content">
-                <table id="help-table">
-                    <tbody>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><img src="Help.png" alt="Help" class="key-img"></div>
-                            </td>
-                            <td class="key-desc">Показва допълнителни символи върху клавишите.</td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><img src="Settings.png" alt="Settings" class="key-img"></div>
-                            </td>
-                            <td class="key-desc"><strong>Клик</strong> История.<br>
-                                <strong>Ctrl+Клик</strong> Настройки.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><img src="Plus.png" alt="C" class="key-img"></div>
-                            </td>
-                            <td class="key-desc">Превключва между нормален и пълноекранен режим.</td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><img src="Eq.png" alt="C" class="key-img"></div>
-                            </td>
-                            <td class="key-desc">Запазва числото от активния дисплей в историята.</td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><img src="C.png" alt="C" class="key-img"></div>
-                                <div class="bottom-row"><strong>AC (All Clear)</strong></div>
-                            </td>
-                            <td class="key-desc">Изтрива дисплея, трите памети и историята.</td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><img src="K123.png" alt="1, 2, 3" class="key-img"></div>
-                                <div class="bottom-row"><strong>M+ (Memory+)</strong></div>
-                            </td>
-                            <td class="key-desc">Добавя числото от активния дисплей към числото в памет 1, 2, 3.</td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><img src="K456.png" alt="4, 5, 6" class="key-img"></div>
-                                <div class="bottom-row"><strong>M- (Memory-)</strong></div>
-                            </td>
-                            <td class="key-desc">Изважда числото от активния дисплей от числото в памет 1, 2, 3.</td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><img src="K789.png" alt="7, 8, 9" class="key-img"></div>
-                                <div class="bottom-row"><strong>MC (Memory Clear)</strong></div>
-                            </td>
-                            <td class="key-desc">Изтрива памет 1, 2, 3.</td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><img src="BS.png" alt="Backspace" class="key-img">
-                                <strong>MC3</strong></div>
-                            </td>
-                            <td class="key-desc">Изтрива и трите памети.</td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><strong>MR</strong><img src="M123.png" alt="Memory клавиши" class="key-img"></div>
-                                <div class="bottom-row"><strong>Memory Recall</strong></div>
-                            </td>
-                            <td class="key-desc"><strong>Клик</strong> Поставя стойността от памет 1, 2, 3 в активния дисплей.<br>
-                                <strong>Ctrl+Клик</strong> Показва временно стойността от памет 1, 2, 3 в горния дисплей.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><img src="Paste.png" alt="Paste" class="key-img"></div>
-                            </td>
-                            <td class="key-desc">Поставя (първото) число от клипборда в активния дисплей.</td>
-                        </tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><img src="Switch.png" alt="Switch" class="key-img"></div>
-                            </td>
-                            <td class="key-desc"><strong>Клик</strong> Сменя активния дисплей.<br>
-                                <strong>Ctrl+Клик</strong> Поставя числото от активния дисплей в другия и го прави активен.
-                            </td>
-                        </tr>
-                        <tr><td colspan="2"><hr class="help-separator"></td></tr>
-                        <tr>
-                            <td class="key-combo">
-                                <div class="top-row"><kbd>Ctrl</kbd><strong> Клик</strong></div>
-                                <div class="bottom-row">над калкулатора</div>
-                            </td>
-                            <td class="key-desc"><strong>Нулиране</strong><br>Връща всички настройки по подразбиране.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="modal-footer" style="margin-top: 15px; display: flex; justify-content: flex-end;">
-                <button id="closeHelpModalButton" class="action-button">Затвори</button>
-            </div>
+        <div class="help-modal-body">
+            <table class="help-modal-table">
+                <tbody>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="Help.png" alt="Help" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc">Показва допълнителни символи върху клавишите.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><img src="Settings.png" alt="Settings" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc"><strong>Клик</strong> История.<br><strong>Ctrl+Клик</strong> Настройки.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="Plus.png" alt="Plus" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc">Превключва между нормален и пълноекранен режим.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="Eq.png" alt="Eq" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc">Запазва числото от активния дисплей в историята.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><strong>AC</strong> (All Clear)</div>
+                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="C.png" alt="C" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc">Изтрива дисплея, трите памети и историята.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><strong>M+</strong> (Memory+)</div>
+                            <div class="help-top-row"><kbd>Ctrl</kbd></div>
+                            <div class="help-bottom-row"><img src="K123.png" alt="K123" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc">Числото от активния дисплей се добавя към числото в памет 1, 2 или 3.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><strong>M-</strong> (Memory-)</div>
+                            <div class="help-top-row"><kbd>Ctrl</kbd></div>
+                            <div class="help-bottom-row"><img src="K456.png" alt="K456" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc">Числото от активния дисплей се изважда от числото в памет 1, 2 или 3.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><strong>MC</strong> (Mem Clear)</div>
+                            <div class="help-top-row"><kbd>Ctrl</kbd></div>
+                            <div class="help-bottom-row"><img src="K789.png" alt="K789" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc">Изтрива памет 1, 2 или 3.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><strong>MC3</strong></div>
+                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="BS.png" alt="Backspace" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc">Изтрива и трите памети.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><strong>MR</strong> (Mem Recall)</div>
+                            <div class="help-bottom-row"></div><img src="M123.png" alt="Memory" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc"><strong>Клик</strong> Поставя стойността от памет 1, 2, 3 в активния дисплей.<br><strong>Ctrl+Клик</strong> Показва временно стойността от памет 1, 2, 3 в горния дисплей.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="Paste.png" alt="Paste" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc">Поставя (първото) число от клипборда в активния дисплей.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><img src="Switch.png" alt="Switch" class="help-key-img"></div>
+                        </td>
+                        <td class="help-key-desc"><strong>Клик</strong> Сменя активния дисплей.<br><strong>Ctrl+Клик</strong> Поставя числото от активния дисплей в другия и го прави активен.</td>
+                    </tr>
+                    <tr>
+                        <td class="help-key-combo">
+                            <div class="help-top-row"><kbd>Ctrl</kbd><strong> Клик</strong></div>
+                            <div class="help-top-row"><strong>над калкулатора</strong></div>
+                        </td>
+                        <td class="help-key-desc"><strong>Нулиране</strong><br>Връща всички настройки по подразбиране.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="help-modal-footer">
+            <button id="closeHelpModalButton" class="help-action-button">Затвори</button>
         </div>
     </div>
+</div>
     
 <script src="status.js"></script>
 <script src="calc.js"></script>
@@ -1285,15 +1240,20 @@
     }
 
     if (closeHelpModalButton) {
-        closeHelpModalButton.addEventListener('click', (e) => { 
-            helpModal.style.display = 'none';
-            // Забавяне на изключването с 1 tick (0 ms timeout)
-            setTimeout(() => {
-                modalIsActive = false;
-            }, 0);
-            e.stopPropagation();
-            e.preventDefault();
-        });
+        closeHelpModalButton.addEventListener('click', closeHelpModal);
+    }
+
+    if (closeHelpModalButtonTop) {
+        closeHelpModalButtonTop.addEventListener('click', closeHelpModal);
+    }
+
+    function closeHelpModal(e) {
+        helpModal.style.display = 'none';
+        setTimeout(() => {
+            modalIsActive = false;
+        }, 0);
+        e.stopPropagation();
+        e.preventDefault();
     }
 
     // Деактивирай по време на разработка, за да не кешира и се зарежда винаги

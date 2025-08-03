@@ -242,3 +242,193 @@ body.ready {
 .overlay-marker:hover {
   outline: 3px solid lime;
 }
+
+/*Styles for Help Modal
+#help-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+#help-table td {
+    padding: 8px 12px;
+    /~ border: 1px solid #ddd; ~/
+    vertical-align: middle;
+}
+#help-table .key-combo {
+    display: flex;
+    flex-direction: column;   /~ подрежда децата вертикално ~/
+    align-items: left;      /~ центрира по хоризонтала ~/
+    width: 40%;
+    white-space: nowrap;
+}
+
+#help-table .top-row {
+    display: flex;
+    align-items: center;      /~ вертикално центрира M+ и изображението ~/
+    gap: 8px;                 /~ разстояние между тях ~/
+}
+
+#help-table .bottom-row {
+    margin-top: 4px;          /~ малко разстояние от горния ред ~/
+}
+
+#help-table .key-desc {
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+#help-table kbd {
+    background-color: #d4d4d4; border-radius: 3px; border: 1px solid #b4b4b4;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .2), 0 2px 0 0 rgba(255, 255, 255, .7) inset;
+    color: #000; display: inline-block; font-size: 0.85em; font-weight: 700;
+    line-height: 1; padding: 4px 6px; white-space: nowrap; width: 30px;
+}
+.help-separator { border: none; border-top: 1px dashed #ccc; margin: 5px 0; }
+*/
+
+.help-modal-content {
+    max-width: 600px;
+    margin: auto;
+    padding: 16px;
+    background: #BCB6B2;
+    border-radius: 8px;
+    font-family: sans-serif;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+.help-modal-header {
+    position: relative;
+    padding-right: 32px;
+}
+
+.help-close-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    color: #666;
+}
+
+.help-modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.help-modal-table {
+    width: 100%;
+    /* премахва удвояване на рамката */
+    border-collapse: collapse;
+    border: 1px solid #000;
+}
+
+.help-modal-table tr {
+    border-bottom: 1px solid #000;
+}
+
+.help-modal-table td {
+    border: none;
+    padding: 6px;
+    vertical-align: middle;
+}
+
+.help-modal-table td:nth-child(2) {
+    border-left: 1px solid #000;
+}
+
+/* Първа колона: ляво подравнена и вертикално центрирана */
+.help-key-combo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    text-align: left;
+    min-width: 80px;
+}
+
+/* Подредба на съдържанието вътре */
+.help-top-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.help-bottom-row {
+    font-size: 12px;
+    margin-top: 2px;
+    color: #555;
+    text-align: left;
+}
+
+.help-key-combo kbd {
+    padding: 2px 6px;
+    background: #eee;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.help-key-img {
+    display: block;
+}
+
+/* Втора колона */
+.help-key-desc {
+    vertical-align: middle;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: left;
+}
+
+/*.help-separator {
+    margin: 8px 0;
+    border: none;
+    border-top: 1px solid #ccc;
+}*/
+
+.help-modal-footer {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.help-action-button {
+    padding: 6px 12px;
+    font-size: 14px;
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Адаптивност за мобилни устройства */
+@media (max-width: 480px) {
+    .help-modal-content {
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .help-key-combo {
+        min-width: 60px;
+    }
+
+    .help-key-desc {
+        font-size: 12px;
+    }
+
+    .help-action-button {
+        font-size: 13px;
+        padding: 5px 10px;
+    }
+
+    .help-close-button {
+        font-size: 18px;
+        top: 6px;
+        right: 6px;
+    }
+}
