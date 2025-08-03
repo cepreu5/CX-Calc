@@ -87,6 +87,11 @@
 
     //memoryShow: Временно показва стойността от даден слот на паметта в горния дисплей, без да го променя
     function memoryShow(slot) {
+        if (slot == 4) {
+            const calculator = document.getElementById("calculator");
+            calculator.src = calculator.src.includes("CalculatorA.png") ? "Calculator0.png" : "CalculatorA.png";
+            return;
+        }
         if (Mem[slot] === undefined) {
             console.warn(`Памет Mem[${slot}] е недефинирана.`);
             return;
