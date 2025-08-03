@@ -11,7 +11,8 @@ const ASSETS = [
   'status.js',
   'fontcalc.js',
   'click.wav',
-  'Calculator.png',
+  'Calculator0.png',
+  'CalculatorA.png',
   'CalcFav.png',
   'Calc32.png',
   'Calc48.png',
@@ -19,6 +20,9 @@ const ASSETS = [
   'Calc144.png',
   'Calc192.png',
   'Calc512.png',
+  'K123.png',
+  'K456.png',
+  'K789.png',
   'manifest.webmanifest'
 ];
 
