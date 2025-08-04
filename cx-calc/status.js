@@ -1,9 +1,7 @@
-    /*
-    * updateMemoryStatusDisplay: Променя цвета на фона на статус зоната
+    /* updateMemoryStatusDisplay: Променя цвета на фона на статус зоната
     * Приема:
     *   - slot: Номер на слота на паметта (1, 2, 3).
-    *   - hasValue: Булева стойност (true, ако има стойност; false, ако е изчистена).
-    */
+    *   - hasValue: Булева стойност (true, ако има стойност; false, ако е изчистена). */
     function updateMemoryStatusDisplay(slot, hasValue) {
         const statusElement = document.getElementById(`statusArea${slot}`);
         if (statusElement) {

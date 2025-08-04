@@ -1,0 +1,10 @@
+{
+  "jsMinifyObfuscator.enableAutoSave": true,
+  "jsMinifyObfuscator.enableMinify": true,
+  "jsMinifyObfuscator.minifySuffix": ".min",
+  "jsMinifyObfuscator.enableObfuscator": true,
+  "jsMinifyObfuscator.obfuscatorLevel": "medium",
+  "jsMinifyObfuscator.watchFolders": {
+    "src": "dist"
+  }
+}
