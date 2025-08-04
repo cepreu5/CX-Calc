@@ -342,7 +342,6 @@
         currencyLevSymbol: 'лв.',
         soundEffectsEnabled: false,
         showRateWarningEnabled: true,
-        calcMem: [0, 0, 0, 0],
         calcBottomOffset: 0,
         initialDisplay: 'lev', // 'eur' или 'lev'
         pwaInstallDeclined: false,
@@ -392,7 +391,6 @@
             soundEffectsEnabled: document.getElementById('soundEffectsCheckbox').checked,
             calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
-            calcMem: Mem,
             pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
             calculatorSkin: currentSettings.calculatorSkin || defaultSettings.calculatorSkin // Запазваме текущия скин
         };
@@ -468,10 +466,15 @@
         CURRENCY_LEV_SYMBOL = settings.currencyLevSymbol;
         showRateWarningEnabled = settings.showRateWarningEnabled;
         soundEffectsEnabled = settings.soundEffectsEnabled;
-        Mem = settings.calcMem;
         calcBottom = settings.calcBottomOffset;
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
+
+        // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
+        const savedMem = JSON.parse(localStorage.getItem('CalcMem'));
+        if (savedMem && Array.isArray(savedMem)) {
+            Mem = savedMem;
+        } // Ако няма запазена памет, използваме първоначално декларираната празна Mem.
 
         // Задаваме облика на калкулатора според запазената настройка
         if (calculator && settings.calculatorSkin) {

@@ -1,5 +1,5 @@
 // sw.js – Service Worker за CX-Calc (PWA + офлайн)
-const CACHE_NAME = 'cx-calc-1.0.2'; // Версия на кеша, редактирай при промяна на ресурсите
+const CACHE_NAME = 'cx-calc-1.0.3'; // Версия на кеша, редактирай при промяна на ресурсите
 // Важно: промени версията при всяка промяна на кешираните ресурси!
 // Това ще принуди браузъра да изтегли новия кеш и да активира новия SW.
 const OFFLINE_PAGE = new URL('index.html', self.location).href;
@@ -25,6 +25,15 @@ const ASSETS = [
   'K123.png',
   'K456.png',
   'K789.png',
+  'M123.png',
+  'BS.png',
+  'C.png',
+  'Switch.png',
+  'Settings.png',
+  'Paste.png',
+  'Plus.png',
+  'Help.png',
+  'Eq.png',
   'manifest.webmanifest'
 ].map(path => new URL(path, self.location).href);
 
