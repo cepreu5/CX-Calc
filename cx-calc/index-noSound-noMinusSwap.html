@@ -27,13 +27,17 @@
         <button id="dismiss" style="width: 150px;">Отказ</button>
     </div>
 
+    <!--div id="install-bar" style="position:fixed; top:0px; width:100%; z-index:1000; display:none;">
+        <button id="install" style="width: 30%;">Инсталиране (20)</button>
+        <button id="dismiss" style="width: 30%;">Отказ</button>
+    </div-->
+
     <div id="statusArea1" class="statusArea"></div>
     <div id="statusArea2" class="statusArea"></div>
     <div id="statusArea3" class="statusArea"></div>
-    <div id="statusArea4" class="statusArea" style="opacity: 1;">Help</div>
 
     <div class="calculator-container" id="calculatorContainer">     
-        <img src="Calculator0.png" ID="calculator" class="calculator-img" alt="Калкулатор">
+        <img src="Calculator.png" ID="calculator" class="calculator-img" alt="Калкулатор">
         <div id="currency" contenteditable="false" ></div>
         <div id="currencyLev" contenteditable="false" ></div>
         <div id="eurInput" class="calculator-display" contenteditable="false"></div>
@@ -49,7 +53,7 @@
             <ul id="historyList">
             </ul>
             <div class="modal-footer" style="margin-top: 15px; display: flex; gap: 10px;">
-                <button id="clearHistoryButton" class="action-button" style="flex-grow: 1;">Изтрий</button>
+                <button id="clearHistoryButton" class="action-button secondary" style="flex-grow: 1;">Изтрий</button>
                 <button id="closeHistoryModalButton" class="action-button" style="flex-grow: 1;">Затвори</button>
             </div>
         </div>
@@ -142,11 +146,9 @@
                         <input type="number" id="statussizeY" data-key="StatusSize" data-prop="y">
 
                         <!-- New setting for calculator bottom offset -->
-                        <label for="calcBottomOffset">Поле отдолу/Звук:</label>
-                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
-                            <input type="number" id="calcBottomOffset" min="0" max="500" value="0" style="width: 60px;">
-                            <input type="checkbox" id="soundEffectsCheckbox" checked>
-                        </div>
+                        <label for="calcBottomOffset">Поле отдолу:</label>
+                        <input type="number" id="calcBottomOffset" min="0" max="500" value="0">
+
                     </div>
                 </div>
             </div>
@@ -154,7 +156,7 @@
                 <button id="ovBtnSettings" class="action-button"  style="margin-right: 20px;" 
                     onclick="showOv()">
                     Зони</button>
-                <button id="closeSettingsModalButton" class="action-button" style="margin-right: 20px;">Затвори</button>
+                <button id="closeSettingsModalButton" class="action-button secondary" style="margin-right: 20px;">Затвори</button>
                 <button id="saveSettings" class="action-button">Запис</button>
             </div>
         </div>
@@ -173,122 +175,44 @@
         </div>
       </div>
     </div>    
-<div id="helpModal" class="modal help-modal">
-    <div class="help-modal-overlay"></div>
-    <div class="help-modal-content">
-        <div class="help-modal-header">
-            <h3>Комбинацията <strong>Ctrl+Клик</strong> на мобилни устройства се постига чрез задържане на бутона.</h3>
-            <button class="help-close-button" id="closeHelpModalButtonTop" aria-label="Затвори">&times;</button>
-        </div>
 
-        <div class="help-modal-body">
-            <table class="help-modal-table">
-                <tbody>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="Help.png" alt="Help" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc">Показва допълнителни символи върху клавишите.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><img src="Settings.png" alt="Settings" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc"><strong>Клик</strong> История.<br><strong>Ctrl+Клик</strong> Настройки.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="Plus.png" alt="Plus" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc">Превключва между нормален и пълноекранен режим.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="Eq.png" alt="Eq" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc">Запазва числото от активния дисплей в историята.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><strong>AC</strong> (All Clear)</div>
-                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="C.png" alt="C" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc">Изтрива дисплея, трите памети и историята.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><strong>M+</strong> (Memory+)</div>
-                            <div class="help-top-row"><kbd>Ctrl</kbd></div>
-                            <div class="help-bottom-row"><img src="K123.png" alt="K123" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc">Числото от активния дисплей се добавя към числото в памет 1, 2 или 3.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><strong>M-</strong> (Memory-)</div>
-                            <div class="help-top-row"><kbd>Ctrl</kbd></div>
-                            <div class="help-bottom-row"><img src="K456.png" alt="K456" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc">Числото от активния дисплей се изважда от числото в памет 1, 2 или 3.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><strong>MC</strong> (Mem Clear)</div>
-                            <div class="help-top-row"><kbd>Ctrl</kbd></div>
-                            <div class="help-bottom-row"><img src="K789.png" alt="K789" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc">Изтрива памет 1, 2 или 3.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><strong>MC3</strong></div>
-                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="BS.png" alt="Backspace" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc">Изтрива и трите памети.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><strong>MR</strong> (Mem Recall)</div>
-                            <div class="help-bottom-row"></div><img src="M123.png" alt="Memory" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc"><strong>Клик</strong> Поставя стойността от памет 1, 2 или 3 в активния дисплей.<br>
-                            <strong>Ctrl+Клик</strong> Показва временно стойността от памет 1, 2 или 3 в горния дисплей.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><kbd>Ctrl</kbd><img src="Paste.png" alt="Paste" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc">Поставя (първото) число от клипборда в активния дисплей.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><img src="Switch.png" alt="Switch" class="help-key-img"></div>
-                        </td>
-                        <td class="help-key-desc"><strong>Клик</strong> Сменя активния дисплей.<br>
-                            <strong>Ctrl+Клик</strong> Поставя числото от активния дисплей в другия и го прави активен.</td>
-                    </tr>
-                    <tr>
-                        <td class="help-key-combo">
-                            <div class="help-top-row"><kbd>Ctrl</kbd><strong> Клик</strong></div>
-                            <div class="help-top-row"><strong>над калкулатора</strong></div>
-                        </td>
-                        <td class="help-key-desc"><strong>Нулиране</strong><br>Връща всички настройки по подразбиране.</td>
-                    </tr>
-                </tbody>
-            </table>
+    <!--div id="install-bar" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:3000; align-items:center; justify-content:center;">
+      <div style="background:#fff; color:#b00; padding:32px 24px; border-radius:12px; box-shadow:0 2px 16px #0003; max-width:90vw; text-align:center;">
+        <div style="font-size:1.2em; margin-bottom:18px;">
+          <img src="Calc48.png" alt="СХ Евро калкулатор">
+          <b>СХ Евро калкулатор</b><br><br>
+          Има възможност да инсталирате калкулатора, така че да може да го стартирате без връзка с интернет.<br>
+          Ако изберете <b>[Отказ]</b> няма да виждате това предложение повече.
         </div>
+        <div style="display:flex; gap:20px; justify-content:center;">
+          <button id="install" class="action-button">Инсталиране (20)</button>
+          <button id="dismiss" class="action-button secondary">Отказ</button>
+        </div>
+      </div>
+    </div-->    
 
-        <div class="help-modal-footer">
-            <button id="closeHelpModalButton" class="help-action-button">Затвори</button>
+    <!--div id="install-bar" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:3000; display:flex; align-items:center; justify-content:center;">
+    <div style="background:#fff; color:#333; padding:32px 28px; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,0.2); max-width:600px; width:90vw; text-align:center; font-family:sans-serif;">
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px;">
+        <img src="Calc48.png" alt="СХ Евро калкулатор" style="width:48px; height:48px;">
+        <div style="font-size:1.5em; font-weight:bold; color:#b00;">СХ Евро калкулатор</div>
+        </div>
+        <div style="font-size:1.1em; margin-bottom:24px; line-height:1.5;">
+            Има възможност да инсталирате калкулатора, така че да може да го стартирате без връзка с интернет.<br>
+            След нулиране на брояча ще може да го изпробвате и да решите дали да го инсталирате при следващо стартиране.<br>
+            Ако изберете <b>Отказ</b>, няма повече да виждате това предложение.
+        </div>
+        <div style="display:flex; gap:20px; justify-content:center;">
+            <button id="install" style="background:#b00; color:#fff; border:none; padding:12px 24px; border-radius:8px; font-size:1em; cursor:pointer; transition:0.3s;">Инсталиране (30)</button>
+            <button id="dismiss" style="background:#ccc; color:#333; border:none; padding:12px 24px; border-radius:8px; font-size:1em; cursor:pointer; transition:0.3s;">Отказ</button>
         </div>
     </div>
-</div>
-    
+    </div-->
+
 <script src="status.js"></script>
 <script src="calc.js"></script>
 <script src="history.js"></script>
 <script src="fontcalc.js"></script>
-
 <script>
     const rows = 5;
     const cols = 4;
@@ -297,6 +221,11 @@
     const display = document.querySelector('#eurInput');
     var calculator = null; // Изображението на калкулатора
     var calcBottom = 0;
+    var EXCHANGE_RATE = 1.95583;
+    var CURRENCY_SYMBOL = '€'; // Валутен символ по подразбиране
+    var CURRENCY_LEV_SYMBOL = 'лв'; // Валутен символ за лев
+    var showRateWarningEnabled = true; // Флаг за разрешение на предупреждението
+    var showWarning = false; // Флаг за показване на предупреждение за курса
 
     var screenWidth = window.innerWidth;
     var imageWidth, imageHeight, aspectRatioW, aspectRatioH;
@@ -308,10 +237,6 @@
     var levMode = true, isStandalone = false; // Начален режим - лв.
     var MainPoints = {};
     let modalIsActive = false;
-    var showWarning = false; // Флаг за показване на предупреждение за курса
-    // Променливи за Web Audio API за по-бърз звук
-    let audioContext;
-    let clickBuffer = null;
 
     const MAX_HISTORY_ITEMS = 30;
     const historyButton = document.getElementById('historyButton');
@@ -320,7 +245,6 @@
     const settingsModal = document.getElementById('settingsModal');
     const historyList = document.getElementById('historyList');
     const closeHistoryModalButton = document.getElementById('closeHistoryModalButton');
-    const closeHelpModalButton = document.getElementById('closeHelpModalButton');
 
     var MainPointsO = {
         Keys:       {x: 43, y: 235},
@@ -339,22 +263,13 @@
     const defaultSettings = {
         exchangeRate: 1.95583,
         currencySymbol: '€',
-        currencyLevSymbol: 'лв.',
-        soundEffectsEnabled: false,
+        currencyLevSymbol: 'лв',
         showRateWarningEnabled: true,
+        calcMem: [0, 0, 0, 0],
         calcBottomOffset: 0,
         initialDisplay: 'lev', // 'eur' или 'lev'
-        pwaInstallDeclined: false,
-        calculatorSkin: 'Calculator0.png' // Скин по подразбиране
+        pwaInstallDeclined: false
     };
-
-    // Инициализираме глобалните променливи директно от defaultSettings.
-    // Това създава единствен източник за стойностите по подразбиране.
-    var EXCHANGE_RATE = defaultSettings.exchangeRate;
-    var CURRENCY_SYMBOL = defaultSettings.currencySymbol;
-    var CURRENCY_LEV_SYMBOL = defaultSettings.currencyLevSymbol;
-    var showRateWarningEnabled = defaultSettings.showRateWarningEnabled;
-    var soundEffectsEnabled = defaultSettings.soundEffectsEnabled;
 
     function saveSettings() {
         // --- ЗАПИС НА НАСТРОЙКИТЕ ---
@@ -388,11 +303,10 @@
             currencySymbol: document.getElementById('currencySymbolInput').value.trim() || defaultSettings.currencySymbol,
             currencyLevSymbol: document.getElementById('currencyLevSymbolInput').value.trim() || defaultSettings.currencyLevSymbol,
             showRateWarningEnabled: document.getElementById('rateWarningCheckbox').checked,
-            soundEffectsEnabled: document.getElementById('soundEffectsCheckbox').checked,
             calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
-            pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
-            calculatorSkin: currentSettings.calculatorSkin || defaultSettings.calculatorSkin // Запазваме текущия скин
+            calcMem: Mem,
+            pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined
         };
         localStorage.setItem('appSettings', JSON.stringify(newAppSettings));
 
@@ -402,6 +316,8 @@
         location.reload();
     }
 
+
+    // New function to populate layout settings
     function populateLayoutSettings() {
       for (const key in MainPointsO) {
         if (MainPointsO.hasOwnProperty(key)) {
@@ -427,6 +343,10 @@
       if (exchangeRateInput) {
           exchangeRateInput.value = EXCHANGE_RATE;
       }
+      // Покажи и в заглавието
+      //const exchangeRateValue = document.getElementById('exchangeRateValue');
+      //if (exchangeRateValue) exchangeRateValue.textContent = EXCHANGE_RATE;
+
       const calcBottomOffsetInput = document.getElementById('calcBottomOffset');
       if (calcBottomOffsetInput) {
           // Вземи текущата стойност от CSS променливата или по подразбиране 100
@@ -448,11 +368,6 @@
       if (rateWarningCheckbox) {
           rateWarningCheckbox.checked = showRateWarningEnabled;
       }
-      // Попълни soundEffectsCheckbox
-      const soundCheckbox = document.getElementById('soundEffectsCheckbox');
-      if (soundCheckbox) {
-          soundCheckbox.checked = soundEffectsEnabled;
-      }
     }
 
     function loadSettings() {
@@ -460,33 +375,25 @@
         // Слива запазените настройки с тези по подразбиране, за да се гарантира, че всички ключове съществуват.
         // Запазените стойности имат предимство.
         const settings = { ...defaultSettings, ...savedSettings };
+
         // Прилага настройките към глобалните променливи на приложението
         EXCHANGE_RATE = settings.exchangeRate;
         CURRENCY_SYMBOL = settings.currencySymbol;
         CURRENCY_LEV_SYMBOL = settings.currencyLevSymbol;
         showRateWarningEnabled = settings.showRateWarningEnabled;
-        soundEffectsEnabled = settings.soundEffectsEnabled;
+        Mem = settings.calcMem;
         calcBottom = settings.calcBottomOffset;
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
 
-        // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
-        const savedMem = JSON.parse(localStorage.getItem('CalcMem'));
-        if (savedMem && Array.isArray(savedMem)) {
-            Mem = savedMem;
-        } // Ако няма запазена памет, използваме първоначално декларираната празна Mem.
-
-        // Задаваме облика на калкулатора според запазената настройка
-        if (calculator && settings.calculatorSkin) {
-            calculator.src = settings.calculatorSkin;
-        }
-
         // Прилага визуални настройки, които са нужни веднага при зареждане
         document.documentElement.style.setProperty('--calc-bottom-offset', `${calcBottom}px`);
+
         // Проверява дали да покаже предупреждение за курса, ако е различен от стандартния
         if (EXCHANGE_RATE !== defaultSettings.exchangeRate) {
             showWarning = true;
         }
+
         // Зареждане на MainPointsO от localStorage
         const savedMainPointsO = localStorage.getItem('MainPointsO');
         if (savedMainPointsO) {
@@ -503,6 +410,87 @@
             console.log("Заредени и допълнени MainPointsO от loadSettings():");
         }
     }
+
+/*
+    function saveLayoutSettings() {
+        let reloadNeeded = false;
+        // Проверка за промяна на позиционните параметри (MainPoints)
+        for (const key in MainPointsO) {
+            if (MainPointsO.hasOwnProperty(key)) {
+                const obj = MainPointsO[key];
+                if (typeof obj === 'object' && obj !== null) {
+                    for (const prop in obj) {
+                        if (obj.hasOwnProperty(prop)) {
+                            const inputId = key.toLowerCase() + prop.toUpperCase();
+                            const inputElement = document.getElementById(inputId);
+                            if (inputElement && !isNaN(parseFloat(inputElement.value))) {
+                                const newValue = parseFloat(inputElement.value);
+                                // Сравняваме с действащата стойност в MainPoints
+                                if (
+                                    MainPoints[key] &&
+                                    typeof MainPoints[key][prop] !== "undefined" &&
+                                    MainPoints[key][prop] !== newValue
+                                ) {
+                                    reloadNeeded = true;
+                                }
+                                obj[prop] = newValue; // присвояване към MainPointsO
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Запази и приложи символа за валута
+        const currencySymbolInput = document.getElementById('currencySymbolInput');
+        if (currencySymbolInput) {
+            const newSymbol = currencySymbolInput.value.trim();
+            // Запазваме само ако не е празно
+            if (newSymbol) {
+                CURRENCY_SYMBOL = newSymbol;
+                document.getElementById('currency').textContent = CURRENCY_SYMBOL;
+                localStorage.setItem('CURRENCY_SYMBOL', CURRENCY_SYMBOL);
+            }
+        }
+
+        // Запазваме настройката за предупреждението
+        const rateWarningCheckbox = document.getElementById('rateWarningCheckbox');
+        if (rateWarningCheckbox) {
+            showRateWarningEnabled = rateWarningCheckbox.checked;
+            localStorage.setItem('showRateWarningEnabled', showRateWarningEnabled);
+        }
+
+        localStorage.setItem('MainPointsO', JSON.stringify(MainPointsO));
+        // Запази exchangeRate
+        const exchangeRateInput = document.getElementById('exchangeRateInput');
+        if (exchangeRateInput) {
+            const rate = parseFloat(exchangeRateInput.value);
+            if (!isNaN(rate) && rate > 0) {
+                EXCHANGE_RATE = rate;
+                // Запази в localStorage
+                localStorage.setItem('EXCHANGE_RATE', EXCHANGE_RATE);
+                // Обнови и в заглавието
+                const exchangeRateValue = document.getElementById('exchangeRateValue');
+                if (exchangeRateValue) {
+                    exchangeRateValue.textContent = EXCHANGE_RATE;
+                }
+            }
+        }
+        // Проверка за промяна на calcBottom
+        const calcBottomOffsetInput = document.getElementById('calcBottomOffset');
+        if (calcBottomOffsetInput && !isNaN(parseInt(calcBottomOffsetInput.value, 10))) {
+            const px = parseInt(calcBottomOffsetInput.value, 10);
+            if (typeof calcBottom !== "undefined" && calcBottom !== px) {
+                reloadNeeded = true;
+            }
+            document.documentElement.style.setProperty('--calc-bottom-offset', px + 'px');
+            localStorage.setItem('calcBottomOffset', px);
+        }
+        // Презареждане само ако има промяна в позиционните параметри
+        if (reloadNeeded) {
+            location.reload();
+        }
+    }
+*/
 
     function getImageSize() {
         if (calculator) {
@@ -545,14 +533,18 @@
         // Заменяме window.innerWidth с containerWidth
         aspectRatioW = imageWidth / imageWidthO; // aspectRatioW е съотношението на ширината на изображението към оригиналната ширина
         aspectRatioH = imageHeight / imageHeightO; // aspectRatioH е съотношението на височината на изображението към оригиналната височина
+        // padding на изображението в canvas, предполага се равен двустранно
+        //StartingPoint.x = ConstX * aspectRatioW + (containerWidth - imageWidth) / 2;
+        //StartingPoint.y = ConstY * aspectRatioH + (containerHeight - imageHeight); // (imageHeight / calculator.naturalHeight)
+        //console.log("StartingPoint.x = ", StartingPoint.x, "  StartingPoint.y = ", StartingPoint.y);
         console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
     }
 
     function getKeyValue(row, col) {
         const keyMap = [
             ["L", "€", "C", "B"],
-            ["7", "8", "9", "/"],
-            ["4", "5", "6", "*"],
+            ["7", "8", "9", "*"],
+            ["4", "5", "6", "/"],
             ["1", "2", "3", "-"],
             ["0", ",", "=", "+"]
         ];
@@ -561,6 +553,8 @@
 
     function formatNumber(num) {
         if (isNaN(num)) return '';
+        // .toFixed(2) correctly rounds to 2 decimal places and ensures two decimal digits.
+        // Example: 123 -> "123.00", 123.4 -> "123.40", 123.456 -> "123.46"
         return num.toFixed(2).replace('.', ',');
     }
 
@@ -571,6 +565,7 @@
     }
 
     function convertFromLevToEur(levStr) {
+        //levStr = levStr.replace(/\s+/g, ''); // Премахваме интервалите
         let levValue = parseNumber(levStr);
         if (isNaN(levValue)) {
             return ''; // Изчистваме целевото поле, ако изходното е невалидно
@@ -581,6 +576,7 @@
     }
 
     function convertFromEurToLev(eurStr) {
+        //eurStr = eurStr.replace(/\s+/g, ''); // Премахваме интервалите
         let eurValue = parseNumber(eurStr);
         if (isNaN(eurValue)) {
             return ''; // Изчистваме целевото поле, ако изходното е невалидно
@@ -604,7 +600,7 @@
         }
         // Conditional formatting of decimal part based on 'dec' flag
         if (dec) {
-            // ensure two decimal places
+            // If 'dec' is true, ensure two decimal places
             if (decimalPart === "" || decimalPart === ",") {
                 decimalPart = ",00";
             } else if (decimalPart.length === 2) {
@@ -643,8 +639,10 @@
         const [activeDisplay, passiveDisplay] = levMode ? [displaylv, display] : [display, displaylv];
         const conversionFn = levMode ? convertFromLevToEur : convertFromEurToLev;
         // Осветяване на активния дисплей
-        activeDisplay.classList.add('active-display');
-        passiveDisplay.classList.remove('active-display');
+        activeDisplay.style.backgroundColor = "rgba(201, 255, 5, 0.3)";
+        activeDisplay.style.borderBottom = "2px solid #fff";
+        passiveDisplay.style.backgroundColor = "rgba(201, 255, 5, 0)";
+        passiveDisplay.style.borderBottom = "none";
         let activeDisplayText;
         if (userInput === "") { // Добавена проверка за празен userInput
             activeDisplayText = "";
@@ -814,10 +812,11 @@
     }
 
     function getKeyColumnIndex(key) {
-        const rect = calculator.getBoundingClientRect();
-        const colWidth = MainPoints.KeySize.x + MainPoints.KbdGaps.x;
-        const relativeX = (key.x - rect.left - MainPoints.Keys.x) / colWidth;
-        return Math.round(relativeX+1); // Връща 1, 2, 3 или 4
+    const rect = calculator.getBoundingClientRect();
+    // const scaleX = rect.width / imageWidthO;
+    const colWidth = MainPoints.KeySize.x + MainPoints.KbdGaps.x;
+    const relativeX = (key.x - rect.left - MainPoints.Keys.x) / colWidth;
+    return Math.round(relativeX+1); // Връща 1, 2, 3 или 4
     }
 
     function controlActions(key) {
@@ -851,40 +850,221 @@
         }
     }
 
-    // Инициализира Web Audio API за бързо възпроизвеждане на звук
-    async function initAudio() {
-        if (!soundEffectsEnabled) return;
-        try {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            // Изтегляме и декодираме аудио файла предварително
-            const response = await fetch('click.wav');
-            const arrayBuffer = await response.arrayBuffer();
-            clickBuffer = await audioContext.decodeAudioData(arrayBuffer);
-            console.log("Аудио файлът е кеширан и готов за възпроизвеждане.");
-        } catch (e) {
-            console.error("Web Audio API не се поддържа или възникна грешка при инициализация.", e);
-            soundEffectsEnabled = false; // Деактивираме звука при грешка
-        }
-    }
-
-    function playClickSound() {
-        if (!soundEffectsEnabled || !clickBuffer || !audioContext) return;
-        if (audioContext.state === 'suspended') audioContext.resume();
-        const source = audioContext.createBufferSource();
-        source.buffer = clickBuffer;
-        source.connect(audioContext.destination);
-        source.start(0);
-    }
-
-    function getKeyDimensions() {
+/*
+    document.addEventListener("click", function(event) {
+        if (modalIsActive) return; // ❌ за да не пропуска при кликване в модалния екран
         const rect = calculator.getBoundingClientRect();
         const scaleX = rect.width / imageWidthO;
         const scaleY = rect.height / imageHeightO;
-        return {
-            keyWidth: MainPointsO.KeySize.x * scaleX,
-            keyHeight: MainPointsO.KeySize.y * scaleY
-        };
+        const keyWidth = MainPointsO.KeySize.x * scaleX;
+        const keyHeight = MainPointsO.KeySize.y * scaleY;
+        keys.forEach(key => {
+            const withinX = event.clientX >= key.x && event.clientX <= key.x + keyWidth;
+            const withinY = event.clientY >= key.y && event.clientY <= key.y + keyHeight;
+            if (withinX && withinY) {
+                if (event.ctrlKey && key.value === '€') {
+                    if (ovFlag) {noOverlay(); ovFlag = false;}
+                    settingsModal.style.display = 'flex';
+                    modalIsActive = true;
+                    populateLayoutSettings();
+                } else if (event.ctrlKey && key.value === 'B') {
+                    for (let i = 1; i < 4; i++) {
+                        Mem[i] = 0;
+                        clearStatus (i);
+                    }
+                    localStorage.setItem('CalcMem', JSON.stringify(Mem));
+                } else if (event.ctrlKey && key.value === '+') {
+                    if (!fullscrFlag) goFullscreen()
+                    else exitFullscreen();
+                    fullscrFlag = !fullscrFlag;
+                } else if (event.ctrlKey && key.value === '*') { */
+                    // if ((/[+\-*/]$/.test(userInput))) return;
+/*                    console.log("Before %: ", userInput);
+                    userInput = userInput.replace(',', '.');
+                    userInput = eval(userInput);
+                    userInput = (parseFloat(userInput) / 100)
+                      .toFixed(2)
+                      .replace('.', ',');
+                    appendNumber("=");
+                    // console.log("Ctrl+%: ", userInput);
+                }  else if (event.ctrlKey && key.value === '-') {*/
+                    //if ((/[+\-*/]$/.test(userInput))) return;
+/*                    if (userInput.startsWith("-")) {
+                        userInput = userInput.slice(1); // премахва първия символ "-"
+                    } else {
+                        userInput = "-" + userInput;    // добавя "-"
+                    }
+                    userInput = userInput.replace(',', '.');
+                    userInput = eval(userInput);
+                    userInput = (parseFloat(userInput))
+                      .toFixed(2)
+                      .replace('.', ',');
+                    appendNumber("=");
+                } else if (event.ctrlKey && isMemoryKey(key.value)) {
+                    const col = getKeyColumnIndex(key);
+                    executeMemoryAction(key.value, col);
+                    console.log("Натиснато:", key.value, "→ Колона:", col);
+                } else {
+                    appendNumber(key.value);
+                }
+            }
+        });
+        // Проверка за кликове върху статус зоните (само за слотове 1, 2, 3)
+        for (let i = 1; i <= 3; i++) {
+            const statusEl = document.getElementById(`statusArea${i}`);
+            if (statusEl && getComputedStyle(statusEl).opacity > 0) {
+                const statusRect = statusEl.getBoundingClientRect();
+                if (event.clientX >= statusRect.left && event.clientX <= statusRect.right &&
+                    event.clientY >= statusRect.top && event.clientY <= statusRect.bottom)  {
+                    if (event.ctrlKey) {
+                    memoryShow(i);
+                    console.log(`Ctrl+Клик върху статус зона ${i} за показване на памет.`);
+                    } else {
+                    memoryRecall(i);
+                    console.log(`Кликнато върху видима статус зона ${i} за извикване на памет.`);
+                    }// Извикваме паметта за съответния слот
+                    break; // Прекратяваме цикъла, ако е обработен клик
+                }
+            }
+        }
+    });
+
+    // 🧩 Улавя десен клик или дълъг тап (контекстно меню)
+    document.addEventListener("contextmenu", function(event) {
+        event.preventDefault(); // предотвратява появата на браузър менюто
+        const rect = calculator.getBoundingClientRect();
+        const scaleX = rect.width / imageWidthO;
+        const scaleY = rect.height / imageHeightO;
+        const keyWidth = MainPointsO.KeySize.x * scaleX;
+        const keyHeight = MainPointsO.KeySize.y * scaleY;
+        keys.forEach(key => {
+            if (event.clientX >= key.x && event.clientX <= key.x + keyWidth &&
+                event.clientY >= key.y && event.clientY <= key.y + keyHeight) {
+                // 👉 Добавяме условието от клавиатурния шорткът
+                if (key.value === '+') {
+                    if (!fullscrFlag) goFullscreen()
+                    else exitFullscreen();
+                    fullscrFlag = !fullscrFlag;
+                } else if (event.ctrlKey && key.value === 'B') {
+                    for (let i = 1; i < 4; i++) {
+                        Mem[i] = 0;
+                        clearStatus (i);
+                    }
+                    localStorage.setItem('CalcMem', JSON.stringify(Mem));
+                } else if (key.value === '*') { */
+                    //if ((/[+\-*/]$/.test(userInput))) return;
+/*                    console.log("Before %: ", userInput);
+                    userInput = userInput.replace(',', '.');
+                    userInput = eval(userInput);
+                    userInput = (parseFloat(userInput) / 100)
+                      .toFixed(2)
+                      .replace('.', ',');
+                    appendNumber("=");
+                    // console.log("Ctrl+%: ", userInput);
+                }  else if (key.value === '-') { */
+                    //if ((/[+\-*/]$/.test(userInput))) return;
+/*                    if (userInput.startsWith("-")) {
+                        userInput = userInput.slice(1); // премахва първия символ "-"
+                    } else {
+                        userInput = "-" + userInput;    // добавя "-"
+                    }
+                    userInput = userInput.replace(',', '.'); */
+                    // if ((/[+\-*/]$/.test(userInput))) return;
+/*                    userInput = eval(userInput);
+                    userInput = (parseFloat(userInput))
+                      .toFixed(2)
+                      .replace('.', ',');
+                    appendNumber("=");
+                } else if (key.value === '€') {
+                    if (ovFlag) {noOverlay(); ovFlag = false;}
+                    settingsModal.style.display = 'flex';
+                    modalIsActive = true;
+                    populateLayoutSettings();
+                } else if (isMemoryKey(key.value)) {
+                    const col = getKeyColumnIndex(key);
+                    executeMemoryAction(key.value, col);
+                }
+            }
+        });
+        // Проверка за кликове върху статус зоните (само за слотове 1, 2, 3)
+        for (let i = 1; i <= 3; i++) {
+            const statusEl = document.getElementById(`statusArea${i}`);
+            if (statusEl && getComputedStyle(statusEl).opacity > 0) {
+                const statusRect = statusEl.getBoundingClientRect();
+                if (event.clientX >= statusRect.left && event.clientX <= statusRect.right &&
+                    event.clientY >= statusRect.top && event.clientY <= statusRect.bottom) {
+                    memoryShow(i); // Извикваме паметта за съответния слот
+                    console.log(`Задържано върху статус зона ${i} за извикване на памет.`);
+                    break; // Прекратяваме цикъла, ако е обработен клик
+                }
+            }
+        }
+    });
+*/
+/*
+    function handleSpecialKey(keyValue, event) {
+        if (event.ctrlKey && keyValue === '€') {
+            if (ovFlag) { noOverlay(); ovFlag = false; }
+            settingsModal.style.display = 'flex';
+            modalIsActive = true;
+            populateLayoutSettings();
+        } else if (event.ctrlKey && keyValue === 'B') {
+            clearAllMemory();
+        } else if (event.ctrlKey && keyValue === '+') {
+            toggleFullscreen();
+        } else if (event.ctrlKey && keyValue === '*') {
+            const result = sanitizeAndEvaluateInput(userInput, 'percent');
+            if (result !== null) {
+                userInput = result;
+                appendNumber("=");
+            }
+        } else if (event.ctrlKey && keyValue === '-') {
+            const result = sanitizeAndEvaluateInput(userInput, 'negate');
+            if (result !== null) {
+                userInput = result;
+                appendNumber("=");
+            }
+        } else if (event.ctrlKey && isMemoryKey(keyValue)) {
+            const col = getKeyColumnIndex(keyValue);
+            executeMemoryAction(keyValue, col);
+        } else {
+            appendNumber(keyValue);
+        }
     }
+*/
+/*
+    document.addEventListener("click", function(event) {
+        if (modalIsActive) return;
+        const { keyWidth, keyHeight } = getKeyDimensions();
+        keys.forEach(key => {
+            if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
+                handleSpecialKey(key.value, event);
+            }
+        });
+        handleStatusZones(event, event.ctrlKey);
+    });
+
+    document.addEventListener("contextmenu", function(event) {
+        event.preventDefault();
+        const { keyWidth, keyHeight } = getKeyDimensions();
+        keys.forEach(key => {
+            if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
+                handleSpecialKey(key.value, event);
+            }
+        });
+        handleStatusZones(event, false);
+    });
+*/
+
+    function getKeyDimensions() {
+            const rect = calculator.getBoundingClientRect();
+            const scaleX = rect.width / imageWidthO;
+            const scaleY = rect.height / imageHeightO;
+            return {
+                keyWidth: MainPointsO.KeySize.x * scaleX,
+                keyHeight: MainPointsO.KeySize.y * scaleY
+            };
+        }
 
     function isWithinKeyBounds(event, key, keyWidth, keyHeight) {
         return (
@@ -896,7 +1076,7 @@
     }
 
     function handleStatusZones(event, isCtrlRequired) {
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 1; i <= 3; i++) {
             const statusEl = document.getElementById(`statusArea${i}`);
             if (statusEl && getComputedStyle(statusEl).opacity > 0) {
                 const rect = statusEl.getBoundingClientRect();
@@ -906,15 +1086,6 @@
                     event.clientY >= rect.top &&
                     event.clientY <= rect.bottom
                 );
-                if (withinBounds && i == 4) {
-                    if (isCtrlRequired) {
-                        memoryShow(4);
-                    } else {
-                        helpModal.style.display = 'flex'; // Показваме модалния прозорец
-                        modalIsActive = true;
-                    }
-                    return true; // Връщаме true, за да покажем, че кликът е обработен
-                }
                 if (withinBounds) {
                     isCtrlRequired ? memoryShow(i) : memoryRecall(i);
                     return true; // Връщаме true, за да покажем, че кликът е обработен
@@ -972,45 +1143,9 @@
         localStorage.setItem('CalcMem', JSON.stringify(Mem));
     }
 
-    async function pasteNumber() {
-        try {
-            const clipboardText = await navigator.clipboard.readText();
-            const cleanedText = clipboardText.replace(/(?<=\d)\s+(?=\d)/g, '');
-            const match = cleanedText.match(/-?\d+[.,]?\d*/);
-            if (match) {
-                let rawNumber = match[0];
-                let normalized = rawNumber.replace(',', '.');
-                let rounded = parseFloat(normalized).toFixed(2);
-                let formatted = rounded.replace('.', ',');
-                const lastChar = formatted.slice(-1);
-                const base = formatted.slice(0, -1);
-                userInput = base;
-                appendNumber(lastChar);
-            } else {
-                console.warn("Не е намерено валидно число в клипборда.");
-            }
-        } catch (err) {
-            console.error("Грешка при достъп до клипборда:", err);
-        }
-    }
-
-    function switchNumber() {
-        appendNumber("="); // за да запомним числото от активния дисплей в клипборда
-        appendNumber("C"); // изтриваме дисплея
-        appendNumber("L"); // превключваме дисплея
-        pasteNumber(); // поставяме числото от клипборда
-    }
-
-    function allClear() {
-        appendNumber("C"); // изтриваме дисплея
-        userInput = ""; // изчистваме userInput
-        Mem = [0, 0, 0, 0]; // изчистваме паметта
-        localStorage.setItem('CalcMem', JSON.stringify(Mem)); // запазваме паметта
-        document.getElementById("clearHistoryButton").click(); // изтриваме историята, ако е налична
-    }
-
     function handleCalculatorInteraction(event, options = {}) {
         // Ако е активен модален прозорец, прекратяваме всякаква обработка на калкулатора.
+        // Това е централизирана проверка, която решава проблема с "пропадането" на кликове за всички модали.
         if (modalIsActive) {
             return;
         }
@@ -1035,12 +1170,6 @@
                     appendNumber(")");
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '+') {
                     toggleFullscreen();
-                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '/') {
-                    pasteNumber();
-                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === 'L') {
-                    switchNumber();
-                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === 'C') {
-                    allClear();
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '*') {
                     const result = sanitizeAndEvaluateInput(userInput, 'percent');
                     if (result !== null) {
@@ -1065,6 +1194,7 @@
         if (handleStatusZones(event, event.ctrlKey || options.allowWithoutCtrl)) {
             interactionHandled = true;
         }
+
         // Обработка на клик върху дисплеите
         if (!interactionHandled) {
             const levDisplayEl = document.getElementById('levInput');
@@ -1079,8 +1209,8 @@
                 toggleDisplayMode();
                 interactionHandled = true;
             }
-
         }
+
         // Ако кликът е извън контейнера на калкулатора и е Ctrl+Click или задържане
         if (!interactionHandled && (event.ctrlKey || options.allowWithoutCtrl)) {
             const calculatorContainer = document.getElementById('calculatorContainer');
@@ -1091,21 +1221,12 @@
                                        event.clientY > containerRect.bottom;
             if (isOutsideContainer) {
                 if (confirm('Сигурни ли сте, че искате да върнете първоначалните настройки?')) {
-                    // Добавяме и изтриване на историята при нулиране
-                    if (typeof clearHistory === 'function') {
-                        clearHistory();
-                        console.log('Историята е изтрита.');
-                    }
                     localStorage.removeItem('MainPointsO');
                     localStorage.removeItem('appSettings');
                     console.log('Всички запазени настройки (MainPointsO, appSettings) са изтрити.');
                     location.reload();
                 }
             }
-        }
-        // Звук, ако е имало валидно взаимодействие
-        if (interactionHandled) {
-            playClickSound();
         }
     }
 
@@ -1117,6 +1238,7 @@
         event.preventDefault(); // блокира контекстното меню
         handleCalculatorInteraction(event, { allowWithoutCtrl: true });
     });
+
 
     document.getElementById('saveSettings').addEventListener('click', function(e) {
         saveSettings();
@@ -1137,80 +1259,92 @@
         e.preventDefault();
     });
 
-    window.addEventListener("load", function() {
+    window.addEventListener("load", async function () {
         try {
             calculator = document.querySelector(".calculator-img");
+            loadSettings(); // Зарежда всички настройки от appSettings
+            // Прилагаме символа към елемента
+            document.getElementById('currency').textContent = CURRENCY_SYMBOL;
+            document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;
 
-            // Изчисленията се правят ВЕДНЪГА, базирано на Calculator0.png,
-            // тъй като размерите на скиновете са идентични.
+            // Основни изчисления
             getImageSize();
             getImageVisualSize();
             scaleMainPoints(aspectRatioW, aspectRatioH);
             const layout = calcNewCoordinates();
-            keys = layout.keys;
+            keys = layout.keys; // This needs to be updated after MainPointsO is potentially loaded
             displayCoords = layout.displayCoords;
             resizeFont();
-
-            // ЕДВА СЛЕД изчисленията, зареждаме настройките, които може да сменят скина.
-            loadSettings();
-            initAudio();
-
-            // Прилагаме символите за валута
-            document.getElementById('currency').textContent = CURRENCY_SYMBOL;
-            document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;
-
+            appendNumber("C");
             // --- ПРЕДУПРЕЖДЕНИЕ ЗА КУРСА ---
             if (showWarning && showRateWarningEnabled) {
                 const warning = document.getElementById('exchangeRateWarning');
                 warning.style.display = 'flex';
-                modalIsActive = true;
+                modalIsActive = true; // Блокираме калкулатора
+
                 document.getElementById('exchangeRateChangeBtn').onclick = function() {
+                    // Връщаме курса по подразбиране и запазваме в новата структура
                     const settings = JSON.parse(localStorage.getItem('appSettings')) || defaultSettings;
                     settings.exchangeRate = defaultSettings.exchangeRate;
                     localStorage.setItem('appSettings', JSON.stringify(settings));
-                    modalIsActive = false;
-                    location.reload();
+                    modalIsActive = false; // Освобождаваме преди презареждане
+                    location.reload(); // Презареждаме, за да се приложи
                 };
                 document.getElementById('exchangeRateConfirmBtn').onclick = function() {
                     warning.style.display = 'none';
-                    modalIsActive = false;
+                    modalIsActive = false; // Освобождаваме калкулатора
                 };
             }
-
             // Визуализираме заредената памет
             for (let i = 1; i <= 3; i++) {
                 if (Mem[i] !== undefined && Mem[i] !== null && Mem[i] !== 0) {
-                    memoryAdd(i, "+");
+                    memoryAdd(i, "+"); // updateStatus ("M", i);
                 }
             }
         } catch (err) {
             console.warn("⚠️ Грешка при инициализация:", err);
         }
-        // Показване на интерфейса и задаване на активен дисплей
+        /*/ Визуален ефект
+        const img = document.querySelector(".calculator-img");
+        if (img) {
+            img.classList.add("glow");
+            img.addEventListener("animationend", () => {
+                img.classList.remove("glow");
+            }, { once: true });
+            // Populate layout settings fields when the page loads (after MainPointsO is set)
+            populateLayoutSettings();
+            const settingsButton = document.getElementById('settingsButton'); // Assuming this button exists
+            if (settingsButton) {
+                settingsButton.addEventListener('click', populateLayoutSettings); // Populate when modal is opened
+            }
+        }*/
+        // Показване на интерфейса
         document.body.classList.add("ready");
-        appendNumber("C");
     });
 
     document.addEventListener('DOMContentLoaded', () => {
         // Затваряне на модал с ESC клавиш
         document.addEventListener('keydown', (e) => {
             const key = e.key;
+
             // Escape винаги работи за затваряне на модални прозорци
             if (key === 'Escape' || key === 'Esc') {
                 historyModal.style.display = 'none';
-                helpModal.style.display = 'none';
                 settingsModal.style.display = 'none';
                 modalIsActive = false;
                 return;
             }
+
             // Блокираме другите клавиши, ако има отворен модален прозорец
             if (modalIsActive) {
                 return;
             }
+
             // Предотвратяваме стандартното поведение, ако е нужно
             if (['Enter', '/', '*', '(', ')'].includes(key)) {
                 e.preventDefault();
             }
+
             // Специална обработка за '%'
             if (key === '%') {
                 if ((/[+\-*/]$/.test(userInput))) return;
@@ -1220,7 +1354,9 @@
                 appendNumber("=");
                 return;
             }
+
             const keyMap = { 'Enter': '=', '=': '=', 'Backspace': 'B', 'Delete': 'B', ',': ',', '.': ',', 'c': 'C', 'C': 'C', '(': '(', ')': ')' };
+
             if (keyMap[key]) {
                 appendNumber(keyMap[key]);
             } else if ("0123456789+-*/".includes(key)) {
@@ -1230,18 +1366,24 @@
         loadHistory();
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
+        // Проверка за инсталирано PWA
+        // const installBtn = document.getElementById('install');
         isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        appendNumber("C");
+        //if (isStandalone) {
+        //   installBtn.style.display = 'none';
+        //}
     });
 
     // Следене на преоразмеряването на прозореца
     window.addEventListener("resize", function (e) {
         getImageVisualSize();
         scaleMainPoints(aspectRatioW, aspectRatioH);
-        const layout = calcNewCoordinates();
+        const layout = calcNewCoordinates(); //@@ calculator, imageWidthO, imageHeightO
         keys = layout.keys;
         displayCoords = layout.displayCoords;
+        //const { keys, displayCoords } = calcNewCoordinates();
         adjustFontSize(levInput, eurInput)
+        //resizeFont();
     })
 
     function showOv() {
@@ -1261,65 +1403,11 @@
         //e.preventDefault();
     }
 
-    if (closeHelpModalButton) {
-        closeHelpModalButton.addEventListener('click', closeHelpModal);
-    }
-
-    if (closeHelpModalButtonTop) {
-        closeHelpModalButtonTop.addEventListener('click', closeHelpModal);
-    }
-
-    function closeHelpModal(e) {
-        helpModal.style.display = 'none';
-        setTimeout(() => {
-            modalIsActive = false;
-        }, 0);
-        e.stopPropagation();
-        e.preventDefault();
-    }
-
-    // Деактивирай по време на разработка, за да не кешира и се зарежда винаги
+    /* // Деактивирано по време на разработка, за да се зарежда винаги от сървъра
     if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-        .then(reg => {
-        console.log('Service Worker регистриран:', reg);
-        navigator.serviceWorker.addEventListener('message', event => {
-            if (event.data?.type === 'NEW_VERSION_AVAILABLE') {
-            console.log('Налична е нова версия!');
-            // Създай визуално съобщение
-            const notice = document.createElement('div');
-            notice.textContent = 'Налична е нова версия. Страницата ще се презареди...';
-            notice.style.position = 'fixed';
-            notice.style.top = '10px';
-            notice.style.left = '50%';
-            notice.style.transform = 'translateX(-50%)';
-            notice.style.background = '#0078d4';
-            notice.style.color = '#fff';
-            notice.style.padding = '12px 20px';
-            notice.style.borderRadius = '6px';
-            notice.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-            notice.style.zIndex = '9999';
-            notice.style.fontFamily = 'sans-serif';
-            notice.style.opacity = '1';
-            notice.style.transition = 'opacity 1s ease-out';
-            document.body.appendChild(notice);
-            notice.style.width = '80%';
-            notice.style.maxWidth = '300px';
-            notice.style.textAlign = 'center';            // Fade-out след 4 секунди
-            setTimeout(() => {
-                notice.style.opacity = '0';
-            }, 4000);
-            // Презареди след 5 секунди
-            setTimeout(() => {
-                window.location.reload();
-            }, 5000);
-            }
-        });
-        })
-        .catch(err => {
-        console.error('Грешка при регистрация на Service Worker:', err);
-        });
+      navigator.serviceWorker.register('sw.js');
     }
+    */
 
     let deferredPrompt;
     if (localStorage.getItem('pwaInstallDeclined') === 'true') {
@@ -1337,6 +1425,9 @@
             const interval = setInterval(() => {
                 countdown--;
                 installBtn.textContent = `Инсталиране (${String(countdown).padStart(2, '0')})`;
+                // const padded = countdown < 10 ? '0' + countdown : countdown;
+                // installBtn.textContent = `Инсталиране (${padded})`;
+                //installBtn.textContent = `Инсталиране (${countdown})`;
                 if (countdown <= 0) cleanup();
             }, 1000);
             const installHandler = () => {

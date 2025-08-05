@@ -1,3 +1,185 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#BFB8B4">
+    <link rel="manifest" href="manifest.webmanifest">
+    <title>CX-Calc</title>
+   	<link rel="shortcut icon" type="image/png" href="CalcFav.png" />
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="install-bar" style="
+        position:fixed;
+        top:0px;
+        width:100%;
+        z-index:1000;
+        display: none;
+        justify-content: center;
+        gap: 20px;
+        padding: 5px;
+        background: transparent;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        font-family: sans-serif;
+    ">
+        <button id="install" style="width: 150px;">Инсталиране (20)</button>
+        <button id="dismiss" style="width: 150px;">Отказ</button>
+    </div>
+
+    <div id="statusArea1" class="statusArea"></div>
+    <div id="statusArea2" class="statusArea"></div>
+    <div id="statusArea3" class="statusArea"></div>
+    <div id="statusArea4" class="statusArea" style="opacity: 1;">Help</div>
+
+    <div class="calculator-container" id="calculatorContainer">     
+        <img src="Calculator0.png" ID="calculator" class="calculator-img" alt="Калкулатор">
+        <div id="currency" contenteditable="false" ></div>
+        <div id="currencyLev" contenteditable="false" ></div>
+        <div id="eurInput" class="calculator-display" contenteditable="false"></div>
+        <div id="levInput" class="calculator-display" contenteditable="false"></div>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-overlay"></div> <!-- Засенчващият слой -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>История</h2>
+            </div>
+            <ul id="historyList">
+            </ul>
+            <div class="modal-footer" style="margin-top: 15px; display: flex; gap: 10px;">
+                <button id="clearHistoryButton" class="action-button secondary" style="flex-grow: 1;">Изтрий</button>
+                <button id="closeHistoryModalButton" class="action-button" style="flex-grow: 1;">Затвори</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-overlay"></div> <!-- Засенчващият слой -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Настройки</h2>
+            </div>
+            <div class="modal-header">
+                <h2>Курс BGN/EUR: <span id="exchangeRateValue">1.95583</span></h2>
+            </div>
+            <div class="settings-grid">
+                <!-- NEW SECTION FOR LAYOUT SETTINGS -->
+                <div class="settings-section">
+                    <div class="layout-settings-grid">
+                        <label for="exchangeRateInput">Валутен курс:</label>
+                        <div style="grid-column: 2 / span 2; display: flex; align-items: center; gap: 10px;">
+                            <input type="number" style="width: 100px; flex-shrink: 0;" step="0.00001" id="exchangeRateInput" value="1.95583">
+                            <label for="rateWarningCheckbox" style="font-size: 0.8em; display: flex; align-items: center; gap: 4px; white-space: nowrap; font-weight: normal; color: var(--settings-label-color);">
+                                <input type="checkbox" id="rateWarningCheckbox" checked>
+                            </label>
+                        </div>
+                        <!-- Currency Symbols -->
+                        <label>Валути:</label>
+                        <div style="grid-column: 2 / -1; display: flex; gap: 10px;">
+                            <input type="text" id="currencySymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="text" id="currencyLevSymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+
+                        <!-- New CurrencyOffset -->
+                        <label>Отместване горе:</label>
+                        <input type="number" id="currencyoffsetX" data-key="CurrencyOffset" data-prop="x">
+                        <input type="number" id="currencyoffsetY" data-key="CurrencyOffset" data-prop="y">
+                        <label>Отместване долу:</label>
+                        <input type="number" id="currencylevoffsetX" data-key="CurrencyLevOffset" data-prop="x">
+                        <input type="number" id="currencylevoffsetY" data-key="CurrencyLevOffset" data-prop="y">
+
+                        <!-- Initial Display Mode -->
+                        <label style="font-weight: bold;">Активен дисплей:</label>
+                        <div style="grid-column: 2 / -1; display: flex; justify-content: flex-start; gap: 20px; align-items: center;">
+                            <label for="initialDisplayEur" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="initialDisplay" id="initialDisplayEur" value="eur"> Горен
+                            </label>
+                            <label for="initialDisplayLev" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="initialDisplay" id="initialDisplayLev" value="lev" checked> Долен
+                            </label>
+                        </div>
+                        <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                        <!-- Keys -->
+                        <label>Клавиатура:</label>
+                        <input type="number" id="keysX" data-key="Keys" data-prop="x">
+                        <input type="number" id="keysY" data-key="Keys" data-prop="y">
+
+                        <!-- KeySize -->
+                        <label>Размер на клавиш:</label>
+                        <input type="number" id="keysizeX" data-key="KeySize" data-prop="x">
+                        <input type="number" id="keysizeY" data-key="KeySize" data-prop="y">
+
+                        <!-- KbdGaps -->
+                        <label>Между клавишите:</label>
+                        <input type="number" id="kbdgapsX" data-key="KbdGaps" data-prop="x">
+                        <input type="number" id="kbdgapsY" data-key="KbdGaps" data-prop="y">
+
+                        <!-- DisplaySize -->
+                        <label>Размер дисплеи:</label>
+                        <input type="number" id="displaysizeX" data-key="DisplaySize" data-prop="x">
+                        <input type="number" id="displaysizeY" data-key="DisplaySize" data-prop="y">
+
+                        <!-- Display (EUR) -->
+                        <label>Горен дисплей:</label>
+                        <input type="number" id="displayX" data-key="Display" data-prop="x">
+                        <input type="number" id="displayY" data-key="Display" data-prop="y">
+
+                        <!-- Displaylv (BGN) -->
+                        <label>Долен дисплей:</label>
+                        <input type="number" id="displaylvX" data-key="Displaylv" data-prop="x">
+                        <input type="number" id="displaylvY" data-key="Displaylv" data-prop="y">
+
+                        <!-- Status -->
+                        <label>М статуси:</label>
+                        <input type="number" id="statusX" data-key="Status" data-prop="x">
+                        <input type="number" id="statusY" data-key="Status" data-prop="y">
+
+                        <!-- StatusSize -->
+                        <label>Размер на статус:</label>
+                        <input type="number" id="statussizeX" data-key="StatusSize" data-prop="x">
+                        <input type="number" id="statussizeY" data-key="StatusSize" data-prop="y">
+
+                        <!-- New setting for calculator bottom offset -->
+                        <label for="calcBottomOffset">Поле отдолу/Звук:</label>
+                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
+                            <input type="number" id="calcBottomOffset" min="0" max="500" value="0" style="width: 60px;">
+                            <input type="checkbox" id="soundEffectsCheckbox" checked>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button id="ovBtnSettings" class="action-button"  style="margin-right: 20px;" 
+                    onclick="showOv()">
+                    Зони</button>
+                <button id="closeSettingsModalButton" class="action-button secondary" style="margin-right: 20px;">Затвори</button>
+                <button id="saveSettings" class="action-button">Запис</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exchangeRateWarning" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:3000; align-items:center; justify-content:center;">
+      <div style="background:#fff; color:#b00; padding:32px 24px; border-radius:12px; box-shadow:0 2px 16px #0003; max-width:90vw; text-align:center;">
+        <div style="font-size:1.2em; margin-bottom:18px;">
+          ВНИМАНИЕ! Валутният курс е променен!<br>
+          Потвърдете новия курс или натиснете <b>[Фиксинг]</b> за връщане на стандартния курс BGN/EUR.<br>
+          Махнете отметката до поле <b>Валутен курс</b>, за да не се показва това предупреждение.
+        </div>
+        <div style="display:flex; gap:20px; justify-content:center;">
+          <button id="exchangeRateConfirmBtn" class="action-button">Потвърди</button>
+          <button id="exchangeRateChangeBtn" class="action-button secondary">Фиксинг</button>
+        </div>
+      </div>
+    </div>    
+
+<script src="status.js"></script>
+<script src="calc.js"></script>
+<script src="history.js"></script>
+<script src="fontcalc.js"></script>
+
+<script>
     const rows = 5;
     const cols = 4;
     const container = document.querySelector('.calculator-container');
@@ -5,6 +187,15 @@
     const display = document.querySelector('#eurInput');
     var calculator = null; // Изображението на калкулатора
     var calcBottom = 0;
+    var EXCHANGE_RATE = 1.95583;
+    var CURRENCY_SYMBOL = '€'; // Валутен символ по подразбиране
+    var CURRENCY_LEV_SYMBOL = 'лв.'; // Валутен символ за лев
+    var showRateWarningEnabled = true; // Флаг за разрешение на предупреждението
+    var showWarning = false; // Флаг за показване на предупреждение за курса
+    var soundEffectsEnabled = true; // Флаг за звукови ефекти
+    // Променливи за Web Audio API за по-бърз звук
+    let audioContext;
+    let clickBuffer = null;
 
     var screenWidth = window.innerWidth;
     var imageWidth, imageHeight, aspectRatioW, aspectRatioH;
@@ -16,10 +207,6 @@
     var levMode = true, isStandalone = false; // Начален режим - лв.
     var MainPoints = {};
     let modalIsActive = false;
-    var showWarning = false; // Флаг за показване на предупреждение за курса
-    // Променливи за Web Audio API за по-бърз звук
-    let audioContext;
-    let clickBuffer = null;
 
     const MAX_HISTORY_ITEMS = 30;
     const historyButton = document.getElementById('historyButton');
@@ -28,7 +215,6 @@
     const settingsModal = document.getElementById('settingsModal');
     const historyList = document.getElementById('historyList');
     const closeHistoryModalButton = document.getElementById('closeHistoryModalButton');
-    const closeHelpModalButton = document.getElementById('closeHelpModalButton');
 
     var MainPointsO = {
         Keys:       {x: 43, y: 235},
@@ -47,22 +233,14 @@
     const defaultSettings = {
         exchangeRate: 1.95583,
         currencySymbol: '€',
-        currencyLevSymbol: 'лв.',
-        soundEffectsEnabled: false,
+        currencyLevSymbol: 'лв',
+        soundEffectsEnabled: true,
         showRateWarningEnabled: true,
-        
+        calcMem: [0, 0, 0, 0],
         calcBottomOffset: 0,
         initialDisplay: 'lev', // 'eur' или 'lev'
-        pwaInstallDeclined: false,
-        calculatorSkin: 'Calculator0.png' // Скин по подразбиране
+        pwaInstallDeclined: false
     };
-
-    // Инициализираме глобалните променливи директно от defaultSettings.
-    var EXCHANGE_RATE = defaultSettings.exchangeRate;
-    var CURRENCY_SYMBOL = defaultSettings.currencySymbol;
-    var CURRENCY_LEV_SYMBOL = defaultSettings.currencyLevSymbol;
-    var showRateWarningEnabled = defaultSettings.showRateWarningEnabled;
-    var soundEffectsEnabled = defaultSettings.soundEffectsEnabled;
 
     function saveSettings() {
         // --- ЗАПИС НА НАСТРОЙКИТЕ ---
@@ -99,8 +277,8 @@
             soundEffectsEnabled: document.getElementById('soundEffectsCheckbox').checked,
             calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
-            pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
-            calculatorSkin: currentSettings.calculatorSkin || defaultSettings.calculatorSkin // Запазваме текущия скин
+            calcMem: Mem,
+            pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined
         };
         localStorage.setItem('appSettings', JSON.stringify(newAppSettings));
 
@@ -174,21 +352,10 @@
         CURRENCY_LEV_SYMBOL = settings.currencyLevSymbol;
         showRateWarningEnabled = settings.showRateWarningEnabled;
         soundEffectsEnabled = settings.soundEffectsEnabled;
+        Mem = settings.calcMem;
         calcBottom = settings.calcBottomOffset;
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
-
-        // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
-        const savedMem = JSON.parse(localStorage.getItem('CalcMem'));
-        if (savedMem && Array.isArray(savedMem)) {
-            Mem = savedMem;
-        } // Ако няма запазена памет, използваме първоначално декларираната празна Mem.
-
-        // Задаваме облика на калкулатора според запазената настройка
-        if (calculator && settings.calculatorSkin) {
-            calculator.src = settings.calculatorSkin;
-        }
-
         // Прилага визуални настройки, които са нужни веднага при зареждане
         document.documentElement.style.setProperty('--calc-bottom-offset', `${calcBottom}px`);
         // Проверява дали да покаже предупреждение за курса, ако е различен от стандартния
@@ -615,12 +782,7 @@
                     event.clientY <= rect.bottom
                 );
                 if (withinBounds && i == 4) {
-                    if (isCtrlRequired) {
-                        memoryShow(4);
-                    } else {
-                        helpModal.style.display = 'flex'; // Показваме модалния прозорец
-                        modalIsActive = true;
-                    }
+                    memoryShow(4); // Променяме основата на калкулатора
                     return true; // Връщаме true, за да покажем, че кликът е обработен
                 }
                 if (withinBounds) {
@@ -712,8 +874,6 @@
     function allClear() {
         appendNumber("C"); // изтриваме дисплея
         userInput = ""; // изчистваме userInput
-        Mem = [0, 0, 0, 0]; // изчистваме паметта
-        localStorage.setItem('CalcMem', JSON.stringify(Mem)); // запазваме паметта
         document.getElementById("clearHistoryButton").click(); // изтриваме историята, ако е налична
     }
 
@@ -845,68 +1005,62 @@
         e.preventDefault();
     });
 
-    window.addEventListener("load", function() {
+    window.addEventListener("load", async function () {
         try {
             calculator = document.querySelector(".calculator-img");
-
-            // Изчисленията се правят ВЕДНЪГА, базирано на Calculator0.png,
-            // тъй като размерите на скиновете са идентични.
+            loadSettings(); // Зарежда всички настройки от appSettings
+            initAudio();    // Инициализираме аудиото за бърза реакция
+            // Прилагаме символа към елемента
+            document.getElementById('currency').textContent = CURRENCY_SYMBOL;
+            document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;
+            // Основни изчисления
             getImageSize();
             getImageVisualSize();
             scaleMainPoints(aspectRatioW, aspectRatioH);
             const layout = calcNewCoordinates();
-            keys = layout.keys;
+            keys = layout.keys; // This needs to be updated after MainPointsO is potentially loaded
             displayCoords = layout.displayCoords;
             resizeFont();
-
-            // ЕДВА СЛЕД изчисленията, зареждаме настройките, които може да сменят скина.
-            loadSettings();
-            initAudio();
-
-            // Прилагаме символите за валута
-            document.getElementById('currency').textContent = CURRENCY_SYMBOL;
-            document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;
-
+            appendNumber("C");
             // --- ПРЕДУПРЕЖДЕНИЕ ЗА КУРСА ---
             if (showWarning && showRateWarningEnabled) {
                 const warning = document.getElementById('exchangeRateWarning');
                 warning.style.display = 'flex';
-                modalIsActive = true;
+                modalIsActive = true; // Блокираме калкулатора
                 document.getElementById('exchangeRateChangeBtn').onclick = function() {
+                    // Връщаме курса по подразбиране и запазваме в новата структура
                     const settings = JSON.parse(localStorage.getItem('appSettings')) || defaultSettings;
                     settings.exchangeRate = defaultSettings.exchangeRate;
                     localStorage.setItem('appSettings', JSON.stringify(settings));
-                    modalIsActive = false;
-                    location.reload();
+                    modalIsActive = false; // Освобождаваме преди презареждане
+                    location.reload(); // Презареждаме, за да се приложи
                 };
                 document.getElementById('exchangeRateConfirmBtn').onclick = function() {
                     warning.style.display = 'none';
-                    modalIsActive = false;
+                    modalIsActive = false; // Освобождаваме калкулатора
                 };
             }
-
             // Визуализираме заредената памет
             for (let i = 1; i <= 3; i++) {
                 if (Mem[i] !== undefined && Mem[i] !== null && Mem[i] !== 0) {
-                    memoryAdd(i, "+");
+                    memoryAdd(i, "+"); // updateStatus ("M", i);
                 }
             }
         } catch (err) {
             console.warn("⚠️ Грешка при инициализация:", err);
         }
-        // Показване на интерфейса и задаване на активен дисплей
+        // Показване на интерфейса
         document.body.classList.add("ready");
-        appendNumber("C");
     });
 
     document.addEventListener('DOMContentLoaded', () => {
         // Затваряне на модал с ESC клавиш
         document.addEventListener('keydown', (e) => {
             const key = e.key;
+
             // Escape винаги работи за затваряне на модални прозорци
             if (key === 'Escape' || key === 'Esc') {
                 historyModal.style.display = 'none';
-                helpModal.style.display = 'none';
                 settingsModal.style.display = 'none';
                 modalIsActive = false;
                 return;
@@ -939,7 +1093,6 @@
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
         isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        appendNumber("C");
     });
 
     // Следене на преоразмеряването на прозореца
@@ -969,64 +1122,9 @@
         //e.preventDefault();
     }
 
-    if (closeHelpModalButton) {
-        closeHelpModalButton.addEventListener('click', closeHelpModal);
-    }
-
-    if (closeHelpModalButtonTop) {
-        closeHelpModalButtonTop.addEventListener('click', closeHelpModal);
-    }
-
-    function closeHelpModal(e) {
-        helpModal.style.display = 'none';
-        setTimeout(() => {
-            modalIsActive = false;
-        }, 0);
-        e.stopPropagation();
-        e.preventDefault();
-    }
-
     // Деактивирай по време на разработка, за да не кешира и се зарежда винаги
-/*    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-        .then(reg => {
-        console.log('Service Worker регистриран:', reg);
-        navigator.serviceWorker.addEventListener('message', event => {
-            if (event.data?.type === 'NEW_VERSION_AVAILABLE') {
-            console.log('Налична е нова версия!');
-            // Създай визуално съобщение
-            const notice = document.createElement('div');
-            notice.textContent = 'Налична е нова версия. Страницата ще се презареди...';
-            notice.style.position = 'fixed';
-            notice.style.top = '10px';
-            notice.style.left = '50%';
-            notice.style.transform = 'translateX(-50%)';
-            notice.style.background = '#0078d4';
-            notice.style.color = '#fff';
-            notice.style.padding = '12px 20px';
-            notice.style.borderRadius = '6px';
-            notice.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-            notice.style.zIndex = '9999';
-            notice.style.fontFamily = 'sans-serif';
-            notice.style.opacity = '1';
-            notice.style.transition = 'opacity 1s ease-out';
-            document.body.appendChild(notice);
-            notice.style.width = '80%';
-            notice.style.maxWidth = '300px';
-            notice.style.textAlign = 'center';            // Fade-out след 4 секунди
-            setTimeout(() => {
-                notice.style.opacity = '0';
-            }, 4000);
-            // Презареди след 5 секунди
-            setTimeout(() => {
-                window.location.reload();
-            }, 5000);
-            }
-        });
-        })
-        .catch(err => {
-        console.error('Грешка при регистрация на Service Worker:', err);
-        });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
     }
 
     let deferredPrompt;
@@ -1067,4 +1165,8 @@
             dismissBtn.addEventListener('click', dismissHandler);
         });
     }
-*/
+
+</script>
+
+</body>
+</html>
