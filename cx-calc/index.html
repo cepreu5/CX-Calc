@@ -1279,7 +1279,7 @@
     }
 
     // Деактивирай по време на разработка, за да не кешира и се зарежда винаги
-    if ('serviceWorker' in navigator) {
+/*    if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
         .then(reg => {
         console.log('Service Worker регистриран:', reg);
@@ -1320,7 +1320,7 @@
         console.error('Грешка при регистрация на Service Worker:', err);
         });
     }
-
+*/
     let deferredPrompt;
     if (localStorage.getItem('pwaInstallDeclined') === 'true') {
         console.log('Потребителят вече е отказал инсталацията.');
