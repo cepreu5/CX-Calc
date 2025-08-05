@@ -2,7 +2,8 @@
 const CACHE_NAME = 'cx-calc-1.0.4'; // Версия на кеша, редактирай при промяна на ресурсите
 // Важно: промени версията при всяка промяна на кешираните ресурси!
 // Това ще принуди браузъра да изтегли новия кеш и да активира новия SW.
-const OFFLINE_PAGE = new URL('index.html', self.location).href;
+// const OFFLINE_PAGE = new URL('index.html', self.location).href;
+const OFFLINE_PAGE = './cx-calc/index.html'
 
 // Активи за кеширане – редактирай списъка според файловете в проекта
 const ASSETS = [
