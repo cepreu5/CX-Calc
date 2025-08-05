@@ -9,14 +9,14 @@
    	<link rel="shortcut icon" type="image/png" href="CalcFav.png" />
 
     <!--
-      РљСЂРёС‚РёС‡РµРЅ CSS, РєРѕР№С‚Рѕ СЃРµ РІРіСЂР°Р¶РґР° РґРёСЂРµРєС‚РЅРѕ РІ HTML.
-      РўРѕРІР° РіР°СЂР°РЅС‚РёСЂР°, С‡Рµ СЃСЉРѕР±С‰РµРЅРёРµС‚Рѕ "Р—Р°СЂРµР¶РґР°РЅРµ..." СЃРµ РїРѕРєР°Р·РІР° РЅРµР·Р°Р±Р°РІРЅРѕ,
-      Р±РµР· РґР° СЃРµ С‡Р°РєР° РёР·С‚РµРіР»СЏРЅРµС‚Рѕ РЅР° РІСЉРЅС€РЅРёСЏ style.css С„Р°Р№Р».
-      РўРѕРІР° Рµ РєР»СЋС‡РѕРІРѕ Р·Р° РґРѕР±СЂРѕ РїРѕС‚СЂРµР±РёС‚РµР»СЃРєРѕ РёР·Р¶РёРІСЏРІР°РЅРµ РїСЂРё Р±Р°РІРЅРё РјСЂРµР¶Рё.
+      Критичен CSS, който се вгражда директно в HTML.
+      Това гарантира, че съобщението "Зареждане..." се показва незабавно,
+      без да се чака изтеглянето на външния style.css файл.
+      Това е ключово за добро потребителско изживяване при бавни мрежи.
     -->
     <style>
         html, body {
-            background-color: #BFB8B4; /* Р—Р°РґР°РІР°РјРµ С„РѕРЅР° РІРµРґРЅР°РіР°, Р·Р° РґР° РёР·Р±РµРіРЅРµРј "РїСЂРѕР±Р»СЏСЃРІР°РЅРµ" РІ Р±СЏР»Рѕ */
+            background-color: #BFB8B4; /* Задаваме фона веднага, за да избегнем "проблясване" в бяло */
         }
         #loading-overlay {
             position: fixed;
@@ -42,7 +42,7 @@
 </head>
 <body>
     <div id="loading-overlay">
-        Р—Р°СЂРµР¶РґР°РЅРµ...
+        Зареждане...
     </div>
 
     <div id="install-bar" style="
@@ -58,8 +58,8 @@
         box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         font-family: sans-serif;
     ">
-        <button id="install" style="width: 150px;">РРЅСЃС‚Р°Р»РёСЂР°РЅРµ (20)</button>
-        <button id="dismiss" style="width: 150px;">РћС‚РєР°Р·</button>
+        <button id="install" style="width: 150px;">Инсталиране (20)</button>
+        <button id="dismiss" style="width: 150px;">Отказ</button>
     </div>
 
     <div id="statusArea1" class="statusArea"></div>
@@ -68,7 +68,7 @@
     <div id="statusArea4" class="statusArea" style="opacity: 1;">Help</div>
 
     <div class="calculator-container" id="calculatorContainer">     
-        <img src="Calculator0.png" ID="calculator" class="calculator-img" alt="РљР°Р»РєСѓР»Р°С‚РѕСЂ">
+        <img src="Calculator0.png" ID="calculator" class="calculator-img" alt="Калкулатор">
         <div id="currency" contenteditable="false" ></div>
         <div id="currencyLev" contenteditable="false" ></div>
         <div id="eurInput" class="calculator-display" contenteditable="false"></div>
@@ -76,34 +76,34 @@
     </div>
 
     <div id="historyModal" class="modal">
-        <div class="modal-overlay"></div> <!-- Р—Р°СЃРµРЅС‡РІР°С‰РёСЏС‚ СЃР»РѕР№ -->
+        <div class="modal-overlay"></div> <!-- Засенчващият слой -->
         <div class="modal-content">
             <div class="modal-header">
-                <h2>РСЃС‚РѕСЂРёСЏ</h2>
+                <h2>История</h2>
             </div>
             <ul id="historyList">
             </ul>
             <div class="modal-footer" style="margin-top: 15px; display: flex; gap: 10px;">
-                <button id="clearHistoryButton" class="action-button" style="flex-grow: 1;">РР·С‚СЂРёР№</button>
-                <button id="closeHistoryModalButton" class="action-button" style="flex-grow: 1;">Р—Р°С‚РІРѕСЂРё</button>
+                <button id="clearHistoryButton" class="action-button" style="flex-grow: 1;">Изтрий</button>
+                <button id="closeHistoryModalButton" class="action-button" style="flex-grow: 1;">Затвори</button>
             </div>
         </div>
     </div>
 
     <div id="settingsModal" class="modal">
-        <div class="modal-overlay"></div> <!-- Р—Р°СЃРµРЅС‡РІР°С‰РёСЏС‚ СЃР»РѕР№ -->
+        <div class="modal-overlay"></div> <!-- Засенчващият слой -->
         <div class="modal-content">
             <div class="modal-header">
-                <h2>РќР°СЃС‚СЂРѕР№РєРё</h2>
+                <h2>Настройки</h2>
             </div>
             <div class="modal-header">
-                <h2>РљСѓСЂСЃ BGN/EUR: <span id="exchangeRateValue">1.95583</span></h2>
+                <h2>Курс BGN/EUR: <span id="exchangeRateValue">1.95583</span></h2>
             </div>
             <div class="settings-grid">
                 <!-- NEW SECTION FOR LAYOUT SETTINGS -->
                 <div class="settings-section">
                     <div class="layout-settings-grid">
-                        <label for="exchangeRateInput">Р’Р°Р»СѓС‚РµРЅ РєСѓСЂСЃ:</label>
+                        <label for="exchangeRateInput">Валутен курс:</label>
                         <div style="grid-column: 2 / span 2; display: flex; align-items: center; gap: 10px;">
                             <input type="number" style="width: 100px; flex-shrink: 0;" step="0.00001" id="exchangeRateInput" value="1.95583">
                             <label for="rateWarningCheckbox" style="font-size: 0.8em; display: flex; align-items: center; gap: 4px; white-space: nowrap; font-weight: normal; color: var(--settings-label-color);">
@@ -111,73 +111,73 @@
                             </label>
                         </div>
                         <!-- Currency Symbols -->
-                        <label>Р’Р°Р»СѓС‚Рё:</label>
+                        <label>Валути:</label>
                         <div style="grid-column: 2 / -1; display: flex; gap: 10px;">
                             <input type="text" id="currencySymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                             <input type="text" id="currencyLevSymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
 
                         <!-- New CurrencyOffset -->
-                        <label>РћС‚РјРµСЃС‚РІР°РЅРµ РіРѕСЂРµ:</label>
+                        <label>Отместване горе:</label>
                         <input type="number" id="currencyoffsetX" data-key="CurrencyOffset" data-prop="x">
                         <input type="number" id="currencyoffsetY" data-key="CurrencyOffset" data-prop="y">
-                        <label>РћС‚РјРµСЃС‚РІР°РЅРµ РґРѕР»Сѓ:</label>
+                        <label>Отместване долу:</label>
                         <input type="number" id="currencylevoffsetX" data-key="CurrencyLevOffset" data-prop="x">
                         <input type="number" id="currencylevoffsetY" data-key="CurrencyLevOffset" data-prop="y">
 
                         <!-- Initial Display Mode -->
-                        <label style="font-weight: bold;">РђРєС‚РёРІРµРЅ РґРёСЃРїР»РµР№:</label>
+                        <label style="font-weight: bold;">Активен дисплей:</label>
                         <div style="grid-column: 2 / -1; display: flex; justify-content: flex-start; gap: 20px; align-items: center;">
                             <label for="initialDisplayEur" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                                <input type="radio" name="initialDisplay" id="initialDisplayEur" value="eur"> Р“РѕСЂРµРЅ
+                                <input type="radio" name="initialDisplay" id="initialDisplayEur" value="eur"> Горен
                             </label>
                             <label for="initialDisplayLev" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                                <input type="radio" name="initialDisplay" id="initialDisplayLev" value="lev" checked> Р”РѕР»РµРЅ
+                                <input type="radio" name="initialDisplay" id="initialDisplayLev" value="lev" checked> Долен
                             </label>
                         </div>
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                         <!-- Keys -->
-                        <label>РљР»Р°РІРёР°С‚СѓСЂР°:</label>
+                        <label>Клавиатура:</label>
                         <input type="number" id="keysX" data-key="Keys" data-prop="x">
                         <input type="number" id="keysY" data-key="Keys" data-prop="y">
 
                         <!-- KeySize -->
-                        <label>Р Р°Р·РјРµСЂ РЅР° РєР»Р°РІРёС€:</label>
+                        <label>Размер на клавиш:</label>
                         <input type="number" id="keysizeX" data-key="KeySize" data-prop="x">
                         <input type="number" id="keysizeY" data-key="KeySize" data-prop="y">
 
                         <!-- KbdGaps -->
-                        <label>РњРµР¶РґСѓ РєР»Р°РІРёС€РёС‚Рµ:</label>
+                        <label>Между клавишите:</label>
                         <input type="number" id="kbdgapsX" data-key="KbdGaps" data-prop="x">
                         <input type="number" id="kbdgapsY" data-key="KbdGaps" data-prop="y">
 
                         <!-- DisplaySize -->
-                        <label>Р Р°Р·РјРµСЂ РґРёСЃРїР»РµРё:</label>
+                        <label>Размер дисплеи:</label>
                         <input type="number" id="displaysizeX" data-key="DisplaySize" data-prop="x">
                         <input type="number" id="displaysizeY" data-key="DisplaySize" data-prop="y">
 
                         <!-- Display (EUR) -->
-                        <label>Р“РѕСЂРµРЅ РґРёСЃРїР»РµР№:</label>
+                        <label>Горен дисплей:</label>
                         <input type="number" id="displayX" data-key="Display" data-prop="x">
                         <input type="number" id="displayY" data-key="Display" data-prop="y">
 
                         <!-- Displaylv (BGN) -->
-                        <label>Р”РѕР»РµРЅ РґРёСЃРїР»РµР№:</label>
+                        <label>Долен дисплей:</label>
                         <input type="number" id="displaylvX" data-key="Displaylv" data-prop="x">
                         <input type="number" id="displaylvY" data-key="Displaylv" data-prop="y">
 
                         <!-- Status -->
-                        <label>Рњ СЃС‚Р°С‚СѓСЃРё:</label>
+                        <label>М статуси:</label>
                         <input type="number" id="statusX" data-key="Status" data-prop="x">
                         <input type="number" id="statusY" data-key="Status" data-prop="y">
 
                         <!-- StatusSize -->
-                        <label>Р Р°Р·РјРµСЂ РЅР° СЃС‚Р°С‚СѓСЃ:</label>
+                        <label>Размер на статус:</label>
                         <input type="number" id="statussizeX" data-key="StatusSize" data-prop="x">
                         <input type="number" id="statussizeY" data-key="StatusSize" data-prop="y">
 
                         <!-- New setting for calculator bottom offset -->
-                        <label for="calcBottomOffset">РџРѕР»Рµ РѕС‚РґРѕР»Сѓ/Р—РІСѓРє:</label>
+                        <label for="calcBottomOffset">Поле отдолу/Звук:</label>
                         <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
                             <input type="number" id="calcBottomOffset" min="0" max="500" value="0" style="width: 60px;">
                             <input type="checkbox" id="soundEffectsCheckbox" checked>
@@ -188,9 +188,9 @@
             <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
                 <button id="ovBtnSettings" class="action-button"  style="margin-right: 20px;" 
                     onclick="showOv()">
-                    Р—РѕРЅРё</button>
-                <button id="closeSettingsModalButton" class="action-button" style="margin-right: 20px;">Р—Р°С‚РІРѕСЂРё</button>
-                <button id="saveSettings" class="action-button">Р—Р°РїРёСЃ</button>
+                    Зони</button>
+                <button id="closeSettingsModalButton" class="action-button" style="margin-right: 20px;">Затвори</button>
+                <button id="saveSettings" class="action-button">Запис</button>
             </div>
         </div>
     </div>
@@ -198,13 +198,13 @@
     <div id="exchangeRateWarning" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:3000; align-items:center; justify-content:center;">
       <div style="background:#fff; color:#b00; padding:32px 24px; border-radius:12px; box-shadow:0 2px 16px #0003; max-width:90vw; text-align:center;">
         <div style="font-size:1.2em; margin-bottom:18px;">
-          Р’РќРРњРђРќРР•! Р’Р°Р»СѓС‚РЅРёСЏС‚ РєСѓСЂСЃ Рµ РїСЂРѕРјРµРЅРµРЅ!<br>
-          РџРѕС‚РІСЉСЂРґРµС‚Рµ РЅРѕРІРёСЏ РєСѓСЂСЃ РёР»Рё РЅР°С‚РёСЃРЅРµС‚Рµ <b>[Р¤РёРєСЃРёРЅРі]</b> Р·Р° РІСЂСЉС‰Р°РЅРµ РЅР° СЃС‚Р°РЅРґР°СЂС‚РЅРёСЏ РєСѓСЂСЃ BGN/EUR.<br>
-          РњР°С…РЅРµС‚Рµ РѕС‚РјРµС‚РєР°С‚Р° РґРѕ РїРѕР»Рµ <b>Р’Р°Р»СѓС‚РµРЅ РєСѓСЂСЃ</b>, Р·Р° РґР° РЅРµ СЃРµ РїРѕРєР°Р·РІР° С‚РѕРІР° РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ.
+          ВНИМАНИЕ! Валутният курс е променен!<br>
+          Потвърдете новия курс или натиснете <b>[Фиксинг]</b> за връщане на стандартния курс BGN/EUR.<br>
+          Махнете отметката до поле <b>Валутен курс</b>, за да не се показва това предупреждение.
         </div>
         <div style="display:flex; gap:20px; justify-content:center;">
-          <button id="exchangeRateConfirmBtn" class="action-button">РџРѕС‚РІСЉСЂРґРё</button>
-          <button id="exchangeRateChangeBtn" class="action-button secondary">Р¤РёРєСЃРёРЅРі</button>
+          <button id="exchangeRateConfirmBtn" class="action-button">Потвърди</button>
+          <button id="exchangeRateChangeBtn" class="action-button secondary">Фиксинг</button>
         </div>
       </div>
     </div>    
@@ -213,8 +213,8 @@
         <div class="help-modal-overlay"></div>
         <div class="help-modal-content">
             <div class="help-modal-header">
-                <h3>РљРѕРјР±РёРЅР°С†РёСЏС‚Р° <strong>Ctrl+РљР»РёРє</strong> РЅР° РјРѕР±РёР»РЅРё СѓСЃС‚СЂРѕР№СЃС‚РІР° СЃРµ РїРѕСЃС‚РёРіР° С‡СЂРµР· Р·Р°РґСЉСЂР¶Р°РЅРµ РЅР° Р±СѓС‚РѕРЅР°.</h3>
-                <button class="help-close-button" id="closeHelpModalButtonTop" aria-label="Р—Р°С‚РІРѕСЂРё">&times;</button>
+                <h3>Комбинацията <strong>Ctrl+Клик</strong> на мобилни устройства се постига чрез задържане на бутона.</h3>
+                <button class="help-close-button" id="closeHelpModalButtonTop" aria-label="Затвори">&times;</button>
             </div>
 
             <div class="help-modal-body">
@@ -224,32 +224,32 @@
                             <td class="help-key-combo">
                                 <div class="help-top-row"><kbd>Ctrl</kbd><img src="Help.png" alt="Help" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc">РџРѕРєР°Р·РІР° РґРѕРїСЉР»РЅРёС‚РµР»РЅРё СЃРёРјРІРѕР»Рё РІСЉСЂС…Сѓ РєР»Р°РІРёС€РёС‚Рµ.</td>
+                            <td class="help-key-desc">Показва допълнителни символи върху клавишите.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
                                 <div class="help-top-row"><img src="Settings.png" alt="Settings" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc"><strong>РљР»РёРє</strong> РСЃС‚РѕСЂРёСЏ.<br><strong>Ctrl+РљР»РёРє</strong> РќР°СЃС‚СЂРѕР№РєРё.</td>
+                            <td class="help-key-desc"><strong>Клик</strong> История.<br><strong>Ctrl+Клик</strong> Настройки.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
                                 <div class="help-top-row"><kbd>Ctrl</kbd><img src="Plus.png" alt="Plus" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc">РџСЂРµРІРєР»СЋС‡РІР° РјРµР¶РґСѓ РЅРѕСЂРјР°Р»РµРЅ Рё РїСЉР»РЅРѕРµРєСЂР°РЅРµРЅ СЂРµР¶РёРј.</td>
+                            <td class="help-key-desc">Превключва между нормален и пълноекранен режим.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
                                 <div class="help-top-row"><kbd>Ctrl</kbd><img src="Eq.png" alt="Eq" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc">Р—Р°РїР°Р·РІР° С‡РёСЃР»РѕС‚Рѕ РѕС‚ Р°РєС‚РёРІРЅРёСЏ РґРёСЃРїР»РµР№ РІ РёСЃС‚РѕСЂРёСЏС‚Р°.</td>
+                            <td class="help-key-desc">Запазва числото от активния дисплей в историята.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
                                 <div class="help-top-row"><strong>AC</strong> (All Clear)</div>
                                 <div class="help-top-row"><kbd>Ctrl</kbd><img src="C.png" alt="C" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc">РР·С‚СЂРёРІР° РґРёСЃРїР»РµСЏ, С‚СЂРёС‚Рµ РїР°РјРµС‚Рё Рё РёСЃС‚РѕСЂРёСЏС‚Р°.</td>
+                            <td class="help-key-desc">Изтрива дисплея, трите памети и историята.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
@@ -257,7 +257,7 @@
                                 <div class="help-top-row"><kbd>Ctrl</kbd></div>
                                 <div class="help-bottom-row"><img src="K123.png" alt="K123" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc">Р§РёСЃР»РѕС‚Рѕ РѕС‚ Р°РєС‚РёРІРЅРёСЏ РґРёСЃРїР»РµР№ СЃРµ РґРѕР±Р°РІСЏ РєСЉРј С‡РёСЃР»РѕС‚Рѕ РІ РїР°РјРµС‚ 1, 2 РёР»Рё 3.</td>
+                            <td class="help-key-desc">Числото от активния дисплей се добавя към числото в памет 1, 2 или 3.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
@@ -265,7 +265,7 @@
                                 <div class="help-top-row"><kbd>Ctrl</kbd></div>
                                 <div class="help-bottom-row"><img src="K456.png" alt="K456" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc">Р§РёСЃР»РѕС‚Рѕ РѕС‚ Р°РєС‚РёРІРЅРёСЏ РґРёСЃРїР»РµР№ СЃРµ РёР·РІР°Р¶РґР° РѕС‚ С‡РёСЃР»РѕС‚Рѕ РІ РїР°РјРµС‚ 1, 2 РёР»Рё 3.</td>
+                            <td class="help-key-desc">Числото от активния дисплей се изважда от числото в памет 1, 2 или 3.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
@@ -273,49 +273,49 @@
                                 <div class="help-top-row"><kbd>Ctrl</kbd></div>
                                 <div class="help-bottom-row"><img src="K789.png" alt="K789" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc">РР·С‚СЂРёРІР° РїР°РјРµС‚ 1, 2 РёР»Рё 3.</td>
+                            <td class="help-key-desc">Изтрива памет 1, 2 или 3.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
                                 <div class="help-top-row"><strong>MC3</strong></div>
                                 <div class="help-top-row"><kbd>Ctrl</kbd><img src="BS.png" alt="Backspace" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc">РР·С‚СЂРёРІР° Рё С‚СЂРёС‚Рµ РїР°РјРµС‚Рё.</td>
+                            <td class="help-key-desc">Изтрива и трите памети.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
                                 <div class="help-top-row"><strong>MR</strong> (Mem Recall)</div>
                                 <div class="help-bottom-row"></div><img src="M123.png" alt="Memory" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc"><strong>РљР»РёРє</strong> РџРѕСЃС‚Р°РІСЏ СЃС‚РѕР№РЅРѕСЃС‚С‚Р° РѕС‚ РїР°РјРµС‚ 1, 2 РёР»Рё 3 РІ Р°РєС‚РёРІРЅРёСЏ РґРёСЃРїР»РµР№.<br>
-                                <strong>Ctrl+РљР»РёРє</strong> РџРѕРєР°Р·РІР° РІСЂРµРјРµРЅРЅРѕ СЃС‚РѕР№РЅРѕСЃС‚С‚Р° РѕС‚ РїР°РјРµС‚ 1, 2 РёР»Рё 3 РІ РіРѕСЂРЅРёСЏ РґРёСЃРїР»РµР№.</td>
+                            <td class="help-key-desc"><strong>Клик</strong> Поставя стойността от памет 1, 2 или 3 в активния дисплей.<br>
+                                <strong>Ctrl+Клик</strong> Показва временно стойността от памет 1, 2 или 3 в горния дисплей.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
                                 <div class="help-top-row"><kbd>Ctrl</kbd><img src="Paste.png" alt="Paste" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc">РџРѕСЃС‚Р°РІСЏ (РїСЉСЂРІРѕС‚Рѕ) С‡РёСЃР»Рѕ РѕС‚ РєР»РёРїР±РѕСЂРґР° РІ Р°РєС‚РёРІРЅРёСЏ РґРёСЃРїР»РµР№.</td>
+                            <td class="help-key-desc">Поставя (първото) число от клипборда в активния дисплей.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
                                 <div class="help-top-row"><img src="Switch.png" alt="Switch" class="help-key-img"></div>
                             </td>
-                            <td class="help-key-desc"><strong>РљР»РёРє</strong> РЎРјРµРЅСЏ Р°РєС‚РёРІРЅРёСЏ РґРёСЃРїР»РµР№.<br>
-                                <strong>Ctrl+РљР»РёРє</strong> РџРѕСЃС‚Р°РІСЏ С‡РёСЃР»РѕС‚Рѕ РѕС‚ Р°РєС‚РёРІРЅРёСЏ РґРёСЃРїР»РµР№ РІ РґСЂСѓРіРёСЏ Рё РіРѕ РїСЂР°РІРё Р°РєС‚РёРІРµРЅ.</td>
+                            <td class="help-key-desc"><strong>Клик</strong> Сменя активния дисплей.<br>
+                                <strong>Ctrl+Клик</strong> Поставя числото от активния дисплей в другия и го прави активен.</td>
                         </tr>
                         <tr>
                             <td class="help-key-combo">
-                                <div class="help-top-row"><kbd>Ctrl</kbd><strong> РљР»РёРє</strong></div>
-                                <div class="help-top-row"><strong>РЅР°Рґ РєР°Р»РєСѓР»Р°С‚РѕСЂР°</strong></div>
+                                <div class="help-top-row"><kbd>Ctrl</kbd><strong> Клик</strong></div>
+                                <div class="help-top-row"><strong>над калкулатора</strong></div>
                             </td>
-                            <td class="help-key-desc"><strong>РќСѓР»РёСЂР°РЅРµ</strong><br>Р’СЂСЉС‰Р° РІСЃРёС‡РєРё РЅР°СЃС‚СЂРѕР№РєРё РїРѕ РїРѕРґСЂР°Р·Р±РёСЂР°РЅРµ.</td>
+                            <td class="help-key-desc"><strong>Нулиране</strong><br>Връща всички настройки по подразбиране.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="help-modal-footer">
-                <button id="closeHelpModalButton" class="help-action-button">Р—Р°С‚РІРѕСЂРё</button>
+                <button id="closeHelpModalButton" class="help-action-button">Затвори</button>
             </div>
         </div>
     </div>

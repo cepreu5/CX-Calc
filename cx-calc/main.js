@@ -253,6 +253,10 @@
         // Заменяме window.innerWidth с containerWidth
         aspectRatioW = imageWidth / imageWidthO; // aspectRatioW е съотношението на ширината на изображението към оригиналната ширина
         aspectRatioH = imageHeight / imageHeightO; // aspectRatioH е съотношението на височината на изображението към оригиналната височина
+        // Предпазна проверка за невалидни стойности (NaN, Infinity, 0),
+        // които могат да възникнат, ако изображението все още не е заредено (naturalWidth/Height = 0).
+        if (!isFinite(aspectRatioW) || aspectRatioW <= 0) aspectRatioW = 1;
+        if (!isFinite(aspectRatioH) || aspectRatioH <= 0) aspectRatioH = 1;
         console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
     }
 

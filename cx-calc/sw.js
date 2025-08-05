@@ -43,11 +43,19 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('SW: Опит за кеширане на статични ресурси...');
-        return cache.addAll(ASSETS);
+        // Заменяме addAll с индивидуални add заявки, за да не се провали цялата инсталация, ако един ресурс липсва.
+        const cachePromises = ASSETS.map(asset => {
+          return cache.add(asset).catch(err => {
+            // Логваме грешка за конкретния ресурс, но не прекъсваме инсталацията.
+            console.warn(`SW: Неуспешно кеширане на ресурс: ${asset}`, err);
+          });
+        });
+        // Изчакваме всички индивидуални опити за кеширане да приключат.
+        return Promise.all(cachePromises);
       })
       .then(() => self.skipWaiting()) // активирай SW веднага
       .catch(error => {
-        console.error('SW: Неуспешно кеширане на ресурси по време на инсталация:', error);
+        console.error('SW: Критична грешка по време на инсталация:', error);
       })
   );
 });
