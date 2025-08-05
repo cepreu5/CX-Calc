@@ -987,8 +987,8 @@
     }
 
     // Деактивирай по време на разработка, за да не кешира и се зарежда винаги
-    if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
+/*    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
         .then(reg => {
         console.log('Service Worker регистриран:', reg);
         navigator.serviceWorker.addEventListener('message', event => {
@@ -1067,3 +1067,4 @@
             dismissBtn.addEventListener('click', dismissHandler);
         });
     }
+*/

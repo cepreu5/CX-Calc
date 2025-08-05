@@ -2,41 +2,41 @@
 const CACHE_NAME = 'cx-calc-1.0.4'; // Версия на кеша, редактирай при промяна на ресурсите
 // Важно: промени версията при всяка промяна на кешираните ресурси!
 // Това ще принуди браузъра да изтегли новия кеш и да активира новия SW.
-// const OFFLINE_PAGE = new URL('index.html', self.location).href;
-const OFFLINE_PAGE = './cx-calc/index.html'
+const OFFLINE_PAGE = new URL('index.html', self.location).href;
+// const OFFLINE_PAGE = './cx-calc/index.html'
 
 // Активи за кеширане – редактирай списъка според файловете в проекта
 const ASSETS = [
-  OFFLINE_PAGE,
-  'style.css',
-  'main.js',
-  'calc.js',
-  'history.js',
-  'status.js',
-  'fontcalc.js',
-  'click.wav',
-  'Calculator0.png',
-  'CalculatorA.png',
-  'CalcFav.png',
-  'Calc32.png',
-  'Calc48.png',
-  'Calc120.png',
-  'Calc144.png',
-  'Calc192.png',
-  'Calc512.png',
-  'K123.png',
-  'K456.png',
-  'K789.png',
-  'M123.png',
-  'BS.png',
-  'C.png',
-  'Switch.png',
-  'Settings.png',
-  'Paste.png',
-  'Plus.png',
-  'Help.png',
-  'Eq.png',
-  'manifest.webmanifest'
+  OFFLINE_PAGE, // +
+  'style.css', // +
+  'main.js', // +
+  'calc.js', // +
+  'history.js', // +
+  'status.js', // +
+  'fontcalc.js', // +
+  'Calculator0.png', // +
+  'CalcFav.png', // +
+  'Calc144.png', // +
+  'K123.png', // +
+  'K456.png', // +
+  'K789.png', // +
+  'M123.png', // +
+  'BS.png', // +
+  'C.png', // +
+  'Switch.png', // +
+  'Settings.png', // +
+  'Paste.png', // +
+  'Plus.png', // +
+  'Help.png', // +
+  'Eq.png', // +
+  'manifest.webmanifest' // +
+  //'click.wav',
+  //'CalculatorA.png',
+  //'Calc32.png',
+  //'Calc48.png',
+  //'Calc120.png',
+  //'Calc192.png',
+  //'Calc512.png',
 ].map(path => new URL(path, self.location).href);
 
 // 1. Инсталирай SW и кеширай всички статични ресурси
