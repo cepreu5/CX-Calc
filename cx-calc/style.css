@@ -17,15 +17,15 @@ body {
     background-color: #BFB8B4;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
 }
 
 body.ready {
-  opacity: 1;
+  /* Този клас вече служи само като спусък за показване на други елементи,
+     а не за промяна на прозрачността на цялото тяло. */
 }
 
 .calculator-container {
+    opacity: 0; /* Скриваме калкулатора по подразбиране */
     position: fixed;
     left: 0;
     right: 0;
@@ -39,6 +39,11 @@ body.ready {
     box-sizing: border-box;
     background-color: #BFB8B4;
     z-index: 0;
+    transition: opacity 0.5s ease-in-out; /* Добавяме плавен преход за показване */
+}
+
+body.ready .calculator-container {
+    opacity: 1; /* Показваме калкулатора, когато тялото е готово */
 }
 
 .calculator-img {
