@@ -7,9 +7,43 @@
     <link rel="manifest" href="manifest.webmanifest">
     <title>CX-Calc</title>
    	<link rel="shortcut icon" type="image/png" href="CalcFav.png" />
-	<link rel="stylesheet" href="style.css" />
+    <!--
+      Критичен CSS, който се вгражда директно в HTML.
+      Това гарантира, че съобщението "Зареждане..." се показва незабавно,
+      без да се чака изтеглянето на външния style.css файл.
+      Това е ключово за добро потребителско изживяване при бавни мрежи.
+    -->
+    <style>
+        html, body {
+            background-color: #BFB8B4; /* Задаваме фона веднага, за да избегнем "проблясване" в бяло */
+        }
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #BFB8B4;
+            z-index: 10001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 1.5em;
+            color: #333;
+            font-family: sans-serif;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+
+	<link rel="stylesheet" href="style.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="style.css"></noscript>
 </head>
 <body>
+    <div id="loading-overlay">
+        Зареждане...
+    </div>
+
     <div id="install-bar" style="
         position:fixed;
         top:0px;
@@ -1188,6 +1222,13 @@
         // Показване на интерфейса и задаване на активен дисплей
         document.body.classList.add("ready");
         appendNumber("C");
+        // Скриване на съобщението за зареждане
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            // Плавно изчезване
+            loadingOverlay.style.opacity = '0';
+            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500); // Премахваме го след анимацията
+        }
     });
 
     document.addEventListener('DOMContentLoaded', () => {
