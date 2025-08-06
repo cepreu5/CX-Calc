@@ -100,7 +100,8 @@
             <div class="settings-grid">
                 <!-- NEW SECTION FOR LAYOUT SETTINGS -->
                 <div class="settings-section">
-                    <div class="layout-settings-grid">
+                    <div class="layout-settings-grid" style="padding: 0; border: none; background: none;">
+                    <span ID="Settings1" class="layout-settings-grid" style="border: 0px; grid-column: 1 / -1;">
                         <label for="exchangeRateInput">Валутен курс:</label>
                         <div style="grid-column: 2 / span 2; display: flex; align-items: center; gap: 10px;">
                             <input type="number" style="width: 100px; flex-shrink: 0;" step="0.00001" id="exchangeRateInput" value="1.95583">
@@ -114,15 +115,12 @@
                             <input type="text" id="currencySymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                             <input type="text" id="currencyLevSymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
-
-                        <!-- New CurrencyOffset -->
-                        <label>Отместване горе:</label>
-                        <input type="number" id="currencyoffsetX" data-key="CurrencyOffset" data-prop="x">
-                        <input type="number" id="currencyoffsetY" data-key="CurrencyOffset" data-prop="y">
-                        <label>Отместване долу:</label>
-                        <input type="number" id="currencylevoffsetX" data-key="CurrencyLevOffset" data-prop="x">
-                        <input type="number" id="currencylevoffsetY" data-key="CurrencyLevOffset" data-prop="y">
-
+                        <!-- New setting for calculator bottom offset -->
+                        <label for="calcBottomOffset">Поле отдолу/Звук:</label>
+                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
+                            <input type="number" id="calcBottomOffset" min="0" max="500" value="0" style="width: 60px;">
+                            <input type="checkbox" id="soundEffectsCheckbox" checked>
+                        </div>
                         <!-- Initial Display Mode -->
                         <label style="font-weight: bold;">Активен дисплей:</label>
                         <div style="grid-column: 2 / -1; display: flex; justify-content: flex-start; gap: 20px; align-items: center;">
@@ -133,6 +131,8 @@
                                 <input type="radio" name="initialDisplay" id="initialDisplayLev" value="lev" checked> Долен
                             </label>
                         </div>
+                    </span>
+                    <span ID="Settings2" class="layout-settings-grid" style="border: 0px; display: none; grid-column: 1 / -1;">
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                         <!-- Keys -->
                         <label>Клавиатура:</label>
@@ -158,11 +158,17 @@
                         <label>Горен дисплей:</label>
                         <input type="number" id="displayX" data-key="Display" data-prop="x">
                         <input type="number" id="displayY" data-key="Display" data-prop="y">
+                        <label>Валутен символ:</label>
+                        <input type="number" id="currencyoffsetX" data-key="CurrencyOffset" data-prop="x">
+                        <input type="number" id="currencyoffsetY" data-key="CurrencyOffset" data-prop="y">
 
                         <!-- Displaylv (BGN) -->
                         <label>Долен дисплей:</label>
                         <input type="number" id="displaylvX" data-key="Displaylv" data-prop="x">
                         <input type="number" id="displaylvY" data-key="Displaylv" data-prop="y">
+                        <label>Валутен символ:</label>
+                        <input type="number" id="currencylevoffsetX" data-key="CurrencyLevOffset" data-prop="x">
+                        <input type="number" id="currencylevoffsetY" data-key="CurrencyLevOffset" data-prop="y">
 
                         <!-- Status -->
                         <label>М статуси:</label>
@@ -173,19 +179,13 @@
                         <label>Размер на статус:</label>
                         <input type="number" id="statussizeX" data-key="StatusSize" data-prop="x">
                         <input type="number" id="statussizeY" data-key="StatusSize" data-prop="y">
-
-                        <!-- New setting for calculator bottom offset -->
-                        <label for="calcBottomOffset">Поле отдолу/Звук:</label>
-                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
-                            <input type="number" id="calcBottomOffset" min="0" max="500" value="0" style="width: 60px;">
-                            <input type="checkbox" id="soundEffectsCheckbox" checked>
-                        </div>
+                    </span>
                     </div>
                 </div>
             </div>
             <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
                 <button id="ovBtnSettings" class="action-button"  style="margin-right: 20px;" 
-                    onclick="showOv()">
+                    onclick="toggleLayoutSettingsView()">
                     Зони</button>
                 <button id="closeSettingsModalButton" class="action-button" style="margin-right: 20px;">Затвори</button>
                 <button id="saveSettings" class="action-button">Запис</button>
@@ -341,6 +341,7 @@
     var levMode = true, isStandalone = false; // Начален режим - лв.
     var MainPoints = {};
     let modalIsActive = false;
+    let layoutSettingsVisible = false; // Следи дали са показани настройките за зони (Settings2)
     var showWarning = false; // Флаг за показване на предупреждение за курса
     // Променливи за Web Audio API за по-бърз звук
     let audioContext;
@@ -1162,6 +1163,7 @@
 
     document.getElementById('closeSettingsModalButton').addEventListener('click', function(e) {
         settingsModal.style.display = 'none'; // Close modal without saving
+        resetLayoutSettingsView();
         setTimeout(() => {
             modalIsActive = false;
         }, 0);
@@ -1236,6 +1238,9 @@
             const key = e.key;
             // Escape винаги работи за затваряне на модални прозорци
             if (key === 'Escape' || key === 'Esc') {
+                if (settingsModal.style.display !== 'none') {
+                    resetLayoutSettingsView();
+                }
                 historyModal.style.display = 'none';
                 helpModal.style.display = 'none';
                 settingsModal.style.display = 'none';
@@ -1283,6 +1288,24 @@
         adjustFontSize(levInput, eurInput)
     })
 
+    function resetLayoutSettingsView() {
+        document.getElementById('Settings1').style.display = 'grid';
+        document.getElementById('Settings2').style.display = 'none';
+        layoutSettingsVisible = false;
+    }
+
+    function toggleLayoutSettingsView() {
+        if (!layoutSettingsVisible) {
+            // Превключваме към изглед с настройките за зоните
+            document.getElementById('Settings1').style.display = 'none';
+            document.getElementById('Settings2').style.display = 'grid';
+            layoutSettingsVisible = true;
+        } else {
+            // Затваряме модала и показваме зоните върху калкулатора
+            showOv(); // Тази функция вече затваря модала
+            resetLayoutSettingsView(); // Връщаме изгледа в начално състояние за следващия път
+        }
+    }
     function showOv() {
         if (!ovFlag) {
             const layout = calcNewCoordinates();
