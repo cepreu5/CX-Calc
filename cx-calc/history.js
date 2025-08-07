@@ -1,13 +1,13 @@
     let history = []; // масив от { entry: string, session: number }
 
     function loadHistory() {
-        const savedHistory = JSON.parse(localStorage.getItem('currencyConverterHistory'));
+        const savedHistory = JSON.parse(localStorage.getItem('CXCalc_history'));
         // Филтрираме старите записи, които може да нямат 'operation' или 'result'
         history = savedHistory ? savedHistory.filter(record => record.operation && record.result) : [];
     }
 
     function saveHistoryToStorage() {
-        localStorage.setItem('currencyConverterHistory', JSON.stringify(history));
+        localStorage.setItem('CXCalc_history', JSON.stringify(history));
     }
 
     function addHistoryEntry(operation, levValue, eurValue) {

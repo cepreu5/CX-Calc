@@ -44,7 +44,7 @@
             default:
                 console.warn("❗ Непозната операция:", operation);
         }
-        localStorage.setItem('CalcMem', JSON.stringify(Mem));
+        localStorage.setItem('CXCalc_CalcMem', JSON.stringify(Mem));
         const statusId = typeof targetSlot === "number" ? `statusArea${targetSlot}` : targetSlot;
         const status = document.getElementById(statusId);
         if (!status) {

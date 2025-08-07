@@ -259,7 +259,7 @@ body.ready .calculator-container {
     max-width: 600px;
     margin: auto;
     padding: 16px;
-    background: #aca6a2;
+    background: #adadad;
     border-radius: 8px;
     font-family: sans-serif;
     font-size: 14px;
@@ -294,6 +294,7 @@ body.ready .calculator-container {
     /* премахва удвояване на рамката */
     border-collapse: collapse;
     border: 1px solid #000;
+    background-color: #cbc4c0; /* Задаваме отделен фон за таблицата */
 }
 
 .help-modal-table tr {
@@ -337,7 +338,7 @@ body.ready .calculator-container {
 
 .help-key-combo kbd {
     padding: 2px 6px;
-    background: #eee;
+    background: #bebebe;
     border-radius: 4px;
     font-size: 13px;
 }
@@ -363,7 +364,8 @@ body.ready .calculator-container {
 .help-modal-footer {
     margin-top: 12px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: left;
 }
 
 .help-action-button {

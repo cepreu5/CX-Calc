@@ -1,5 +1,5 @@
 // sw.js – Service Worker за CX-Calc (PWA + офлайн)
-const CACHE_NAME = 'cx-calc-1.0.3'; // Версия на кеша, редактирай при промяна на ресурсите
+const CACHE_NAME = 'cx-calc-1.0.5'; // Версия на кеша, редактирай при промяна на ресурсите
 // Важно: промени версията при всяка промяна на кешираните ресурси!
 // Това ще принуди браузъра да изтегли новия кеш и да активира новия SW.
 const OFFLINE_PAGE = new URL('index.html', self.location).href;
@@ -62,19 +62,25 @@ self.addEventListener('install', event => {
 
 // 2. Активирай нов SW и изтрий стари кешове
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE_NAME)
-            .map(k => caches.delete(k))
-      ))
-      .then(() => self.clients.claim()) // поеми контрол над всички клиенти
-  );
-  self.clients.matchAll().then(clients => {
-    clients.forEach(client => {
-      client.postMessage({ type: 'NEW_VERSION_AVAILABLE' });
-    });
-  });
+    event.waitUntil(
+        caches.keys()
+            .then(keys => {
+                // Изтриваме старите кешове
+                return Promise.all(
+                    keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+                );
+            })
+            .then(() => self.clients.claim()) // Поемаме контрол веднага
+            .then(() => {
+                // Уведомяваме всички клиенти за новата версия.
+                // Това е вътре в waitUntil, за да се гарантира, че ще се изпълни.
+                return self.clients.matchAll().then(clients => {
+                    const match = CACHE_NAME.match(/cx-calc-([^']+)/);
+                    const version = match ? match[1] : 'N/A';
+                    clients.forEach(client => client.postMessage({ type: 'NEW_VERSION_AVAILABLE', version: version }));
+                });
+            })
+    );
 });
 
 // 3. Прехващай мрежови заявки

@@ -15,7 +15,11 @@
     -->
     <style>
         html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
             background-color: #BFB8B4; /* Задаваме фона веднага, за да избегнем "проблясване" в бяло */
+            overflow: hidden; /* Предотвратява появата на скрол-бар, докато се вижда оверлеят */
         }
         #loading-overlay {
             position: fixed;
@@ -60,17 +64,17 @@
         <button id="dismiss" style="width: 150px;">Отказ</button>
     </div>
 
-    <div id="statusArea1" class="statusArea"></div>
-    <div id="statusArea2" class="statusArea"></div>
-    <div id="statusArea3" class="statusArea"></div>
-    <div id="statusArea4" class="statusArea" style="opacity: 1;">Help</div>
-
     <div class="calculator-container" id="calculatorContainer">     
         <img src="Calculator0.png" ID="calculator" class="calculator-img" alt="Калкулатор">
         <div id="currency" contenteditable="false" ></div>
         <div id="currencyLev" contenteditable="false" ></div>
         <div id="eurInput" class="calculator-display" contenteditable="false"></div>
         <div id="levInput" class="calculator-display" contenteditable="false"></div>
+    <div id="statusArea1" class="statusArea"></div>
+    <div id="statusArea2" class="statusArea"></div>
+    <div id="statusArea3" class="statusArea"></div>
+    <div id="statusArea4" class="statusArea" style="opacity: 1;">Help</div>
+
     </div>
 
     <div id="historyModal" class="modal">
@@ -318,6 +322,9 @@
         </div>
 
         <div class="help-modal-footer">
+            <span id="help-footer-info" style="font-size: 0.8em; color: #555;">
+                <!-- Попълва се от JavaScript -->
+            </span>
             <button id="closeHelpModalButton" class="help-action-button">Затвори</button>
         </div>
     </div>
@@ -329,6 +336,22 @@
 <script src="fontcalc.js"></script>
 
 <script>
+    // --- Предпазен механизъм (Safety Net) за екрана "Зареждане..." ---
+    // Ако приложението не успее да зареди в рамките на 10 секунди,
+    // ще покажем съобщение за грешка, вместо потребителят да чака безкрайно.
+    const loadingTimeout = setTimeout(() => {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+            console.error("Критична грешка: Приложението не успя да зареди в рамките на 10 секунди.");
+            loadingOverlay.innerHTML = `
+                <div style="padding: 20px; text-align: center; line-height: 1.5;">
+                    Възникна грешка при зареждане.<br>
+                    Моля, опитайте да <a href="." style="color: #005a9e; text-decoration: underline;">презаредите страницата</a>.
+                </div>
+            `;
+        }
+    }, 10000); // 10 секунди
+
     const rows = 5;
     const cols = 4;
     const container = document.querySelector('.calculator-container');
@@ -417,10 +440,10 @@
                 }
             }
         }
-        localStorage.setItem('MainPointsO', JSON.stringify(MainPointsO));
+        localStorage.setItem('CXCalc_MainPointsO', JSON.stringify(MainPointsO));
 
         // 2. Събираме и записваме останалите настройки в appSettings
-        const currentSettings = JSON.parse(localStorage.getItem('appSettings')) || defaultSettings;
+        const currentSettings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
         // Събираме и записваме останалите настройки в appSettings
         const newAppSettings = {
             exchangeRate: parseFloat(document.getElementById('exchangeRateInput').value) || defaultSettings.exchangeRate,
@@ -433,7 +456,7 @@
             pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
             calculatorSkin: currentSettings.calculatorSkin || defaultSettings.calculatorSkin // Запазваме текущия скин
         };
-        localStorage.setItem('appSettings', JSON.stringify(newAppSettings));
+        localStorage.setItem('CXCalc_appSettings', JSON.stringify(newAppSettings));
 
         // --- ПРИЛАГАНЕ НА ПРОМЕНИТЕ ---
         // 3. Презареждаме страницата, за да се приложат всички промени консистентно
@@ -495,7 +518,7 @@
     }
 
     function loadSettings() {
-        const savedSettings = JSON.parse(localStorage.getItem('appSettings'));
+        const savedSettings = JSON.parse(localStorage.getItem('CXCalc_appSettings'));
         // Слива запазените настройки с тези по подразбиране, за да се гарантира, че всички ключове съществуват.
         // Запазените стойности имат предимство.
         const settings = { ...defaultSettings, ...savedSettings };
@@ -510,7 +533,7 @@
         levMode = (settings.initialDisplay === 'lev');
 
         // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
-        const savedMem = JSON.parse(localStorage.getItem('CalcMem'));
+        const savedMem = JSON.parse(localStorage.getItem('CXCalc_CalcMem'));
         if (savedMem && Array.isArray(savedMem)) {
             Mem = savedMem;
         } // Ако няма запазена памет, използваме първоначално декларираната празна Mem.
@@ -527,7 +550,7 @@
             showWarning = true;
         }
         // Зареждане на MainPointsO от localStorage
-        const savedMainPointsO = localStorage.getItem('MainPointsO');
+        const savedMainPointsO = localStorage.getItem('CXCalc_MainPointsO');
         if (savedMainPointsO) {
             const parsedSettings = JSON.parse(savedMainPointsO);
             // Дълбоко сливане на запазените настройки с тези по подразбиране.
@@ -1135,9 +1158,9 @@
                         clearHistory();
                         console.log('Историята е изтрита.');
                     }
-                    localStorage.removeItem('MainPointsO');
-                    localStorage.removeItem('appSettings');
-                    console.log('Всички запазени настройки (MainPointsO, appSettings) са изтрити.');
+                    localStorage.removeItem('CXCalc_MainPointsO');
+                    localStorage.removeItem('CXCalc_appSettings');
+                    console.log('Всички запазени настройки (CXCalc_MainPointsO, CXCalc_appSettings) са изтрити.');
                     location.reload();
                 }
             }
@@ -1178,6 +1201,12 @@
     });
 
     window.addEventListener("load", function() {
+        // Приложението е заредило успешно.
+        // 1. Връщаме възможността за скролиране, която беше спряна от вградения CSS.
+        document.body.style.overflow = 'auto';
+        // 2. Премахваме предпазния механизъм (таймера).
+        clearTimeout(loadingTimeout);
+
         try {
             calculator = document.querySelector(".calculator-img");
 
@@ -1281,6 +1310,17 @@
         const checkVersionBtn = document.getElementById('checkVersionBtn');
         if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
 
+        // --- Динамично показване на версията от localStorage ---
+        const helpFooterInfo = document.getElementById('help-footer-info');
+        const emailLink = `<a href="mailto:cx.sites.online@gmail.com" style="color: inherit; text-decoration: none;">cx.sites.online@gmail.com</a>`;
+
+        // Показваме веднага версията от localStorage. Това е единственото четене при зареждане.
+        const currentVersion = localStorage.getItem('CXCalc_appVersion');
+        if (helpFooterInfo) {
+            const versionText = currentVersion || 'N/A';
+            helpFooterInfo.innerHTML = `Версия ${versionText} &bull; Контакт: ${emailLink}`;
+        }
+
         loadHistory();
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
@@ -1357,34 +1397,13 @@
         console.log('Service Worker регистриран:', reg);
         navigator.serviceWorker.addEventListener('message', event => {
             if (event.data?.type === 'NEW_VERSION_AVAILABLE') {
-            console.log('Налична е нова версия!');
-            // Създай визуално съобщение
-            const notice = document.createElement('div');
-            notice.textContent = 'Налична е нова версия. Страницата ще се презареди...';
-            notice.style.position = 'fixed';
-            notice.style.top = '10px';
-            notice.style.left = '50%';
-            notice.style.transform = 'translateX(-50%)';
-            notice.style.background = '#0078d4';
-            notice.style.color = '#fff';
-            notice.style.padding = '12px 20px';
-            notice.style.borderRadius = '6px';
-            notice.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-            notice.style.zIndex = '9999';
-            notice.style.fontFamily = 'sans-serif';
-            notice.style.opacity = '1';
-            notice.style.transition = 'opacity 1s ease-out';
-            document.body.appendChild(notice);
-            notice.style.width = '80%';
-            notice.style.maxWidth = '300px';
-            notice.style.textAlign = 'center';            // Fade-out след 4 секунди
-            setTimeout(() => {
-                notice.style.opacity = '0';
-            }, 4000);
-            // Презареди след 5 секунди
-            setTimeout(() => {
-                window.location.reload();
-            }, 5000);
+                console.log('Налична е нова версия:', event.data.version);
+                // 1. Записваме новата версия в localStorage за следващото зареждане.
+                if (event.data.version) {
+                    localStorage.setItem('CXCalc_appVersion', event.data.version);
+                }
+                // 2. Показваме съобщението за презареждане.
+                showNotification('Налична е нова версия. Презареждане...', 'success', 4000, true);
             }
         });
         })
@@ -1394,7 +1413,7 @@
     }
 
     let deferredPrompt;
-    if (localStorage.getItem('pwaInstallDeclined') === 'true') {
+    if (localStorage.getItem('CXCalc_pwaInstallDeclined') === 'true') {
         console.log('Потребителят вече е отказал инсталацията.');
     } else {
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -1417,7 +1436,7 @@
                 cleanup();
             };
             const dismissHandler = () => {
-                localStorage.setItem('pwaInstallDeclined', 'true');
+                localStorage.setItem('CXCalc_pwaInstallDeclined', 'true');
                 deferredPrompt = null;
                 cleanup();
             };
@@ -1432,16 +1451,72 @@
         });
     }
 
+    function showNotification(message, type = 'info', duration = 3000, isReloading = false) {
+        const existingNotice = document.querySelector('.custom-notification');
+        if (existingNotice) {
+            document.body.removeChild(existingNotice);
+        }
+
+        const notice = document.createElement('div');
+        notice.className = 'custom-notification';
+        notice.textContent = message;
+
+        const colors = {
+            info: '#0078d4',    // Синьо
+            success: '#107c10', // Зелено
+            error: '#d13438'    // Червено
+        };
+        notice.style.background = colors[type] || colors.info;
+
+        Object.assign(notice.style, {
+            position: 'fixed',
+            top: '10px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: '#fff',
+            padding: '12px 20px',
+            borderRadius: '6px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+            zIndex: '9999',
+            fontFamily: 'sans-serif',
+            opacity: '0',
+            transition: 'opacity 0.5s ease-in-out',
+            width: '80%',
+            maxWidth: '300px',
+            textAlign: 'center'
+        });
+        document.body.appendChild(notice);
+
+        setTimeout(() => { notice.style.opacity = '1'; }, 10);
+
+        setTimeout(() => {
+            notice.style.opacity = '0';
+            setTimeout(() => {
+                if (isReloading) {
+                    window.location.reload();
+                } else if (document.body.contains(notice)) {
+                    document.body.removeChild(notice);
+                }
+            }, 500);
+        }, duration);
+    }
+
     function checkForUpdates() {
         const checkVersionBtn = document.getElementById('checkVersionBtn');
+
+        // 1. Проверяваме за интернет връзка ПРЕДИ всичко останало.
+        if (!navigator.onLine) {
+            showNotification('Няма връзка с интернет. Проверката е невъзможна.', 'error');
+            return; // Прекратяваме, ако сме офлайн.
+        }
         if (!('serviceWorker' in navigator)) {
-            alert('Service Worker не се поддържа от този браузър.');
+            showNotification('Service Worker не се поддържа.', 'error');
             return;
         }
 
         navigator.serviceWorker.getRegistration().then(registration => {
             if (!registration) {
-                alert('Грешка: Service Worker не е регистриран.');
+                showNotification('Service Worker не е регистриран.', 'error');
                 return;
             }
 
@@ -1449,36 +1524,28 @@
             checkVersionBtn.textContent = 'Проверява се...';
             checkVersionBtn.disabled = true;
 
-            // Принуждава браузъра да провери за нов service worker файл.
             registration.update().then(() => {
                 if (registration.installing) {
-                    // Намерен е нов service worker и се инсталира.
-                    // Съществуващата логика (слушаща за 'NEW_VERSION_AVAILABLE')
-                    // ще уведоми потребителя да презареди, след като инсталацията приключи.
-                    // Не е нужно да правим нищо повече тук.
                     console.log('SW: Намерен е нов service worker, инсталира се...');
+                    showNotification('Инсталира се нова версия...', 'info');
                 } else if (registration.waiting) {
-                    // Вече има инсталиран и чакащ service worker.
-                    // Това означава, че нова версия е налична, но не е активирана.
-                    // Изпращаме му съобщение да се активира.
                     console.log('SW: Намерен е чакащ service worker. Изпраща се команда за активиране...');
+                    showNotification('Активира се нова версия...', 'info');
                     registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                    // След като се активира, той ще изпрати 'NEW_VERSION_AVAILABLE' и ще се покаже съобщението за презареждане.
                 } else {
-                    // Няма нов service worker.
-                    alert('Вие използвате последната версия на приложението.');
+                    // Показваме съобщението само ако проверката е била успешна.
+                    // В офлайн режим никога няма да стигнем дотук.
+                    showNotification('Вие използвате последната версия.', 'success'); 
                 }
             }).catch(error => {
                 console.error('Грешка при проверка за нова версия:', error);
-                alert('Възникна грешка при проверката за нова версия.');
+                showNotification('Грешка при проверката за нова версия.', 'error');
             }).finally(() => {
-                // Връщаме бутона в нормално състояние, но само ако няма намерена нова версия.
-                // Ако има нова версия, страницата ще се презареди и няма смисъл да го пипаме.
                 if (!registration.installing && !registration.waiting) {
-                    setTimeout(() => { // малко забавяне, за да може потребителят да види alert-а
+                    setTimeout(() => {
                         checkVersionBtn.textContent = originalText;
                         checkVersionBtn.disabled = false;
-                    }, 1500);
+                    }, 3000);
                 }
             });
         });
