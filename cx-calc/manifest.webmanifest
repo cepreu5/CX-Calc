@@ -1,6 +1,6 @@
 {
-  "name": "CX-Calc",
-  "short_name": "CX-Calc 1.0",
+  "name": "CX-Calc 1.0",
+  "short_name": "CX-calc",
   "description": "CX-Calc - калкулатор за бързо конвертиране от една валута в друга с интуитивен интерфейс и възможности за настройки.",
   "id": "/cx-calc/?source=pwa",
   "start_url": "/cx-calc/?source=pwa",
