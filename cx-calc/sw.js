@@ -162,3 +162,10 @@ self.addEventListener('fetch', event => {
             .catch(() => caches.match(request).then(r => r || caches.match(OFFLINE_PAGE)))
     );
 });
+
+// 4. Слушай за съобщения от клиента (напр. за пропускане на изчакването)
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});

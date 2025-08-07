@@ -131,6 +131,11 @@
                                 <input type="radio" name="initialDisplay" id="initialDisplayLev" value="lev" checked> Долен
                             </label>
                         </div>
+                        <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                        <!--<label>Приложение:</label>-->
+                        <div style="grid-column: 1 / -1;">
+                            <button id="checkVersionBtn" class="action-button" style="width: 100%; padding: 8px 12px; font-size: 0.9em;">Проверка за нова версия</button>
+                        </div>
                     </span>
                     <span ID="Settings2" class="layout-settings-grid" style="border: 0px; display: none; grid-column: 1 / -1;">
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
@@ -1272,6 +1277,10 @@
                 appendNumber(key);
             }
         });
+        // Добавяме слушател за бутона за проверка на версия
+        const checkVersionBtn = document.getElementById('checkVersionBtn');
+        if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
+
         loadHistory();
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
@@ -1420,6 +1429,58 @@
             }
             installBtn.addEventListener('click', installHandler);
             dismissBtn.addEventListener('click', dismissHandler);
+        });
+    }
+
+    function checkForUpdates() {
+        const checkVersionBtn = document.getElementById('checkVersionBtn');
+        if (!('serviceWorker' in navigator)) {
+            alert('Service Worker не се поддържа от този браузър.');
+            return;
+        }
+
+        navigator.serviceWorker.getRegistration().then(registration => {
+            if (!registration) {
+                alert('Грешка: Service Worker не е регистриран.');
+                return;
+            }
+
+            const originalText = checkVersionBtn.textContent;
+            checkVersionBtn.textContent = 'Проверява се...';
+            checkVersionBtn.disabled = true;
+
+            // Принуждава браузъра да провери за нов service worker файл.
+            registration.update().then(() => {
+                if (registration.installing) {
+                    // Намерен е нов service worker и се инсталира.
+                    // Съществуващата логика (слушаща за 'NEW_VERSION_AVAILABLE')
+                    // ще уведоми потребителя да презареди, след като инсталацията приключи.
+                    // Не е нужно да правим нищо повече тук.
+                    console.log('SW: Намерен е нов service worker, инсталира се...');
+                } else if (registration.waiting) {
+                    // Вече има инсталиран и чакащ service worker.
+                    // Това означава, че нова версия е налична, но не е активирана.
+                    // Изпращаме му съобщение да се активира.
+                    console.log('SW: Намерен е чакащ service worker. Изпраща се команда за активиране...');
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    // След като се активира, той ще изпрати 'NEW_VERSION_AVAILABLE' и ще се покаже съобщението за презареждане.
+                } else {
+                    // Няма нов service worker.
+                    alert('Вие използвате последната версия на приложението.');
+                }
+            }).catch(error => {
+                console.error('Грешка при проверка за нова версия:', error);
+                alert('Възникна грешка при проверката за нова версия.');
+            }).finally(() => {
+                // Връщаме бутона в нормално състояние, но само ако няма намерена нова версия.
+                // Ако има нова версия, страницата ще се презареди и няма смисъл да го пипаме.
+                if (!registration.installing && !registration.waiting) {
+                    setTimeout(() => { // малко забавяне, за да може потребителят да види alert-а
+                        checkVersionBtn.textContent = originalText;
+                        checkVersionBtn.disabled = false;
+                    }, 1500);
+                }
+            });
         });
     }
 
