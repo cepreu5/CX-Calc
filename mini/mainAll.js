@@ -30,6 +30,8 @@
     const historyList = document.getElementById('historyList');
     const closeHistoryModalButton = document.getElementById('closeHistoryModalButton');
     const closeHelpModalButton = document.getElementById('closeHelpModalButton');
+    const clearHistoryButton = document.getElementById('clearHistoryButton');
+    const closeHelpModalButtonTop = document.getElementById('closeHelpModalButtonTop');
 
     var MainPointsO = {
         Keys:       {x: 43, y: 235},
@@ -916,6 +918,32 @@
             loadingOverlay.style.opacity = '0';
             setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500); // Премахваме го след анимацията
         }
+
+        // --- PWA Install Prompt Logic for iOS ---
+        // Логиката е тук, за да сме сигурни, че loading overlay е изчезнал
+        // и банерът е достъпен за клик.
+        isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const installDeclined = localStorage.getItem('CXCalc_pwaInstallDeclined') === 'true';
+
+        // Показваме специални инструкции за iOS, тъй като beforeinstallprompt не се поддържа.
+        if (isIOS && !isStandalone && !installDeclined) {
+            const iosPrompt = document.getElementById('ios-install-prompt');
+            const dismissIosBtn = document.getElementById('dismiss-ios-prompt');
+            const declineIosBtn = document.getElementById('decline-ios-install');
+            if (iosPrompt && dismissIosBtn && declineIosBtn) {
+                iosPrompt.style.display = 'flex';
+                // Бутонът 'Отказ' скрива банера и запазва избора за постоянно
+                declineIosBtn.addEventListener('click', () => {
+                    iosPrompt.style.display = 'none';
+                    localStorage.setItem('CXCalc_pwaInstallDeclined', 'true');
+                }, { once: true });
+                // Бутонът 'x' само скрива банера за текущата сесия
+                dismissIosBtn.addEventListener('click', () => {
+                    iosPrompt.style.display = 'none';
+                }, { once: true });
+            }
+        }
     });
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -975,7 +1003,7 @@
         loadHistory();
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
-        isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
         appendNumber("C");
     });
 
