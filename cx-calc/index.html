@@ -7,6 +7,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <title>CX-Calc</title>
    	<link rel="shortcut icon" type="image/png" href="CalcFav.png" />
+    <link rel="apple-touch-icon" href="Calc120.png">
     <!--
       Критичен CSS, който се вгражда директно в HTML.
       Това гарантира, че съобщението "Зареждане..." се показва незабавно,
@@ -855,7 +856,11 @@
                     console.error("Грешка в изчисленията", error);
                 }
             } else {
-                if (canAddCharacter(userInput, value)) {
+                // Предотвратяване на водещи нули (напр. 04 -> 4 или 5+04 -> 5+4)
+                if (currentNumber === '0' && value !== ',' && !/[+\-*/]/.test(value)) {
+                    // Заменяме '0' с новата цифра, вместо да я добавяме
+                    userInput = userInput.slice(0, -1) + value;
+                } else if (canAddCharacter(userInput, value)) {
                     userInput += value;
                 }
             }

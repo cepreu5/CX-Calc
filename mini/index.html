@@ -331,11 +331,29 @@
     </div>
 </div>
 
-<script src="main.js"></script>
-<script src="status.js"></script>
+<script>
+    // --- Предпазен механизъм (Safety Net) за екрана "Зареждане..." ---
+    // Ако приложението не успее да зареди в рамките на 10 секунди,
+    // ще покажем съобщение за грешка, вместо потребителят да чака безкрайно.
+    const loadingTimeout = setTimeout(() => {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+            console.error("Критична грешка: Приложението не успя да зареди в рамките на 10 секунди.");
+            loadingOverlay.innerHTML = `
+                <div style="padding: 20px; text-align: center; line-height: 1.5;">
+                    Възникна грешка при зареждане.<br>
+                    Моля, опитайте да <a href="." style="color: #005a9e; text-decoration: underline;">презаредите страницата</a>.
+                </div>
+            `;
+        }
+    }, 10000); // 10 секунди
+</script>
+
+<script src="mainAll.js"></script>
+<!--/*<script src="status.js"></script>
 <script src="calc.js"></script>
 <script src="history.js"></script>
-<script src="fontcalc.js"></script>
+<script src="fontcalc.js"></script>*/-->
 
 </body>
 </html>

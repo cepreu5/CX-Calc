@@ -1,19 +1,3 @@
-    // --- Предпазен механизъм (Safety Net) за екрана "Зареждане..." ---
-    // Ако приложението не успее да зареди в рамките на 10 секунди,
-    // ще покажем съобщение за грешка, вместо потребителят да чака безкрайно.
-    const loadingTimeout = setTimeout(() => {
-        const loadingOverlay = document.getElementById('loading-overlay');
-        if (loadingOverlay && loadingOverlay.style.display !== 'none') {
-            console.error("Критична грешка: Приложението не успя да зареди в рамките на 10 секунди.");
-            loadingOverlay.innerHTML = `
-                <div style="padding: 20px; text-align: center; line-height: 1.5;">
-                    Възникна грешка при зареждане.<br>
-                    Моля, опитайте да <a href="." style="color: #005a9e; text-decoration: underline;">презаредите страницата</a>.
-                </div>
-            `;
-        }
-    }, 10000); // 10 секунди
-
     const rows = 5;
     const cols = 4;
     const container = document.querySelector('.calculator-container');
@@ -1216,4 +1200,482 @@
                 }
             });
         });
+    }
+
+// ------------ status.js
+
+    /* updateMemoryStatusDisplay: Променя цвета на фона на статус зоната
+    * Приема:
+    *   - slot: Номер на слота на паметта (1, 2, 3).
+    *   - hasValue: Булева стойност (true, ако има стойност; false, ако е изчистена). */
+    function updateMemoryStatusDisplay(slot, hasValue) {
+        const statusElement = document.getElementById(`statusArea${slot}`);
+        if (statusElement) {
+            statusElement.style.backgroundColor = hasValue ? "rgb(225, 250, 4)" : "#565749"; // алтернативен или оригинален цвят
+        }
+    }
+
+    // Проверка дали клавишът има допълнително поведение
+    function isMemoryKey(value) {
+        return /^[1-9]$/.test(value) || ["*", "/", "-"].includes(value);
+    }
+
+    function memoryAdd(targetSlot, operation = "+") {
+        const rawText = (levMode ? displaylv : display).textContent.trim();
+        const cleanText = rawText.replace(/\s/g, '').replace(',', '.');
+        let value = parseFloat(cleanText);
+        if (isNaN(value)) value = 0;
+        if (Mem[targetSlot] === undefined) Mem[targetSlot] = 0;
+        switch (operation) {
+            case "+":
+            Mem[targetSlot] += value;
+                console.log(`M+ в Mem[${targetSlot}] → +${value} = [${Mem}]`);
+                updateMemoryStatusDisplay(targetSlot, true); // Променя фона на светлосин
+                setTimeout(() => {
+                    updateMemoryStatusDisplay(targetSlot, false); // Връща оригиналния фон след х секунди
+                }, 300);
+                break;
+            case "-":
+                Mem[targetSlot] -= value;
+                console.log(`M− в Mem[${targetSlot}] → −${value} = [${Mem}]`);
+                updateMemoryStatusDisplay(targetSlot, true); // Променя фона на светлосин
+                setTimeout(() => {
+                    updateMemoryStatusDisplay(targetSlot, false); // Връща оригиналния фон след х секунди
+                }, 300);
+                break;
+            case "0":
+                Mem[targetSlot] = 0;
+                console.log(`0 в Mem[${targetSlot}] → +${value} = [${Mem}]`);
+            break;
+            default:
+                console.warn("❗ Непозната операция:", operation);
+        }
+        localStorage.setItem('CXCalc_CalcMem', JSON.stringify(Mem));
+        const statusId = typeof targetSlot === "number" ? `statusArea${targetSlot}` : targetSlot;
+        const status = document.getElementById(statusId);
+        if (!status) {
+            //console.warn(`updateStatus: елемент с id '${statusId}' не е намерен.`);
+            return;
+        }
+        //console.log(`✔️ updateStatus(${statusId}):`, message);
+        status.textContent = "M" + targetSlot;
+        status.style.opacity = "1";
+    }
+
+    // Действията за памет
+    function executeMemoryAction(value, statusArea) {
+        switch (statusArea) {
+            case 1:
+            switch (value) {
+                case "1": memoryAdd(1, "+"); break;
+                case "4": memoryAdd(1, "-"); break;
+                case "7": memoryAdd(1, "0"); clearStatus(statusArea); break;
+            }
+            break;
+            case 2:
+            switch (value) {
+                case "2": memoryAdd(2, "+"); break;
+                case "5": memoryAdd(2, "-"); break;
+                case "8": memoryAdd(2, "0"); clearStatus(statusArea); break;
+            }
+            break;
+            case 3:
+            switch (value) {
+                case "3": memoryAdd(3, "+"); break;
+                case "6": memoryAdd(3, "-"); break;
+                case "9": memoryAdd(3, "0"); clearStatus(statusArea); break;
+            }
+            break;
+        }
+    }
+
+    //memoryShow: Временно показва стойността от даден слот на паметта в горния дисплей, без да го променя
+    function memoryShow(slot) {
+        if (slot == 4) {
+            const calculatorEl = document.getElementById("calculator");
+            const newSkin = calculatorEl.src.includes("CalculatorA.png") ? "Calculator0.png" : "CalculatorA.png";
+            calculatorEl.src = newSkin;
+
+            // Запазваме новия скин в localStorage
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            settings.calculatorSkin = newSkin; // Запазваме името на файла
+            localStorage.setItem('appSettings', JSON.stringify(settings));
+            return;
+        }
+        if (Mem[slot] === undefined) {
+            console.warn(`Памет Mem[${slot}] е недефинирана.`);
+            return;
+        }
+        const originalValue = displaylv.textContent; // Запазваме оригиналната стойност на levInput
+        const originalEurValue = display.textContent; // Запазваме оригиналната стойност на eurInput (div)
+        const originalBgColor = displaylv.style.backgroundColor;
+        const originalEurBgColor = display.style.backgroundColor; // Запазваме оригиналния фон на eurInput (div)
+        // Форматираме и показваме стойността от паметта
+        const memValueStr = groupByThree(formatNumber(Mem[slot]));
+        // Показваме стойността в eurInput (div)
+        display.textContent = memValueStr;
+        adjustFontSize(displaylv, display);
+        display.style.backgroundColor = 'rgba(255, 223, 186, 0.5)'; // Светло оранжево за индикация
+        // Връщаме оригиналните стойности след 3 секунди
+        setTimeout(() => {
+            display.textContent = originalEurValue;
+            display.style.backgroundColor = originalEurBgColor;
+        }, 1000);
+    }
+
+    function memoryRecall(slot) {
+        // Guard clause: не променяме, ако паметта е празна или ако потребителят вече е въвел число
+        if (Mem[slot] === undefined || Mem[slot] === 0 || (userInput !== "" && !(/[+\-*/×÷]$/.test(userInput)))) {
+            return;
+        }
+        const valueStr = Mem[slot].toString().replace('.', ',');
+        userInput += valueStr; // Добавяме стойността от паметта към текущия вход
+        const isExpression = /[+\-*/×÷(]/.test(userInput);
+        // Определяме кой дисплей е първичен и кой вторичен, за да избегнем повторение на код
+        const primaryDisplay = levMode ? displaylv : display;
+        const secondaryDisplay = levMode ? display : displaylv;
+        const conversionFunction = levMode ? convertFromLevToEur : convertFromEurToLev;
+        if (isExpression) {
+            // Ако е израз, показваме го в първичния дисплей и изчистваме вторичния
+            primaryDisplay.textContent = userInput.replace(/\*/g, "×").replace(/\//g, "÷");
+            secondaryDisplay.textContent = "";
+        } else {
+            // Ако е число, форматираме го и показваме конвертираната стойност
+            primaryDisplay.textContent = groupByThree(userInput, true);
+            secondaryDisplay.textContent = groupByThree(conversionFunction(userInput, true));
+        }
+        console.log(`📟 MR от Mem[${slot}] → "${valueStr}" → нов userInput: "${userInput}"`);
+        adjustFontSize(displaylv, display);
+        updateMemoryStatusDisplay(slot, false); // Връща оригиналния фон веднага при извикване
+    }
+
+    function clearStatus(sArea) {
+        const statusId = typeof sArea === "number" ? `statusArea${sArea}` : sArea;
+        const status = document.getElementById(statusId);
+        if (!status) return;
+        status.style.opacity = "0";
+    }
+
+    // calc.js ----------------------
+
+        function scaleMainPoints(aspectRatioW, aspectRatioH) {
+        if (!MainPointsO) return;
+        for (const key in MainPointsO) {
+            const originalPoint = MainPointsO[key];
+            if (
+                originalPoint &&
+                typeof originalPoint.x === "number" &&
+                typeof originalPoint.y === "number"
+            ) {
+                MainPoints[key] = {
+                    x: originalPoint.x * aspectRatioW,
+                    y: originalPoint.y * aspectRatioH
+                };
+                // console.log(`MainPoints[${key}]: x=${MainPoints[key].x}, y=${MainPoints[key].y}`);
+                // console.log(`MainPointsO[${key}]: x=${MainPointsO[key].x}, y=${MainPointsO[key].y}`);
+            }
+        }
+    }
+
+    function positionStatusArea(index, ovFlag = false) {
+        const col = index - 1;
+        const rect = calculator.getBoundingClientRect();
+        const keyX = MainPoints.Keys.x + col * (MainPoints.KeySize.x + MainPoints.KbdGaps.x);
+        const keyCenter = keyX + MainPoints.KeySize.x / 2;
+        const status = document.getElementById(`statusArea${index}`);
+        if (status  && !ovFlag) {
+            status.className = "statusArea";
+            status.style.position = "fixed";
+            status.style.left = `${rect.left + MainPoints.Status.x + keyCenter - MainPoints.StatusSize.x / 2}px`;
+            status.style.top = `${rect.top + MainPoints.Status.y}px`;
+            status.style.width = `${MainPoints.StatusSize.x}px`;
+            status.style.height = `${MainPoints.StatusSize.y}px`;
+            status.style.pointerEvents = "none"; // за да не пречи на кликове по клавишите
+        }
+        if (ovFlag) {
+            const container = document.body;
+            // Изчистване на предишните маркери
+            const marker = document.createElement("div");
+            marker.className = "overlay-marker";
+            marker.style.position = "fixed";
+            marker.style.left = `${rect.left + MainPoints.Status.x + keyCenter - MainPoints.StatusSize.x / 2}px`;
+            marker.style.top = `${rect.top + MainPoints.Status.y}px`;
+            marker.style.width = `${2+MainPoints.StatusSize.x}px`;
+            marker.style.height = `${2+MainPoints.StatusSize.y}px`;
+            marker.style.pointerEvents = "none"; // за да не пречи на кликове по клавишите
+            marker.style.backgroundColor = "transparent"; //"rgba(255,255,255,0.5)";
+            marker.style.border = "5px solid yellow";
+            marker.style.pointerEvents = "none"; // за да не пречи на кликове по клавишите
+            marker.style.zIndex = "9999";
+            container.appendChild(marker);
+        }
+    }
+
+    function noOverlay() {
+        document.querySelectorAll('.overlay-marker').forEach(e => e.remove());
+    };
+
+    function placeKeys(keys, displayCoords) {
+        const container = document.body;
+        // Изчистване на предишните маркери
+       noOverlay();
+        // Клавиши 
+        keys.forEach(key => {
+            const keyElement = document.createElement("div");
+            keyElement.className = "overlay-marker";
+            keyElement.style.position = "fixed";// "absolute";
+            keyElement.style.left = `${key.x}px`;
+            keyElement.style.top = `${key.y}px`;
+            keyElement.style.width = `${MainPoints.KeySize.x}px`;
+            keyElement.style.height = `${MainPoints.KeySize.y}px`;
+            keyElement.style.backgroundColor = "transparent"; //"rgba(255,255,255,0.5)";
+            keyElement.style.border = "1px solid yellow";
+            keyElement.style.pointerEvents = "none"; // за да не пречи на кликове по клавишите
+            keyElement.style.zIndex = "9999";
+            container.appendChild(keyElement);
+        });
+        // Позициониране на статус областите
+        for (let i = 1; i < 5; i++) positionStatusArea(i, true);
+    }
+
+    function calcNewCoordinates() {
+        if (!calculator) {
+            console.error("Липсва изображението на калкулатора.");
+            return { keys: [], displayCoords: {} };
+        }
+        const rect = calculator.getBoundingClientRect();
+        const containerRect = document.getElementById('calculatorContainer').getBoundingClientRect();
+        // console.log("Координати на калкулатора L T:", rect.left, rect.top, MainPoints.Display.y);
+        // Връщаме координати за оверлея
+        const displayCoords = {
+            lv: {
+                x: rect.left + MainPoints.Displaylv.x,
+                y: rect.top + MainPoints.Displaylv.y
+            },
+            eur: {
+                x: rect.left + MainPoints.Display.x,
+                y: rect.top + MainPoints.Display.y
+            }
+        };
+        // в  масива за клавишите - новите координати
+        const keys = [];
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                keys.push({
+                    x: rect.left + MainPoints.Keys.x + col * (MainPoints.KeySize.x + MainPoints.KbdGaps.x),
+                    y: rect.top + MainPoints.Keys.y + row * (MainPoints.KeySize.y + MainPoints.KbdGaps.y),
+                    value: getKeyValue(row, col)
+                });
+            }
+        }
+        const markers = [
+            { label: "Лев дисплей",  id: "levInput",  coords: displayCoords.lv },
+            { label: "Евро дисплей", id: "eurInput",  coords: displayCoords.eur },
+            { label: "Валута",       id: "currency",  coords: { x: displayCoords.eur.x + MainPoints.CurrencyOffset.x, y: displayCoords.eur.y + MainPoints.CurrencyOffset.y } },
+            { label: "Валута Лев",   id: "currencyLev", coords: { x: displayCoords.lv.x + MainPoints.CurrencyLevOffset.x, y: displayCoords.lv.y + MainPoints.CurrencyLevOffset.y } }
+        ];
+        markers.forEach(({ label, id, coords }) => {
+            // console.log("Дисплей на калкулатора.");
+            const x = parseFloat(coords?.x);
+            const y = parseFloat(coords?.y);
+            if (isNaN(x) || isNaN(y)) {
+                console.warn(`⚠️ ${label} получи невалидни координати:`, coords);
+                return;
+            }
+            const marker = document.getElementById(id);
+            if (!marker) {
+                console.warn(`⚠️ Елемент с id '${id}' не е намерен.`);
+                return;
+            }
+
+            marker.title = label;
+            marker.style.position = "absolute";
+            marker.style.left = `${x - containerRect.left}px`;
+            marker.style.top = `${y - containerRect.top}px`;
+            // Прилагаме размер и клас само на дисплеите, не и на символа за валута
+            if (id === "levInput" || id === "eurInput") {
+                marker.className = "calculator-display";
+                marker.style.width = `${MainPoints.DisplaySize.x}px`;
+                marker.style.height = `${MainPoints.DisplaySize.y}px`;
+            } else if (id === "currency" || id === "currencyLev") {
+                const baseFontSize = 24; // Базов размер на шрифта
+                marker.style.fontSize = `${baseFontSize * aspectRatioH}px`;
+            }
+        });
+        for (let i = 1; i < 5; i++) positionStatusArea(i);
+        return { keys, displayCoords };
+    }
+
+// history.js -----------------------
+
+    let history = []; // масив от { entry: string, session: number }
+
+    function loadHistory() {
+        const savedHistory = JSON.parse(localStorage.getItem('CXCalc_history'));
+        // Филтрираме старите записи, които може да нямат 'operation' или 'result'
+        history = savedHistory ? savedHistory.filter(record => record.operation && record.result) : [];
+    }
+
+    function saveHistoryToStorage() {
+        localStorage.setItem('CXCalc_history', JSON.stringify(history));
+    }
+
+    function addHistoryEntry(operation, levValue, eurValue) {
+        const formattedLev = groupByThree(formatNumber(levValue));
+        const formattedEur = groupByThree(formatNumber(eurValue));
+        let entry = `${formattedLev} лв. = ${formattedEur} €`;
+        if (`${groupByThree(formatNumber(levValue))}` == "" || `${groupByThree(formatNumber(eurValue))}` == "") {
+            if (formattedLev === "") {
+                entry = `${formattedEur}`;
+            } else if (formattedEur === "") {
+                entry = `${formattedLev}`;
+            }         
+        };
+        history.unshift({ operation, result: entry });
+        if (history.length > MAX_HISTORY_ITEMS) {
+            history = history.slice(0, MAX_HISTORY_ITEMS);
+        }
+        saveHistoryToStorage();
+    }
+
+    function formatExpression(expression) {
+        expression = expression.replace(/\s+/g, '');
+        // Израз с две числа и оператор между тях
+        const regex = /(\d+(?:[.,]\d+)?)[\s]*([+\-*/×÷])[\s]*(\d+(?:[.,]\d+)?)/;
+        return expression.replace(regex, (_, raw1, operator, raw2) => {
+            // Унифициране: ако има запетая – я заменяме с точка
+            const n1 = parseFloat(raw1.replace(',', '.'));
+            const n2 = parseFloat(raw2.replace(',', '.'));
+            // Форматиране: 2 знака след десетичния знак
+            const formatted1 = n1.toFixed(2).replace('.', ',');
+            const formatted2 = n2.toFixed(2).replace('.', ',');
+            return `${formatted1} ${operator} ${formatted2}`;
+        });
+    }
+
+    function updateHistoryList() {
+        historyList.innerHTML = '';
+        if (history.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = 'Няма запазена история.';
+            historyList.appendChild(li);
+            return;
+        }
+        history.forEach(record => {
+            const li = document.createElement('li');
+            li.textContent = "";
+            if (/[+\-*/×÷]/.test(record.operation)) {
+                li.textContent = `${formatExpression(record.operation)} -> `;
+            }
+            li.textContent += `${record.result}`;
+            // li.textContent = `${record.operation} = ${record.result}`;
+            historyList.appendChild(li);
+        });
+    }
+
+    function handleClearHistory() {
+        history = [];
+        saveHistoryToStorage();
+        updateHistoryList();
+        closeHistoryModalButton.click();
+    }
+
+    function historyOpen() {
+        noOverlay();
+        updateHistoryList();
+        historyModal.style.display = 'flex';
+        modalIsActive = true;
+    };
+
+    // Clear History button
+    if (clearHistoryButton) {
+        clearHistoryButton.addEventListener('click', handleClearHistory);
+    }
+
+    if (closeHistoryModalButton) {
+        closeHistoryModalButton.addEventListener('click', (e) => { 
+            historyModal.style.display = 'none';
+            // Забавяне на изключването с 1 tick (0 ms timeout)
+            setTimeout(() => {
+                modalIsActive = false;
+            }, 0);
+            e.stopPropagation();
+            e.preventDefault();
+        });
+    }
+
+// fontcalc.js ------------------------
+
+    function getTextWidth(text, inputElement) {
+        const span = document.createElement("span");
+        span.style.visibility = "hidden";
+        span.style.position = "absolute";
+        span.style.whiteSpace = "pre"; // запазва интервалите
+        span.style.fontSize = getComputedStyle(inputElement).fontSize;
+        span.style.fontFamily = getComputedStyle(inputElement).fontFamily;
+        span.style.fontWeight = getComputedStyle(inputElement).fontWeight;
+        span.textContent = text;
+        document.body.appendChild(span);
+        const width = span.offsetWidth;
+        document.body.removeChild(span);
+        return width;
+    }
+
+    function adjustFontSize(element1, element2) {
+        const maxFontSize = 48;
+        const minFontSize = 14;
+        // Вземаме текстовете
+        const text1 = element1.innerText !== undefined ? element1.innerText : element1.textContent || "0";
+        const text2 = element2.innerText !== undefined ? element2.innerText : element2.textContent || "0";
+        console.log("text1: " + text1);
+        console.log("text2: " + text2);
+        // Използваме ширината и височината на по-малкия елемент (за по-сигурно)
+        // Използваме getBoundingClientRect() за по-голяма точност (връща дробни стойности)
+        const rect1 = element1.getBoundingClientRect();
+        const rect2 = element2.getBoundingClientRect();
+        const width = Math.min(rect1.width, rect2.width);
+        const height = Math.min(rect1.height, rect2.height);
+        // Създаваме скрит div за измерване
+        const measuringDiv = document.createElement("div");
+        measuringDiv.style.position = "absolute";
+        measuringDiv.style.visibility = "hidden";
+        measuringDiv.style.height = "auto";
+        measuringDiv.style.width = "auto"; // Позволяваме на елемента да се разшири свободно
+        measuringDiv.style.whiteSpace = "nowrap"; // Предотвратяваме пренасянето на нов ред
+        const cs = getComputedStyle(element1);
+        measuringDiv.style.fontFamily = cs.fontFamily;
+        measuringDiv.style.fontWeight = cs.fontWeight;
+        measuringDiv.style.letterSpacing = cs.letterSpacing;
+        // Без padding/border, за да мерим само съдържанието
+        measuringDiv.style.padding = "0";
+        measuringDiv.style.border = "none";
+        measuringDiv.style.boxSizing = "border-box";
+        document.body.appendChild(measuringDiv);
+        // Определяме кой от двата текста е визуално по-широк, за да го използваме за измерване
+        measuringDiv.style.fontSize = maxFontSize + "px"; // Измерваме с максималния шрифт
+        measuringDiv.textContent = text1;
+        const width1 = measuringDiv.scrollWidth;
+        measuringDiv.textContent = text2;
+        const width2 = measuringDiv.scrollWidth;
+        const widerText = width1 >= width2 ? text1 : text2;
+        let fontSize = maxFontSize;
+        while (fontSize >= minFontSize) {
+            measuringDiv.style.fontSize = fontSize + "px";
+            measuringDiv.textContent = widerText;
+            if (measuringDiv.scrollWidth <= width && measuringDiv.scrollHeight <= height) {
+                break;
+            }
+            fontSize--;
+        }
+        if (fontSize < minFontSize) fontSize = minFontSize;
+        // Прилагаме еднакъв размер и на двата елемента
+        fontSize--;
+        element1.style.fontSize = fontSize + "px";
+        element2.style.fontSize = fontSize + "px";
+        document.body.removeChild(measuringDiv);
+    }
+
+    function resizeFont() {
+        const height = display.clientHeight; // Взимаме височината на дисплея
+        display.style.fontSize = displaylv.style.fontSize = (height * 0.99) + 'px'; // % от височината
     }
