@@ -65,6 +65,34 @@
         <button id="dismiss" style="width: 150px;">Отказ</button>
     </div>
 
+    <div id="ios-install-prompt" style="
+        display: none; /* Скрито по подразбиране */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f0f0f0;
+        border-top: 1px solid #ccc;
+        padding: 10px;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        z-index: 1000;
+        font-family: sans-serif;
+        font-size: 14px;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    ">
+        <span>За да инсталирате, натиснете
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-bottom: 3px;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+            и изберете "Добави към началния екран".
+        </span>
+        <button id="dismiss-ios-prompt" style="
+            background: none; border: none; font-size: 20px; cursor: pointer;
+            color: #888; padding: 0 5px; line-height: 1;
+        ">&times;</button>
+    </div>
+
     <div class="calculator-container" id="calculatorContainer">     
         <img src="Calculator0.png" ID="calculator" class="calculator-img" alt="Калкулатор">
         <div id="currency" contenteditable="false" ></div>
@@ -1331,7 +1359,26 @@
         loadHistory();
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
+
+        // --- PWA Install Prompt Logic ---
         isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const installDeclined = localStorage.getItem('CXCalc_pwaInstallDeclined') === 'true';
+
+        // Показваме специални инструкции за iOS, тъй като beforeinstallprompt не се поддържа.
+        if (isIOS && !isStandalone && !installDeclined) {
+            const iosPrompt = document.getElementById('ios-install-prompt');
+            const dismissIosBtn = document.getElementById('dismiss-ios-prompt');
+
+            if (iosPrompt && dismissIosBtn) {
+                iosPrompt.style.display = 'flex';
+                dismissIosBtn.addEventListener('click', () => {
+                    iosPrompt.style.display = 'none';
+                    localStorage.setItem('CXCalc_pwaInstallDeclined', 'true');
+                }, { once: true });
+            }
+        }
+
         appendNumber("C");
     });
 

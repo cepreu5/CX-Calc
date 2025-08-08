@@ -991,7 +991,26 @@
         loadHistory();
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
+
+        // --- PWA Install Prompt Logic ---
         isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const installDeclined = localStorage.getItem('CXCalc_pwaInstallDeclined') === 'true';
+
+        // Показваме специални инструкции за iOS, тъй като beforeinstallprompt не се поддържа.
+        if (isIOS && !isStandalone && !installDeclined) {
+            const iosPrompt = document.getElementById('ios-install-prompt');
+            const dismissIosBtn = document.getElementById('dismiss-ios-prompt');
+
+            if (iosPrompt && dismissIosBtn) {
+                iosPrompt.style.display = 'flex';
+                dismissIosBtn.addEventListener('click', () => {
+                    iosPrompt.style.display = 'none';
+                    localStorage.setItem('CXCalc_pwaInstallDeclined', 'true');
+                }, { once: true });
+            }
+        }
+
         appendNumber("C");
     });
 
