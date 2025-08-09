@@ -360,11 +360,11 @@
     const currencyLevEl = document.getElementById('currencyLev');
     const currencyEurEl = document.getElementById('currency');
     if (levMode) {
-        currencyLevEl.textContent = `•${CURRENCY_LEV_SYMBOL}`;
-        currencyEurEl.textContent = ` ${CURRENCY_SYMBOL}`;
+        currencyLevEl.textContent = `• ${CURRENCY_LEV_SYMBOL}`;
+        currencyEurEl.textContent = CURRENCY_SYMBOL;
     } else {
-        currencyLevEl.textContent = ` ${CURRENCY_LEV_SYMBOL}`;
-        currencyEurEl.textContent = `•${CURRENCY_SYMBOL}`;
+        currencyLevEl.textContent = CURRENCY_LEV_SYMBOL;
+        currencyEurEl.textContent = `• ${CURRENCY_SYMBOL}`;
     } */
 
         let activeDisplayText;
@@ -1214,9 +1214,15 @@
                 return;
             }
 
-            const originalText = checkVersionBtn.textContent;
-            checkVersionBtn.textContent = 'Проверява се...';
-            checkVersionBtn.disabled = true;
+            // Намираме span елемента вътре в бутона, за да променяме само неговия текст.
+            const btnTextSpan = checkVersionBtn.querySelector('span');
+            if (!btnTextSpan) {
+                console.error("Не е намерен текстов елемент (span) в бутона за проверка на версия.");
+                return;
+            }
+            const originalText = btnTextSpan.textContent;
+            btnTextSpan.textContent = 'Проверява се...';
+            checkVersionBtn.disabled = true; // Деактивираме бутона, докато проверяваме.
 
             registration.update().then(() => {
                 if (registration.installing) {
@@ -1237,7 +1243,7 @@
             }).finally(() => {
                 if (!registration.installing && !registration.waiting) {
                     setTimeout(() => {
-                        checkVersionBtn.textContent = originalText;
+                        if (btnTextSpan) btnTextSpan.textContent = originalText;
                         checkVersionBtn.disabled = false;
                     }, 3000);
                 }
@@ -1427,13 +1433,13 @@
         const keyCenter = keyX + MainPoints.KeySize.x / 2;
         const status = document.getElementById(`statusArea${index}`);
         if (status  && !ovFlag) {
-            status.className = "statusArea";
-            status.style.position = "fixed";
+            // status.className = "statusArea";
+            // status.style.position = "fixed";
             status.style.left = `${rect.left + MainPoints.Status.x + keyCenter - MainPoints.StatusSize.x / 2}px`;
             status.style.top = `${rect.top + MainPoints.Status.y}px`;
             status.style.width = `${MainPoints.StatusSize.x}px`;
             status.style.height = `${MainPoints.StatusSize.y}px`;
-            status.style.pointerEvents = "none"; // за да не пречи на кликове по клавишите
+            // status.style.pointerEvents = "none"; // за да не пречи на кликове по клавишите
         }
         if (ovFlag) {
             const container = document.body;
