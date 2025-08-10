@@ -243,9 +243,7 @@ function setupEventListeners() {
         // This will be expanded later
     });
 
-    window.addEventListener("load", () => {
-        document.body.style.overflow = 'auto';
-        loadSettings();
+function initializeLayout() {
         const { width, height } = getImageSize();
         const { imageWidth, imageHeight } = getImageVisualSize();
         scaleMainPoints(imageWidth / width, imageHeight / height);
@@ -253,13 +251,29 @@ function setupEventListeners() {
         keys = layout.keys;
         displayCoords = layout.displayCoords;
         resizeFont();
+}
+
+window.addEventListener("load", () => {
+    document.body.style.overflow = 'auto';
+    loadSettings();
+
+    // Ensure layout is initialized only after the image is loaded
+    if (calculator.complete) {
+        initializeLayout();
+    } else {
+        calculator.addEventListener('load', initializeLayout);
+    }
 
         document.getElementById('currency').textContent = CURRENCY_SYMBOL;
         document.getElementById('currencyLev').textContent = CURRENCY_LEV_SYMBOL;
 
         for (let i = 1; i <= 3; i++) {
             if (Mem[i] !== undefined && Mem[i] !== null && Mem[i] !== 0) {
-                // memoryAdd(i, "+");
+            const statusElement = document.getElementById(`statusArea${i}`);
+            if (statusElement) {
+                statusElement.style.opacity = "1";
+                statusElement.textContent = "M" + i;
+            }
             }
         }
         document.body.classList.add("ready");
@@ -272,12 +286,7 @@ function setupEventListeners() {
     });
 
     window.addEventListener("resize", () => {
-        const { width, height } = getImageSize();
-        const { imageWidth, imageHeight } = getImageVisualSize();
-        scaleMainPoints(imageWidth / width, imageHeight / height);
-        const layout = calcNewCoordinates(calculator);
-        keys = layout.keys;
-        displayCoords = layout.displayCoords;
+    initializeLayout();
         adjustFontSize(displaylv, display);
     });
 
