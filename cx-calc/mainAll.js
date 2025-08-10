@@ -163,6 +163,16 @@
       if (soundCheckbox) {
           soundCheckbox.checked = soundEffectsEnabled;
       }
+      // Попълваме кой радио бутон за активен дисплей да бъде избран
+      const initialDisplayEur = document.getElementById('initialDisplayEur');
+      const initialDisplayLev = document.getElementById('initialDisplayLev');
+      if (initialDisplayEur && initialDisplayLev) {
+          if (levMode) {
+              initialDisplayLev.checked = true;
+          } else {
+              initialDisplayEur.checked = true;
+          }
+      }
     }
 
     function loadSettings() {
@@ -624,7 +634,12 @@
     function handleStatusZones(event, isCtrlRequired) {
         for (let i = 1; i <= 4; i++) {
             const statusEl = document.getElementById(`statusArea${i}`);
-            if (statusEl && getComputedStyle(statusEl).opacity > 0) {
+            if (!statusEl) continue; // Прескачаме, ако елементът не съществува
+
+            // За слотове 1-3, зоната трябва да е видима. За слот 4 (Help), тя е винаги активна.
+            const isClickable = getComputedStyle(statusEl).opacity > 0 || i === 4;
+
+            if (isClickable) {
                 const rect = statusEl.getBoundingClientRect();
                 const withinBounds = (
                     event.clientX >= rect.left &&
@@ -632,22 +647,24 @@
                     event.clientY >= rect.top &&
                     event.clientY <= rect.bottom
                 );
-                if (withinBounds && i == 4) {
-                    if (isCtrlRequired) {
-                        memoryShow(4);
-                    } else {
-                        helpModal.style.display = 'flex'; // Показваме модалния прозорец
-                        modalIsActive = true;
-                    }
-                    return true; // Връщаме true, за да покажем, че кликът е обработен
-                }
+
                 if (withinBounds) {
-                    isCtrlRequired ? memoryShow(i) : memoryRecall(i);
-                    return true; // Връщаме true, за да покажем, че кликът е обработен
+                    if (i === 4) {
+                        if (isCtrlRequired) {
+                            memoryShow(4); // Смяна на скин
+                        } else {
+                            helpModal.style.display = 'flex'; // Показване на помощ
+                            modalIsActive = true;
+                        }
+                        return true; // Кликът е обработен
+                    } else { // i е 1, 2, или 3
+                        isCtrlRequired ? memoryShow(i) : memoryRecall(i);
+                        return true; // Кликът е обработен
+                    }
                 }
             }
         }
-        return false; // Връщаме false, ако кликът не е върху активна зона
+        return false; // Кликът не е върху активна статус зона
     }
 
     function sanitizeAndEvaluateInput(input, operationType) {
