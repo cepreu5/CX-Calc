@@ -22,6 +22,7 @@ let calcBottom = 0;
 const displaylv = document.querySelector('#levInput');
 const display = document.querySelector('#eurInput');
 const calculator = document.querySelector(".calculator-img");
+window.calculator = calculator; // Expose for debugging
 
 const MainPointsO = {
     Keys: { x: 43, y: 235 },
@@ -249,6 +250,7 @@ function initializeLayout() {
         scaleMainPoints(imageWidth / width, imageHeight / height);
         const layout = calcNewCoordinates(calculator);
         keys = layout.keys;
+    window.keys = keys; // Expose for debugging
         displayCoords = layout.displayCoords;
         resizeFont();
 }
