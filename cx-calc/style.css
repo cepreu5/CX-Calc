@@ -404,3 +404,64 @@ body.ready .calculator-container {
         right: 6px;
     }
 }
+
+/* --- Tips System Styles --- */
+.tip-popup {
+    position: fixed;
+    background-color: #383838;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10000;
+    max-width: 250px;
+    font-family: sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    border: 1px solid #555;
+}
+
+.tip-popup .tip-tail {
+    position: absolute;
+    bottom: -10px; /* Position below the popup */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #383838; /* Same color as the popup background */
+}
+
+.tip-content {
+    margin-bottom: 10px;
+}
+
+.tip-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #ccc;
+}
+
+.tip-actions label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.tip-close-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.tip-close-btn:hover {
+    color: white;
+}
