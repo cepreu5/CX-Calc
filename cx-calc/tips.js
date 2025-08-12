@@ -6,18 +6,28 @@
 // 1. Data structure for all available tips
 const allTips = [
     {
-        id: 'tip-history-and-settings',
-        text: 'Кликнете тук за достъп до историята. Натиснете Ctrl+Клик (или задръжте) за достъп до настройките.',
-        target: '€', // The value of the key to attach to
-    },
-    {
         id: 'tip-help',
-        text: 'Кликнете тук за подробна помощна информация за всички функции.',
+        text: 'Показва подробна помощна информация за разширените функции на калкулатора. Задръжте го, за да се покажат помощни обозначения върху бутоните (на компютър: Ctrl+Клик).',
         target: 'statusArea4',
     },
     {
+        id: 'tip-history-and-settings',
+        text: 'История. Задръжте бутона за отваряне на Настройки (на компютър: Ctrl+Клик).',
+        target: '€', // The value of the key to attach to
+    },
+    {
         id: 'tip-display-switch',
-        text: 'Кликнете върху някой от дисплеите, за да го направите активен за въвеждане.',
+        text: 'Клик върху някой от дисплеите превключва активния дисплей (или натискане на бутона с две стрелки).',
+        target: 'display', // A generic target for the display area
+    },
+    {
+        id: 'tip-copy',
+        text: 'Извлича от съдържанието на клипборда първото число (ако има такова).',
+        target: '/', // A generic target for the display area
+    },
+    {
+        id: 'tip-paste',
+        text: 'Резултатът от пресмятанията се запомня автоматично в клипборда, така че можете лесно да го поставите навсякъде.',
         target: 'display', // A generic target for the display area
     }
 ];
@@ -54,11 +64,13 @@ function saveTipStates() {
 /**
  * Creates and displays a single tip pop-up on the screen.
  * @param {object} tip The tip object to display.
+ * @param {function} [onClose] Optional callback to execute when the tip is closed.
  */
-function createTipElement(tip) {
+function createTipElement(tip, onClose) {
     const targetCoords = keyCoordinatesMap.get(tip.target);
     if (!targetCoords) {
         console.warn(`Could not find coordinates for tip target: ${tip.target}`);
+        if (onClose) onClose(); // Продължаваме, за да не блокира обучението
         return;
     }
 
@@ -80,6 +92,43 @@ function createTipElement(tip) {
 
     container.appendChild(tipElement);
 
+    // Прихващаме всички кликове вътре в подсказката и спираме разпространението им.
+    // Това е основната защита, която предпазва елементите под подсказката (напр. бутоните на калкулатора)
+    // от случайно задействане при клик върху фона на подсказката, checkbox-а или бутона за затваряне.
+    tipElement.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+
+    // Централизирана функция за затваряне на подсказката и почистване
+    const closeTip = (event) => {
+        // Спираме разпространението на клика, за да не задейства бутони под подсказката.
+        if (event) {
+            event.stopPropagation();
+        }
+        // Почистваме 'click outside' listener-а, за да избегнем течове на памет
+        document.removeEventListener('click', handleClickOutside, true);
+        // Премахваме елемента от DOM, ако все още е там
+        if (container.contains(tipElement)) {
+            container.removeChild(tipElement);
+        }
+        // Изпълняваме callback-а за следващо действие (напр. показване на следваща подсказка)
+        if (onClose) {
+            onClose();
+        }
+    };
+
+    // Handler, който затваря подсказката при клик извън нея
+    const handleClickOutside = (event) => {
+        if (!tipElement.contains(event.target)) {
+            closeTip(event);
+        }
+    };
+
+    // Добавяме listener-а със закъснение, за да не може същият клик, който е отворил подсказката, да я затвори веднага.
+    setTimeout(() => {
+        document.addEventListener('click', handleClickOutside, true);
+    }, 0);
+
     // Position the tip above the target element
     const targetCenterX = targetCoords.x + targetCoords.width / 2;
     const popupRect = tipElement.getBoundingClientRect();
@@ -87,17 +136,17 @@ function createTipElement(tip) {
     tipElement.style.top = `${targetCoords.y - popupRect.height - 12}px`; // 12px for tail and gap
 
     // Event Listeners
-    tipElement.querySelector('.tip-dont-show-again').addEventListener('change', () => {
+    tipElement.querySelector('.tip-dont-show-again').addEventListener('change', (event) => {
         const tipToUpdate = tips.find(t => t.id === tip.id);
         if (tipToUpdate) {
             tipToUpdate.show = false;
             saveTipStates();
         }
-        container.removeChild(tipElement);
+        closeTip(event);
     });
 
-    tipElement.querySelector('.tip-close-btn').addEventListener('click', () => {
-        container.removeChild(tipElement);
+    tipElement.querySelector('.tip-close-btn').addEventListener('click', (event) => {
+        closeTip(event);
     });
 }
 
@@ -116,7 +165,19 @@ function showTips(mode = 'Single') {
             break;
 
         case 'All':
-            tips.forEach(tip => createTipElement(tip));
+            let tipIndex = 0;
+            const showNextTip = () => {
+                if (tipIndex < tips.length) {
+                    const currentTip = tips[tipIndex];
+                    tipIndex++;
+                    // Подаваме showNextTip като callback, за да се покаже следващата подсказка
+                    createTipElement(currentTip, showNextTip);
+                } else {
+                    // Извиква се, след като последната подсказка е затворена
+                    showNotification('Приятна работа с CX-Calc!', 'success');
+                }
+            };
+            showNextTip(); // Стартираме обучението
             break;
 
         case 'newOnly':

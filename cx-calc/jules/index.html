@@ -258,18 +258,20 @@
         </div>
     </div>
 
-    <div id="exchangeRateWarning" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:3000; align-items:center; justify-content:center;">
-      <div style="background:#fff; color:#b00; padding:32px 24px; border-radius:12px; box-shadow:0 2px 16px #0003; max-width:90vw; text-align:center;">
-        <div style="font-size:1.2em; margin-bottom:18px;">
-          ВНИМАНИЕ! Валутният курс е променен!<br>
-          Потвърдете новия курс или натиснете <b>[Фиксинг]</b> за връщане на стандартния курс BGN/EUR.<br>
-          Махнете отметката до поле <b>Валутен курс</b>, за да не се показва това предупреждение.
+    <!-- Предупреждение за валутен курс - вече използва общия .modal клас -->
+    <div id="exchangeRateWarning" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" style="max-width: 450px; background-color: #fff; color: #b00; text-align: center;">
+            <div style="font-size:1.2em; margin-bottom:18px; padding: 15px;">
+                <strong>ВНИМАНИЕ!</strong><br>Валутният курс е променен.<br>
+                Потвърдете новия курс или натиснете <b>[Фиксинг]</b> за връщане на стандартния курс BGN/EUR.<br>
+                <small>Махнете отметката до поле <b>Валутен курс</b> в настройките, за да не се показва това предупреждение.</small>
+            </div>
+            <div style="display:flex; gap:15px; justify-content:center; padding: 0 15px 15px;">
+                <button id="exchangeRateConfirmBtn" class="action-button">Потвърди</button>
+                <button id="exchangeRateChangeBtn" class="action-button secondary">Фиксинг</button>
+            </div>
         </div>
-        <div style="display:flex; gap:20px; justify-content:center;">
-          <button id="exchangeRateConfirmBtn" class="action-button">Потвърди</button>
-          <button id="exchangeRateChangeBtn" class="action-button secondary">Фиксинг</button>
-        </div>
-      </div>
     </div>
         
     <div id="helpModal" class="modal help-modal">

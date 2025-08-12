@@ -1,6 +1,6 @@
 
 :root {
-    --modal-bg-color: transparent; /* Премахваме замъгляването */
+    /* --modal-bg-color: transparent; Премахваме замъгляването */
     --modal-content-bg: #BCB6B2;
     --settings-label-color: #383838;
     --container-bg-color: #b1aba6;
@@ -146,30 +146,32 @@ body.ready .calculator-container {
     margin-bottom: 15px;
 }
 
-.modal-overlay {
+/*.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачен фон */
+    background-color: rgba(0, 0, 0, 0.5); /~ Полупрозрачен фон ~/
     z-index: 1;
-    pointer-events: all; /* ← ключово */
-    cursor: default; /* принуждава браузъра да отчете повърхност */
+    pointer-events: all; /~ ← ключово ~/
+    cursor: default; /~ принуждава браузъра да отчете повърхност ~/
 }
+*/
 
 /* Modal styles */
 .modal {
     display: none; /* Hidden by default */
     font-family: 'Arial', sans-serif; /* шрифт Arial */
     position: fixed; /* Stay in place */
-    z-index: 10; /* Sit on top, по-висок от statusArea */
+    z-index: 3000; /* Sit on top, по-висок от statusArea */
     left: 0;
     top: 0;
     width: 100%; /* Full width */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
-    background-color: var(--modal-bg-color); /* Black w/ opacity */
+    /* background-color: var(--modal-bg-color); Black w/ opacity */
+    background-color: rgba(0, 0, 0, 0.5); /* Затъмнен фон (овърлей) */
     justify-content: center;
     align-items: center;
     pointer-events: auto; /* по подразбиране, но важно */
@@ -366,9 +368,14 @@ body.ready .calculator-container {
 .help-modal-footer {
     margin-top: 12px;
     display: flex;
-    justify-content: space-between;
-    align-items: left;
+    justify-content: flex-end; /* Подрежда елементите вдясно */
+    align-items: center;       /* Центрира елементите вертикално */
 }
+
+/*.help-modal-footer .help-action-button {
+    margin-left: 10px; /~ Разстояние между бутоните ~/
+    flex-shrink: 0; /~ Предотвратява бутоните да се свиват ~/
+}*/
 
 .help-action-button {
     font-size: 13px;
@@ -405,32 +412,21 @@ body.ready .calculator-container {
     }
 }
 
-/* --- Tips System Styles --- */
+/* -- Tip Popups -- */
 .tip-popup {
     position: fixed;
-    background-color: #383838;
-    color: white;
-    padding: 10px 15px;
+    background-color: #d6d63f; /* Light yellow */
+    border: 1px solid #d6d63f;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 10000;
     max-width: 250px;
     font-family: sans-serif;
     font-size: 14px;
     line-height: 1.4;
-    border: 1px solid #555;
-}
-
-.tip-popup .tip-tail {
-    position: absolute;
-    bottom: -10px; /* Position below the popup */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 10px solid #383838; /* Same color as the popup background */
+    color: #333;
+    pointer-events: auto;
 }
 
 .tip-content {
@@ -442,26 +438,40 @@ body.ready .calculator-container {
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    color: #ccc;
+    border-top: 1px solid #d6d63f;
+    padding-top: 8px;
+    margin-top: 8px;
 }
 
 .tip-actions label {
     display: flex;
     align-items: center;
     gap: 5px;
+    color: #555;
     cursor: pointer;
+    font-weight: normal;
 }
 
 .tip-close-btn {
     background: none;
     border: none;
-    color: #ccc;
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
-    padding: 0 5px;
+    color: #888;
+    padding: 0 4px;
 }
 
-.tip-close-btn:hover {
-    color: white;
+.tip-tail {
+    position: absolute;
+    bottom: -10px; /* Position it at the bottom of the popup */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #d6d63f; /* Same as popup background */
+    /* Add a border to the tail to match the popup border */
+    filter: drop-shadow(0 1px 0 #b8b898);
 }
