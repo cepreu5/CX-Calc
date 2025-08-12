@@ -913,28 +913,7 @@
 
                 // --- START OF TIPS INTEGRATION ---
                 if (typeof initTips === 'function' && typeof showTips === 'function') {
-                    const coordinatesMap = new Map();
-                    const keyDimensions = getKeyDimensions();
-                    // Add key coordinates
-                    keys.forEach(key => {
-                        coordinatesMap.set(key.value, {
-                            x: key.x,
-                            y: key.y,
-                            width: keyDimensions.keyWidth,
-                            height: keyDimensions.keyHeight
-                        });
-                    });
-                    // Add display coordinates (pointing to the bottom display for the tip)
-                    const levDisplayEl = document.getElementById('levInput');
-                    if (levDisplayEl) {
-                        coordinatesMap.set('display', levDisplayEl.getBoundingClientRect());
-                    }
-                    // Add status area 4 (Help) coordinates
-                    const helpZone = document.getElementById('statusArea4');
-                    if (helpZone) {
-                        coordinatesMap.set('statusArea4', helpZone.getBoundingClientRect());
-                    }
-                    initTips(coordinatesMap);
+                    initTips(); // Initialize tips without coordinates
                     if (tipsEnabled) {
                         showTips('Single'); // Show the first available tip on load
                     }
@@ -1894,16 +1873,51 @@
         }
     ];
 
-    // This will hold the final tip data with calculated coordinates and show states
+    // This will hold the final tip data with show states
     let tips = [];
-    let keyCoordinatesMap = new Map();
 
     /**
-     * Initializes the tips system with coordinates from the main app.
-     * @param {Map<string, {x: number, y: number, width: number, height: number}>} coordinatesMap A map of target IDs to their screen coordinates.
+     * Finds the current coordinates of a tip's target element.
+     * @param {string} target The target identifier from the tip object.
+     * @returns {DOMRect | {x: number, y: number, width: number, height: number} | null}
      */
-    function initTips(coordinatesMap) {
-        keyCoordinatesMap = coordinatesMap;
+    function getTargetCoordinates(target) {
+        // 1. Check if the target is a calculator key from the 'keys' array
+        const key = keys.find(k => k.value === target);
+        if (key) {
+            const keyDimensions = getKeyDimensions();
+            return {
+                x: key.x,
+                y: key.y,
+                width: keyDimensions.keyWidth,
+                height: keyDimensions.keyHeight
+            };
+        }
+
+        // 2. Check for special string identifiers which map to DOM elements
+        let element = null;
+        if (target === 'display') {
+            // The 'display' tip points to the active input, but levInput is a stable choice
+            element = document.getElementById('levInput');
+        } else {
+            // Assume the target is a direct DOM element ID
+            element = document.getElementById(target);
+        }
+
+        if (element) {
+            return element.getBoundingClientRect();
+        }
+
+        // 3. If no target is found, warn and return null
+        console.warn(`Could not find a valid target for tip: ${target}`);
+        return null;
+    }
+
+
+    /**
+     * Initializes the tips system by loading saved states from localStorage.
+     */
+    function initTips() {
         const savedStates = JSON.parse(localStorage.getItem('CXCalc_TipStates')) || {};
         tips = allTips.map(tip => ({
             ...tip,
@@ -1929,10 +1943,9 @@
      * @param {function} [onClose] Optional callback to execute when the tip is closed.
      */
     function createTipElement(tip, onClose) {
-        const targetCoords = keyCoordinatesMap.get(tip.target);
+        const targetCoords = getTargetCoordinates(tip.target);
         if (!targetCoords) {
-            console.warn(`Could not find coordinates for tip target: ${tip.target}`);
-            if (onClose) onClose(); // Продължаваме, за да не блокира обучението
+            if (onClose) onClose(); // Continue the tutorial sequence even if a target is missing
             return;
         }
 
@@ -1944,61 +1957,65 @@
         tipElement.innerHTML = `
             <div class="tip-content">${tip.text}</div>
             <div class="tip-actions">
-                <label>
-                    <input type="checkbox" class="tip-dont-show-again"> Не показвай повече
-                </label>
-                <button class="tip-close-btn">&times;</button>
+                <button class="tip-action-btn tip-dont-show-again-btn">Не показвай повече</button>
+                <button class="tip-action-btn tip-close-btn">&times;</button>
             </div>
             <div class="tip-tail"></div>
         `;
 
         container.appendChild(tipElement);
 
-        // Прихващаме всички кликове вътре в подсказката и спираме разпространението им.
-        // Това е основната защита, която предпазва елементите под подсказката (напр. бутоните на калкулатора)
-        // от случайно задействане при клик върху фона на подсказката, checkbox-а или бутона за затваряне.
         tipElement.addEventListener('click', (event) => {
             event.stopPropagation();
         });
 
-        // Централизирана функция за затваряне на подсказката и почистване
         const closeTip = (event) => {
-            // Спираме разпространението на клика, за да не задейства бутони под подсказката.
             if (event) {
                 event.stopPropagation();
             }
-            // Почистваме 'click outside' listener-а, за да избегнем течове на памет
             document.removeEventListener('click', handleClickOutside, true);
-            // Премахваме елемента от DOM, ако все още е там
             if (container.contains(tipElement)) {
                 container.removeChild(tipElement);
             }
-            // Изпълняваме callback-а за следващо действие (напр. показване на следваща подсказка)
             if (onClose) {
                 onClose();
             }
         };
 
-        // Handler, който затваря подсказката при клик извън нея
         const handleClickOutside = (event) => {
             if (!tipElement.contains(event.target)) {
                 closeTip(event);
             }
         };
 
-        // Добавяме listener-а със закъснение, за да не може същият клик, който е отворил подсказката, да я затвори веднага.
         setTimeout(() => {
             document.addEventListener('click', handleClickOutside, true);
         }, 0);
 
-        // Position the tip above the target element
+        // Position the tip dynamically based on fresh coordinates
         const targetCenterX = targetCoords.x + targetCoords.width / 2;
         const popupRect = tipElement.getBoundingClientRect();
-        tipElement.style.left = `${targetCenterX - popupRect.width / 2}px`;
-        tipElement.style.top = `${targetCoords.y - popupRect.height - 12}px`; // 12px for tail and gap
+        let top = targetCoords.y - popupRect.height - 12; // 12px for tail and gap
+        let left = targetCenterX - popupRect.width / 2;
+
+        // Boundary checks to prevent the popup from going off-screen
+        if (top < 0) {
+            top = targetCoords.y + targetCoords.height + 12; // Position below if not enough space above
+            tipElement.classList.add('tip-below'); // Add class to flip the tail
+        }
+        if (left < 0) {
+            left = 5; // Add some padding from the edge
+        }
+        if (left + popupRect.width > window.innerWidth) {
+            left = window.innerWidth - popupRect.width - 5;
+        }
+
+        tipElement.style.top = `${top}px`;
+        tipElement.style.left = `${left}px`;
+
 
         // Event Listeners
-        tipElement.querySelector('.tip-dont-show-again').addEventListener('change', (event) => {
+        tipElement.querySelector('.tip-dont-show-again-btn').addEventListener('click', (event) => {
             const tipToUpdate = tips.find(t => t.id === tip.id);
             if (tipToUpdate) {
                 tipToUpdate.show = false;
@@ -2032,14 +2049,12 @@
                     if (tipIndex < tips.length) {
                         const currentTip = tips[tipIndex];
                         tipIndex++;
-                        // Подаваме showNextTip като callback, за да се покаже следващата подсказка
                         createTipElement(currentTip, showNextTip);
                     } else {
-                        // Извиква се, след като последната подсказка е затворена
                         showNotification('Приятна работа с CX-Calc!', 'success');
                     }
                 };
-                showNextTip(); // Стартираме обучението
+                showNextTip();
                 break;
 
             case 'newOnly':
@@ -2053,3 +2068,4 @@
                 break;
         }
     }
+
