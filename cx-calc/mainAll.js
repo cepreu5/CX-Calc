@@ -1248,20 +1248,23 @@
                 if (countdown <= 0) cleanup();
             }, 1000);
             const installHandler = () => {
-                deferredPrompt.prompt();
-                deferredPrompt = null;
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                }
                 cleanup();
             };
             const dismissHandler = () => {
                 localStorage.setItem('CXCalc_pwaInstallDeclined', 'true');
-                deferredPrompt = null;
                 cleanup();
             };
             function cleanup() {
                 clearInterval(interval);
                 installBar.style.display = 'none';
+                // Премахваме event listeners, за да се избегнат течове на памет
                 installButton.removeEventListener('click', installHandler);
                 dismissButton.removeEventListener('click', dismissHandler);
+                // Нулираме променливата, тъй като prompt-ът е еднократен
+                deferredPrompt = null;
             }
             installButton.addEventListener('click', installHandler);
             dismissButton.addEventListener('click', dismissHandler);
