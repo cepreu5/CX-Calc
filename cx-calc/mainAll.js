@@ -56,7 +56,7 @@
         showRateWarningEnabled: true,
         calcBottomOffset: 0,
         initialDisplay: 'lev', // 'eur' или 'lev'
-        tipsEnabled: false, // Показване на подсказки при стартиране
+        tipsEnabled: true, // Показване на подсказки при стартиране
         pwaInstallDeclined: false,
         calculatorSkin: 'Calculator0.png' // Скин по подразбиране
     };
@@ -1641,8 +1641,8 @@
             }
         }
         const markers = [
-            { label: "Лев дисплей",  id: "levInput",  coords: displayCoords.lv },
-            { label: "Евро дисплей", id: "eurInput",  coords: displayCoords.eur },
+            { label: "Долен дисплей",  id: "levInput",  coords: displayCoords.lv },
+            { label: "Горен дисплей", id: "eurInput",  coords: displayCoords.eur },
             { label: "Валута",       id: "currency",  coords: { x: displayCoords.eur.x + MainPoints.CurrencyOffset.x, y: displayCoords.eur.y + MainPoints.CurrencyOffset.y } },
             { label: "Валута Лев",   id: "currencyLev", coords: { x: displayCoords.lv.x + MainPoints.CurrencyLevOffset.x, y: displayCoords.lv.y + MainPoints.CurrencyLevOffset.y } }
         ];
