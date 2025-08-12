@@ -903,6 +903,40 @@
             keys = layout.keys;
             displayCoords = layout.displayCoords;
             resizeFont();
+<<<<<<< HEAD
+=======
+
+            // --- START OF TIPS INTEGRATION ---
+            if (typeof initTips === 'function' && typeof showTips === 'function') {
+                const coordinatesMap = new Map();
+                const keyDimensions = getKeyDimensions();
+                // Add key coordinates
+                keys.forEach(key => {
+                    coordinatesMap.set(key.value, {
+                        x: key.x,
+                        y: key.y,
+                        width: keyDimensions.keyWidth,
+                        height: keyDimensions.keyHeight
+                    });
+                });
+                // Add display coordinates (using a generic key)
+                coordinatesMap.set('display', {
+                    x: displayCoords.eur.x,
+                    y: displayCoords.eur.y,
+                    width: MainPoints.DisplaySize.x,
+                    // Approximate height of both displays + gap
+                    height: (MainPoints.DisplaySize.y * 2) + (displayCoords.lv.y - displayCoords.eur.y - MainPoints.DisplaySize.y)
+                });
+                // Add status area 4 (Help) coordinates
+                const helpZone = document.getElementById('statusArea4');
+                if (helpZone) {
+                    coordinatesMap.set('statusArea4', helpZone.getBoundingClientRect());
+                }
+                initTips(coordinatesMap);
+                showTips('Single'); // Show the first available tip on load
+            }
+            // --- END OF TIPS INTEGRATION ---
+>>>>>>> parent of bc4c9f6 (end tips)
 
             initAudio();
 
