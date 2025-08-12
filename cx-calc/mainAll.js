@@ -18,6 +18,7 @@
     let modalIsActive = false;
     let layoutSettingsVisible = false; // Следи дали са показани настройките за зони (Settings2)
     var showWarning = false; // Флаг за показване на предупреждение за курса
+    var tipsEnabled = true; // Флаг за показване на подсказки
     // Променливи за Web Audio API за по-бърз звук
     let audioContext;
     let clickBuffer = null;
@@ -55,6 +56,7 @@
         showRateWarningEnabled: true,
         calcBottomOffset: 0,
         initialDisplay: 'lev', // 'eur' или 'lev'
+        tipsEnabled: true, // Показване на подсказки при стартиране
         pwaInstallDeclined: false,
         calculatorSkin: 'Calculator0.png' // Скин по подразбиране
     };
@@ -101,6 +103,7 @@
             soundEffectsEnabled: document.getElementById('soundEffectsCheckbox').checked,
             calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
+            tipsEnabled: document.getElementById('tipsEnabledCheckbox').checked,
             pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
             calculatorSkin: currentSettings.calculatorSkin || defaultSettings.calculatorSkin // Запазваме текущия скин
         };
@@ -173,6 +176,11 @@
               initialDisplayEur.checked = true;
           }
       }
+      // Попълваме checkbox-а за подсказките
+      const tipsEnabledCheckbox = document.getElementById('tipsEnabledCheckbox');
+      if (tipsEnabledCheckbox) {
+          tipsEnabledCheckbox.checked = tipsEnabled;
+      }
     }
 
     function loadSettings() {
@@ -185,6 +193,7 @@
         CURRENCY_SYMBOL = settings.currencySymbol;
         CURRENCY_LEV_SYMBOL = settings.currencyLevSymbol;
         showRateWarningEnabled = settings.showRateWarningEnabled;
+        tipsEnabled = settings.tipsEnabled;
         soundEffectsEnabled = settings.soundEffectsEnabled;
         calcBottom = settings.calcBottomOffset;
         // Задаваме активния дисплей при стартиране според запазената стойност
@@ -891,52 +900,59 @@
         try {
             calculator = document.querySelector(".calculator-img");
 
-            // Първо зареждаме настройките, за да използваме правилните координати и скин.
+            const initializeCalculatorLayout = () => {
+                // Изчисленията вече се правят СЛЕД като изображението е заредено,
+                // което гарантира коректни размери, независимо от скина.
+                getImageSize();
+                getImageVisualSize();
+                scaleMainPoints(aspectRatioW, aspectRatioH);
+                const layout = calcNewCoordinates();
+                keys = layout.keys;
+                displayCoords = layout.displayCoords;
+                resizeFont();
+
+                // --- START OF TIPS INTEGRATION ---
+                if (typeof initTips === 'function' && typeof showTips === 'function') {
+                    const coordinatesMap = new Map();
+                    const keyDimensions = getKeyDimensions();
+                    // Add key coordinates
+                    keys.forEach(key => {
+                        coordinatesMap.set(key.value, {
+                            x: key.x,
+                            y: key.y,
+                            width: keyDimensions.keyWidth,
+                            height: keyDimensions.keyHeight
+                        });
+                    });
+                    // Add display coordinates (pointing to the bottom display for the tip)
+                    const levDisplayEl = document.getElementById('levInput');
+                    if (levDisplayEl) {
+                        coordinatesMap.set('display', levDisplayEl.getBoundingClientRect());
+                    }
+                    // Add status area 4 (Help) coordinates
+                    const helpZone = document.getElementById('statusArea4');
+                    if (helpZone) {
+                        coordinatesMap.set('statusArea4', helpZone.getBoundingClientRect());
+                    }
+                    initTips(coordinatesMap);
+                    if (tipsEnabled) {
+                        showTips('Single'); // Show the first available tip on load
+                    }
+                }
+                // --- END OF TIPS INTEGRATION ---
+            };
+
+            // Закачаме event listener ПРЕДИ да сменим src, за да сме сигурни, че ще се задейства.
+            calculator.onload = initializeCalculatorLayout;
+
+            // Първо зареждаме настройките, което може да смени calculator.src и да задейства .onload
             loadSettings();
 
-            // Изчисленията се правят ВЕДНАГА, базирано на Calculator0.png,
-            // тъй като размерите на скиновете са идентични.
-            getImageSize();
-            getImageVisualSize();
-            scaleMainPoints(aspectRatioW, aspectRatioH);
-            const layout = calcNewCoordinates();
-            keys = layout.keys;
-            displayCoords = layout.displayCoords;
-            resizeFont();
-<<<<<<< HEAD
-=======
-
-            // --- START OF TIPS INTEGRATION ---
-            if (typeof initTips === 'function' && typeof showTips === 'function') {
-                const coordinatesMap = new Map();
-                const keyDimensions = getKeyDimensions();
-                // Add key coordinates
-                keys.forEach(key => {
-                    coordinatesMap.set(key.value, {
-                        x: key.x,
-                        y: key.y,
-                        width: keyDimensions.keyWidth,
-                        height: keyDimensions.keyHeight
-                    });
-                });
-                // Add display coordinates (using a generic key)
-                coordinatesMap.set('display', {
-                    x: displayCoords.eur.x,
-                    y: displayCoords.eur.y,
-                    width: MainPoints.DisplaySize.x,
-                    // Approximate height of both displays + gap
-                    height: (MainPoints.DisplaySize.y * 2) + (displayCoords.lv.y - displayCoords.eur.y - MainPoints.DisplaySize.y)
-                });
-                // Add status area 4 (Help) coordinates
-                const helpZone = document.getElementById('statusArea4');
-                if (helpZone) {
-                    coordinatesMap.set('statusArea4', helpZone.getBoundingClientRect());
-                }
-                initTips(coordinatesMap);
-                showTips('Single'); // Show the first available tip on load
+            // Ако изображението вече е в кеша, .onload може да не се задейства.
+            // Затова правим ръчна проверка и извикваме функцията.
+            if (calculator.complete) {
+                initializeCalculatorLayout();
             }
-            // --- END OF TIPS INTEGRATION ---
->>>>>>> parent of bc4c9f6 (end tips)
 
             initAudio();
 
@@ -947,18 +963,26 @@
             // --- ПРЕДУПРЕЖДЕНИЕ ЗА КУРСА ---
             if (showWarning && showRateWarningEnabled) {
                 const warning = document.getElementById('exchangeRateWarning');
-                warning.style.display = 'flex';
-                modalIsActive = true;
-                document.getElementById('exchangeRateChangeBtn').onclick = function() {
-                    const settings = JSON.parse(localStorage.getItem('appSettings')) || defaultSettings;
-                    settings.exchangeRate = defaultSettings.exchangeRate;
-                    localStorage.setItem('appSettings', JSON.stringify(settings));
-                    modalIsActive = false;
-                    location.reload();
-                };
-                document.getElementById('exchangeRateConfirmBtn').onclick = function() {
+                // Тъй като HTML вече е с правилната структура (.modal),
+                // просто трябва да го покажем и да закачим event handlers.
+                const closeWarning = (event) => {
+                    // Спираме разпространението на клика, за да не задейства бутони под модала.
+                    if (event) event.stopPropagation();
                     warning.style.display = 'none';
                     modalIsActive = false;
+                };
+
+                warning.style.display = 'flex'; // Показваме модала
+                modalIsActive = true;
+                document.getElementById('exchangeRateChangeBtn').onclick = function(event) {
+                    if (event) event.stopPropagation();
+                    const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
+                    settings.exchangeRate = defaultSettings.exchangeRate;
+                    localStorage.setItem('CXCalc_appSettings', JSON.stringify(settings));
+                    location.reload(); // Презареждането ще скрие модала
+                };
+                document.getElementById('exchangeRateConfirmBtn').onclick = function(event) {
+                    closeWarning(event);
                 };
             }
 
@@ -981,7 +1005,6 @@
             loadingOverlay.style.opacity = '0';
             setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500); // Премахваме го след анимацията
         }
-
         // --- PWA Install Prompt Logic for iOS ---
         // Логиката е тук, за да сме сигурни, че loading overlay е изчезнал
         // и банерът е достъпен за клик.
@@ -1007,10 +1030,35 @@
                 }, { once: true });
             }
         }
+        // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
+        appendNumber("C");
     });
 
     document.addEventListener('DOMContentLoaded', () => {
         // Затваряне на модал с ESC клавиш
+
+        // --- Универсално затваряне на модален прозорец при клик извън съдържанието ---
+        // Този listener е закачен за целия документ и работи за всички елементи с клас .modal
+        document.addEventListener('click', (event) => {
+            // Проверяваме дали е кликнато директно върху овърлея на модален прозорец (който има клас .modal)
+            // event.target е самият .modal елемент, а не .modal-content
+            if (event.target.classList.contains('modal')) {
+                // Ключова стъпка: Спираме разпространението на събитието.
+                // Това предотвратява "пробиването" на клика до елементите под модала (напр. бутоните на калкулатора),
+                // след като модалът бъде скрит.
+                event.stopPropagation();
+
+                // Скриваме модалния прозорец
+                event.target.style.display = 'none';
+
+                // Ако е бил прозорецът за настройки, връщаме го в начален изглед
+                if (event.target.id === 'settingsModal') {
+                    resetLayoutSettingsView();
+                }
+                // Деактивираме флага за модален прозорец
+                modalIsActive = false;
+            }
+        });
         document.addEventListener('keydown', (e) => {
             const key = e.key;
             // Escape винаги работи за затваряне на модални прозорци
@@ -1052,6 +1100,31 @@
         const checkVersionBtn = document.getElementById('checkVersionBtn');
         if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
 
+        // --- Слушатели за бутоните за управление на подсказките ---
+        const resetTipsButton = document.getElementById('resetTipsButton');
+        if (resetTipsButton) {
+            resetTipsButton.addEventListener('click', () => {
+                if (typeof showTips === 'function') {
+                    showTips('Reset');
+                }
+            });
+        }
+
+        const startTutorialButton = document.getElementById('startTutorialButton');
+        if (startTutorialButton) {
+            startTutorialButton.addEventListener('click', () => {
+                // Затваряме модала за настройки
+                settingsModal.style.display = 'none';
+                modalIsActive = false;
+                resetLayoutSettingsView();
+
+                // Стартираме обучението
+                if (typeof showTips === 'function') {
+                    showTips('All');
+                }
+            });
+        }
+
         // --- Динамично показване на версията от localStorage ---
         const helpFooterInfo = document.getElementById('help-footer-info');
         const emailLink = `<a href="mailto:cx.sites.online@gmail.com" style="color: inherit; text-decoration: none;">cx.sites.online@gmail.com</a>`;
@@ -1067,7 +1140,6 @@
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
 
-        appendNumber("C");
     });
 
     // Следене на преоразмеряването на прозореца
@@ -1397,9 +1469,9 @@
             calculatorEl.src = newSkin;
 
             // Запазваме новия скин в localStorage
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || {};
             settings.calculatorSkin = newSkin; // Запазваме името на файла
-            localStorage.setItem('appSettings', JSON.stringify(settings));
+            localStorage.setItem('CXCalc_appSettings', JSON.stringify(settings));
             return;
         }
         if (Mem[slot] === undefined) {
@@ -1569,8 +1641,8 @@
             }
         }
         const markers = [
-            { label: "Лев дисплей",  id: "levInput",  coords: displayCoords.lv },
-            { label: "Евро дисплей", id: "eurInput",  coords: displayCoords.eur },
+            { label: "Долен дисплей",  id: "levInput",  coords: displayCoords.lv },
+            { label: "Горен дисплей", id: "eurInput",  coords: displayCoords.eur },
             { label: "Валута",       id: "currency",  coords: { x: displayCoords.eur.x + MainPoints.CurrencyOffset.x, y: displayCoords.eur.y + MainPoints.CurrencyOffset.y } },
             { label: "Валута Лев",   id: "currencyLev", coords: { x: displayCoords.lv.x + MainPoints.CurrencyLevOffset.x, y: displayCoords.lv.y + MainPoints.CurrencyLevOffset.y } }
         ];
@@ -1592,9 +1664,15 @@
             marker.style.position = "absolute";
             marker.style.left = `${x - containerRect.left}px`;
             marker.style.top = `${y - containerRect.top}px`;
-            // Прилагаме размер и клас само на дисплеите, не и на символа за валута
             if (id === "levInput" || id === "eurInput") {
-                marker.className = "calculator-display";
+                // Запазваме текущото състояние на 'active-display', преди да променим класовете.
+                const isActive = marker.classList.contains('active-display');
+                // Задаваме основния клас, което премахва 'active-display'.
+                marker.className = "calculator-display"; 
+                // Ако елементът е бил активен, добавяме класа отново.
+                if (isActive) {
+                    marker.classList.add('active-display');
+                }
                 marker.style.width = `${MainPoints.DisplaySize.x}px`;
                 marker.style.height = `${MainPoints.DisplaySize.y}px`;
             } else if (id === "currency" || id === "currencyLev") {
@@ -1778,4 +1856,200 @@
     function resizeFont() {
         const height = display.clientHeight; // Взимаме височината на дисплея
         display.style.fontSize = displaylv.style.fontSize = (height * 0.99) + 'px'; // % от височината
+    }
+
+// tips ------------------
+
+    /**
+     * @file tips.js
+     * @description Manages the interactive pop-up help system.
+     */
+
+    // 1. Data structure for all available tips
+    const allTips = [
+        {
+            id: 'tip-help',
+            text: 'Показва подробна помощна информация за разширените функции на калкулатора. Задръжте го, за да се покажат помощни обозначения върху бутоните (на компютър: Ctrl+Клик).',
+            target: 'statusArea4',
+        },
+        {
+            id: 'tip-history-and-settings',
+            text: 'История. Задръжте бутона за отваряне на Настройки (на компютър: Ctrl+Клик).',
+            target: '€', // The value of the key to attach to
+        },
+        {
+            id: 'tip-display-switch',
+            text: 'Клик върху някой от дисплеите превключва активния дисплей (или натискане на бутона с две стрелки).',
+            target: 'display', // A generic target for the display area
+        },
+        {
+            id: 'tip-copy',
+            text: 'Извлича от съдържанието на клипборда първото число (ако има такова).',
+            target: '/', // A generic target for the display area
+        },
+        {
+            id: 'tip-paste',
+            text: 'Резултатът от пресмятанията се запомня автоматично в клипборда, така че можете лесно да го поставите навсякъде.',
+            target: 'display', // A generic target for the display area
+        }
+    ];
+
+    // This will hold the final tip data with calculated coordinates and show states
+    let tips = [];
+    let keyCoordinatesMap = new Map();
+
+    /**
+     * Initializes the tips system with coordinates from the main app.
+     * @param {Map<string, {x: number, y: number, width: number, height: number}>} coordinatesMap A map of target IDs to their screen coordinates.
+     */
+    function initTips(coordinatesMap) {
+        keyCoordinatesMap = coordinatesMap;
+        const savedStates = JSON.parse(localStorage.getItem('CXCalc_TipStates')) || {};
+        tips = allTips.map(tip => ({
+            ...tip,
+            show: savedStates[tip.id] !== false // Default to true if not explicitly set to false
+        }));
+        console.log('Tips system initialized.');
+    }
+
+    /**
+     * Saves the current 'show' state of all tips to localStorage.
+     */
+    function saveTipStates() {
+        const statesToSave = tips.reduce((acc, tip) => {
+            acc[tip.id] = tip.show;
+            return acc;
+        }, {});
+        localStorage.setItem('CXCalc_TipStates', JSON.stringify(statesToSave));
+    }
+
+    /**
+     * Creates and displays a single tip pop-up on the screen.
+     * @param {object} tip The tip object to display.
+     * @param {function} [onClose] Optional callback to execute when the tip is closed.
+     */
+    function createTipElement(tip, onClose) {
+        const targetCoords = keyCoordinatesMap.get(tip.target);
+        if (!targetCoords) {
+            console.warn(`Could not find coordinates for tip target: ${tip.target}`);
+            if (onClose) onClose(); // Продължаваме, за да не блокира обучението
+            return;
+        }
+
+        const container = document.body;
+        const tipElement = document.createElement('div');
+        tipElement.className = 'tip-popup';
+        tipElement.id = `popup-${tip.id}`;
+
+        tipElement.innerHTML = `
+            <div class="tip-content">${tip.text}</div>
+            <div class="tip-actions">
+                <label>
+                    <input type="checkbox" class="tip-dont-show-again"> Не показвай повече
+                </label>
+                <button class="tip-close-btn">&times;</button>
+            </div>
+            <div class="tip-tail"></div>
+        `;
+
+        container.appendChild(tipElement);
+
+        // Прихващаме всички кликове вътре в подсказката и спираме разпространението им.
+        // Това е основната защита, която предпазва елементите под подсказката (напр. бутоните на калкулатора)
+        // от случайно задействане при клик върху фона на подсказката, checkbox-а или бутона за затваряне.
+        tipElement.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+        // Централизирана функция за затваряне на подсказката и почистване
+        const closeTip = (event) => {
+            // Спираме разпространението на клика, за да не задейства бутони под подсказката.
+            if (event) {
+                event.stopPropagation();
+            }
+            // Почистваме 'click outside' listener-а, за да избегнем течове на памет
+            document.removeEventListener('click', handleClickOutside, true);
+            // Премахваме елемента от DOM, ако все още е там
+            if (container.contains(tipElement)) {
+                container.removeChild(tipElement);
+            }
+            // Изпълняваме callback-а за следващо действие (напр. показване на следваща подсказка)
+            if (onClose) {
+                onClose();
+            }
+        };
+
+        // Handler, който затваря подсказката при клик извън нея
+        const handleClickOutside = (event) => {
+            if (!tipElement.contains(event.target)) {
+                closeTip(event);
+            }
+        };
+
+        // Добавяме listener-а със закъснение, за да не може същият клик, който е отворил подсказката, да я затвори веднага.
+        setTimeout(() => {
+            document.addEventListener('click', handleClickOutside, true);
+        }, 0);
+
+        // Position the tip above the target element
+        const targetCenterX = targetCoords.x + targetCoords.width / 2;
+        const popupRect = tipElement.getBoundingClientRect();
+        tipElement.style.left = `${targetCenterX - popupRect.width / 2}px`;
+        tipElement.style.top = `${targetCoords.y - popupRect.height - 12}px`; // 12px for tail and gap
+
+        // Event Listeners
+        tipElement.querySelector('.tip-dont-show-again').addEventListener('change', (event) => {
+            const tipToUpdate = tips.find(t => t.id === tip.id);
+            if (tipToUpdate) {
+                tipToUpdate.show = false;
+                saveTipStates();
+            }
+            closeTip(event);
+        });
+
+        tipElement.querySelector('.tip-close-btn').addEventListener('click', (event) => {
+            closeTip(event);
+        });
+    }
+
+    /**
+     * Main function to control the display of tips.
+     * @param {'Single' | 'All' | 'newOnly' | 'Reset'} mode The mode of operation.
+     */
+    function showTips(mode = 'Single') {
+        document.querySelectorAll('.tip-popup').forEach(el => el.remove());
+
+        switch (mode) {
+            case 'Reset':
+                tips.forEach(tip => tip.show = true);
+                saveTipStates();
+                showNotification('Всички подсказки са нулирани.', 'success');
+                break;
+
+            case 'All':
+                let tipIndex = 0;
+                const showNextTip = () => {
+                    if (tipIndex < tips.length) {
+                        const currentTip = tips[tipIndex];
+                        tipIndex++;
+                        // Подаваме showNextTip като callback, за да се покаже следващата подсказка
+                        createTipElement(currentTip, showNextTip);
+                    } else {
+                        // Извиква се, след като последната подсказка е затворена
+                        showNotification('Приятна работа с CX-Calc!', 'success');
+                    }
+                };
+                showNextTip(); // Стартираме обучението
+                break;
+
+            case 'newOnly':
+                tips.filter(tip => tip.show).forEach(tip => createTipElement(tip));
+                break;
+
+            case 'Single':
+            default:
+                const firstTipToShow = tips.find(tip => tip.show);
+                if (firstTipToShow) createTipElement(firstTipToShow);
+                break;
+        }
     }
