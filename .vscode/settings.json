@@ -1,0 +1,4 @@
+{
+  "scss.lint.emptyRules": "ignore",
+  "less.lint.emptyRules": "ignore"
+}
