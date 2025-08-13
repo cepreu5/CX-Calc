@@ -434,7 +434,7 @@ body.ready .calculator-container {
 
 .tip-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end; /* Align button to the right */
     align-items: center;
     gap: 8px;
     border-top: 1px solid #d6d63f;
@@ -450,7 +450,7 @@ body.ready .calculator-container {
     font-size: 12px;
     cursor: pointer;
     color: #333;
-    transition: background-color 0.2s, border-color 0.2s;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
     font-family: sans-serif;
      -webkit-user-select: none; /* за Safari */
     user-select: none;
@@ -461,27 +461,16 @@ body.ready .calculator-container {
     border-color: #bbb;
 }
 
-.tip-dont-show-again-btn {
-    background-color: #b0afaf;
+.tip-next-btn {
+    background-color: #0078d4;
+    color: white;
+    border-color: #0078d4;
 }
 
-.tip-dont-show-again-btn:hover {
-    background-color: #e0e0e0;
-    border-color: #adadad;
-}
-
-/* Specific style for the close button to make it just an 'X' */
-.tip-close-btn {
-    background: none;
-    border: none;
-    font-size: 22px;
-    line-height: 1;
-    color: #888;
-    padding: 0;
-    min-width: 20px; /* Ensure it has a clickable area */
-}
-.tip-close-btn:hover {
-    color: #333;
+.tip-next-btn:hover {
+    background-color: #005a9e;
+    border-color: #005a9e;
+    color: white;
 }
 
 

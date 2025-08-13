@@ -1,3 +1,4 @@
+// terser mainAll.js --compress --mangle --toplevel --output mainnAll.js
     const rows = 5;
     const cols = 4;
     const container = document.querySelector('.calculator-container');
@@ -105,7 +106,6 @@
             soundEffectsEnabled: document.getElementById('soundEffectsCheckbox').checked,
             calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
-            tipsEnabled: document.getElementById('tipsEnabledCheckbox').checked,
             pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
             calculatorSkin: currentSettings.calculatorSkin || defaultSettings.calculatorSkin // Запазваме текущия скин
         };
@@ -178,11 +178,7 @@
               initialDisplayEur.checked = true;
           }
       }
-      // Попълваме checkbox-а за подсказките
-      const tipsEnabledCheckbox = document.getElementById('tipsEnabledCheckbox');
-      if (tipsEnabledCheckbox) {
-          tipsEnabledCheckbox.checked = tipsEnabled;
-      }
+      
     }
 
     function loadSettings() {
@@ -863,8 +859,32 @@
         }
     }
 
+    /*function updateDebugInfo() {
+        const debugDiv = document.getElementById('debug-dev');
+        if (debugDiv) {
+            // Вземаме и парсваме настройките
+            const settingsString = localStorage.getItem('CXCalc_appSettings') || '{}';
+            const settingsObject = JSON.parse(settingsString);
+
+            // Форматираме ги в HTML низ
+            const formattedSettings = Object.entries(settingsObject)
+                .map(([key, value]) => `&nbsp;&nbsp;${key}: ${JSON.stringify(value)}`)
+                .join('<br>');
+
+            // Актуализираме съдържанието на debug div-а
+            debugDiv.innerHTML = `
+                modalIsActive: ${modalIsActive}<br>
+                tipsEnabled: ${tipsEnabled}<br>
+                showWarning: ${showWarning}<br>
+                CXCalc_appSettings:<br>
+                ${formattedSettings}
+            `;
+        }
+    }*/
+
     document.addEventListener("click", function(event) {
         handleCalculatorInteraction(event);
+        // updateDebugInfo();
     });
 
     document.addEventListener("contextmenu", function(event) {
@@ -963,9 +983,10 @@
             }
             // --- START OF TIPS INTEGRATION ---
             if (typeof initTips === 'function' && typeof showTips === 'function') {
-                initTips(); // Initialize tips without coordinates
-                if (tipsEnabled) {
-                    showTips('Single'); // Show the first available tip on load
+                initTips();
+                if (tipsEnabled) { // Will be true on first ever run
+                    tutorialSkinSwitch = true;
+                    memoryShow(4, showTips); // Switch skin, then start tutorial
                 }
             }
             // --- END OF TIPS INTEGRATION ---
@@ -1088,33 +1109,13 @@
         const resetTipsButton = document.getElementById('resetTipsButton');
         if (resetTipsButton) {
             resetTipsButton.addEventListener('click', (event) => {
-                event.stopPropagation(); // <-- ТАЗИ ЛИНИЯ СПИРА "ПРОПУСКАНЕТО"
-                if (typeof showTips === 'function') {
-                    showTips('Reset');
-                }
-            });
-        }
-
-        const startTutorialButton = document.getElementById('startTutorialButton');
-        if (startTutorialButton) {
-            startTutorialButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 settingsModal.style.display = 'none';
                 modalIsActive = false;
                 resetLayoutSettingsView();
-
-                const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
-                const currentSkin = settings.calculatorSkin || 'Calculator0.png';
-
-                if (currentSkin === 'Calculator0.png') {
+                if (typeof showTips === 'function') {
                     tutorialSkinSwitch = true;
-                    // Сменяме скина и подаваме старта на обучението като callback
-                    memoryShow(4, () => {
-                        showTips('All');
-                    });
-                } else {
-                    tutorialSkinSwitch = false;
-                    showTips('All');
+                    memoryShow(4, showTips); // Switch skin, then start tutorial
                 }
             });
         }
@@ -1205,13 +1206,18 @@
         console.log('Service Worker регистриран:', reg);
         navigator.serviceWorker.addEventListener('message', event => {
             if (event.data?.type === 'NEW_VERSION_AVAILABLE') {
-                console.log('Налична е нова версия:', event.data.version);
-                // 1. Записваме новата версия в localStorage за следващото зареждане.
-                if (event.data.version) {
-                    localStorage.setItem('CXCalc_appVersion', event.data.version);
+                const currentVersion = localStorage.getItem('CXCalc_appVersion');
+                const newVersion = event.data.version;
+
+                if (newVersion && newVersion !== currentVersion) {
+                    console.log('Налична е нова версия:', newVersion);
+                    localStorage.setItem('CXCalc_appVersion', newVersion);
+                    
+                    // Only show notification and reload if it's an actual update, not the first install
+                    if (currentVersion) {
+                        showNotification('Налична е нова версия. Презареждане...', 'success', 4000, true);
+                    }
                 }
-                // 2. Показваме съобщението за презареждане.
-                showNotification('Налична е нова версия. Презареждане...', 'success', 4000, true);
             }
         });
         })
@@ -1488,9 +1494,12 @@
 
             calculatorEl.src = newSkin;
 
-            const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || {};
-            settings.calculatorSkin = newSkin;
-            localStorage.setItem('CXCalc_appSettings', JSON.stringify(settings));
+            // Only save the skin if it's NOT part of the tutorial skin switch
+            if (!tutorialSkinSwitch) {
+                const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
+                settings.calculatorSkin = newSkin;
+                localStorage.setItem('CXCalc_appSettings', JSON.stringify(settings));
+            }
             return;
         }
         if (Mem[slot] === undefined) {
@@ -1958,29 +1967,16 @@
      * Initializes the tips system by loading saved states from localStorage.
      */
     function initTips() {
-        const savedStates = JSON.parse(localStorage.getItem('CXCalc_TipStates')) || {};
-        tips = allTips.map(tip => ({
-            ...tip,
-            show: savedStates[tip.id] !== false // Default to true if not explicitly set to false
-        }));
+        tips = allTips;
         console.log('Tips system initialized.');
     }
 
-    /**
-     * Saves the current 'show' state of all tips to localStorage.
-     */
-    function saveTipStates() {
-        const statesToSave = tips.reduce((acc, tip) => {
-            acc[tip.id] = tip.show;
-            return acc;
-        }, {});
-        localStorage.setItem('CXCalc_TipStates', JSON.stringify(statesToSave));
-    }
+    
 
     /**
      * Creates and displays a single tip pop-up on the screen.
      * @param {object} tip The tip object to display.
-     * @param {function} [onClose] Optional callback to execute when the tip is closed.
+     * @param {function} [onClose] Optional callback to execute when the tip is closed to show the next tip.
      */
     function createTipElement(tip, onClose) {
         const targetCoords = getTargetCoordinates(tip.target);
@@ -1997,8 +1993,7 @@
         tipElement.innerHTML = `
             <div class="tip-content">${tip.text}</div>
             <div class="tip-actions">
-                <button class="tip-action-btn tip-dont-show-again-btn">Не показвай повече</button>
-                <button class="tip-action-btn tip-close-btn">&times;</button>
+                <button class="tip-action-btn tip-next-btn">Следващ</button>
             </div>
             <div class="tip-tail"></div>
         `;
@@ -2013,7 +2008,6 @@
             if (event) {
                 event.stopPropagation();
             }
-            document.removeEventListener('click', handleClickOutside, true);
             if (container.contains(tipElement)) {
                 container.removeChild(tipElement);
             }
@@ -2021,16 +2015,6 @@
                 onClose();
             }
         };
-
-        const handleClickOutside = (event) => {
-            if (!tipElement.contains(event.target)) {
-                closeTip(event);
-            }
-        };
-
-        setTimeout(() => {
-            document.addEventListener('click', handleClickOutside, true);
-        }, 0);
 
         // Position the tip dynamically based on fresh coordinates
         const targetCenterX = targetCoords.x + targetCoords.width / 2;
@@ -2061,70 +2045,46 @@
             tail.style.left = `${tailLeft}px`;
         }
 
-
-        // Event Listeners
-        tipElement.querySelector('.tip-dont-show-again-btn').addEventListener('click', (event) => {
-            const tipToUpdate = tips.find(t => t.id === tip.id);
-            if (tipToUpdate) {
-                tipToUpdate.show = false;
-                saveTipStates();
-            }
-            closeTip(event);
-        });
-
-        tipElement.querySelector('.tip-close-btn').addEventListener('click', (event) => {
-            closeTip(event);
+        tipElement.querySelector('.tip-next-btn').addEventListener('click', (event) => {
+            closeTip(event); // Continue tutorial
         });
     }
 
     /**
-     * Main function to control the display of tips.
-     * @param {'Single' | 'All' | 'newOnly' | 'Reset'} mode The mode of operation.
+     * Main function to control the display of the tips tutorial.
      */
-    function showTips(mode = 'Single') {
+    function showTips() {
         // АКО ИМА АКТИВЕН МОДАЛЕН ПРОЗОРЕЦ, НЕ ПОКАЗВАЙ ПОДСКАЗКА
         if (modalIsActive) {
             return; 
         }
         document.querySelectorAll('.tip-popup').forEach(el => el.remove());
+        let tipIndex = 0;
 
-        switch (mode) {
-            case 'Reset':
-                tips.forEach(tip => tip.show = true);
-                saveTipStates();
-                showNotification('Всички подсказки са нулирани.', 'success');
-                break;
-
-            case 'All':
-                let tipIndex = 0;
-                const showNextTip = () => {
-                    // Преди да покажем нова подсказка, винаги изчистваме всички съществуващи.
-                    document.querySelectorAll('.tip-popup').forEach(el => el.remove());
-
-                    if (tipIndex < tips.length) {
-                        const currentTip = tips[tipIndex];
-                        tipIndex++;
-                        createTipElement(currentTip, showNextTip);
-                    } else {
-                        showNotification('Приятна работа с CX-Calc!', 'success');
-                        if (tutorialSkinSwitch) {
-                            memoryShow(4); // Връщаме скина, без callback
-                            tutorialSkinSwitch = false;
-                        }
-                    }
-                };
-                showNextTip();
-                break;
-
-            case 'newOnly':
-                tips.filter(tip => tip.show).forEach(tip => createTipElement(tip));
-                break;
-
-            case 'Single':
-            default:
-                const firstTipToShow = tips.find(tip => tip.show);
-                if (firstTipToShow) createTipElement(firstTipToShow);
-                break;
+        const endTutorial = () => {
+            document.querySelectorAll('.tip-popup').forEach(el => el.remove());
+            showNotification('Приятна работа с CX-Calc!', 'success');
+            if (tutorialSkinSwitch) {
+                memoryShow(4); // Връщаме скина, без callback
+                tutorialSkinSwitch = false;
+            }
+            
+            // Disable tips for subsequent runs and save
+            const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
+            settings.tipsEnabled = false;
+            localStorage.setItem('CXCalc_appSettings', JSON.stringify(settings));
         }
+
+        const showNextTip = () => {
+            document.querySelectorAll('.tip-popup').forEach(el => el.remove());
+            if (tipIndex < tips.length) {
+                const currentTip = tips[tipIndex];
+                tipIndex++;
+                createTipElement(currentTip, showNextTip);
+            } else {
+                endTutorial();
+            }
+        };
+        showNextTip();
     }
 
