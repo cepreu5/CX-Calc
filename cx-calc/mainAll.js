@@ -67,6 +67,8 @@
     var CURRENCY_LEV_SYMBOL = defaultSettings.currencyLevSymbol;
     var showRateWarningEnabled = defaultSettings.showRateWarningEnabled;
     var soundEffectsEnabled = defaultSettings.soundEffectsEnabled;
+    var tutorialSkinSwitch = false;
+    var originalOnloadHandler = null; // Ще пази оригиналния onload handler
 
     function saveSettings() {
         // --- ЗАПИС НА НАСТРОЙКИТЕ ---
@@ -910,15 +912,6 @@
                 keys = layout.keys;
                 displayCoords = layout.displayCoords;
                 resizeFont();
-
-                // --- START OF TIPS INTEGRATION ---
-                if (typeof initTips === 'function' && typeof showTips === 'function') {
-                    initTips(); // Initialize tips without coordinates
-                    if (tipsEnabled) {
-                        showTips('Single'); // Show the first available tip on load
-                    }
-                }
-                // --- END OF TIPS INTEGRATION ---
             };
 
             // Закачаме event listener ПРЕДИ да сменим src, за да сме сигурни, че ще се задейства.
@@ -941,6 +934,9 @@
 
             // --- ПРЕДУПРЕЖДЕНИЕ ЗА КУРСА ---
             if (showWarning && showRateWarningEnabled) {
+                //const originalTipsEnabled = tipsEnabled;
+                //tipsEnabled = false;
+
                 const warning = document.getElementById('exchangeRateWarning');
                 // Тъй като HTML вече е с правилната структура (.modal),
                 // просто трябва да го покажем и да закачим event handlers.
@@ -963,7 +959,16 @@
                 document.getElementById('exchangeRateConfirmBtn').onclick = function(event) {
                     closeWarning(event);
                 };
+                // tipsEnabled = originalTipsEnabled; // Възстановяваме първоначалното състояние на tipsEnabled
             }
+            // --- START OF TIPS INTEGRATION ---
+            if (typeof initTips === 'function' && typeof showTips === 'function') {
+                initTips(); // Initialize tips without coordinates
+                if (tipsEnabled) {
+                    showTips('Single'); // Show the first available tip on load
+                }
+            }
+            // --- END OF TIPS INTEGRATION ---
 
             // Визуализираме заредената памет
             for (let i = 1; i <= 3; i++) {
@@ -1082,7 +1087,8 @@
         // --- Слушатели за бутоните за управление на подсказките ---
         const resetTipsButton = document.getElementById('resetTipsButton');
         if (resetTipsButton) {
-            resetTipsButton.addEventListener('click', () => {
+            resetTipsButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // <-- ТАЗИ ЛИНИЯ СПИРА "ПРОПУСКАНЕТО"
                 if (typeof showTips === 'function') {
                     showTips('Reset');
                 }
@@ -1091,14 +1097,23 @@
 
         const startTutorialButton = document.getElementById('startTutorialButton');
         if (startTutorialButton) {
-            startTutorialButton.addEventListener('click', () => {
-                // Затваряме модала за настройки
+            startTutorialButton.addEventListener('click', (event) => {
+                event.stopPropagation();
                 settingsModal.style.display = 'none';
                 modalIsActive = false;
                 resetLayoutSettingsView();
 
-                // Стартираме обучението
-                if (typeof showTips === 'function') {
+                const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
+                const currentSkin = settings.calculatorSkin || 'Calculator0.png';
+
+                if (currentSkin === 'Calculator0.png') {
+                    tutorialSkinSwitch = true;
+                    // Сменяме скина и подаваме старта на обучението като callback
+                    memoryShow(4, () => {
+                        showTips('All');
+                    });
+                } else {
+                    tutorialSkinSwitch = false;
                     showTips('All');
                 }
             });
@@ -1441,15 +1456,40 @@
     }
 
     //memoryShow: Временно показва стойността от даден слот на паметта в горния дисплей, без да го променя
-    function memoryShow(slot) {
+    function memoryShow(slot, callback) { // Добавен е 'callback'
         if (slot == 4) {
             const calculatorEl = document.getElementById("calculator");
             const newSkin = calculatorEl.src.includes("CalculatorA.png") ? "Calculator0.png" : "CalculatorA.png";
+
+            // Запазваме оригиналния onload, за да го възстановим
+            if (!originalOnloadHandler) {
+                originalOnloadHandler = calculatorEl.onload;
+            }
+
+            // Временно деактивираме подсказките, за да не се покаже tip при смяната
+            const originalTipsEnabled = tipsEnabled;
+            tipsEnabled = false;
+
+            calculatorEl.onload = () => {
+                // Изпълняваме оригиналната функция за преизчисляване на layout
+                if (typeof originalOnloadHandler === 'function') {
+                    originalOnloadHandler();
+                }
+                // Възстановяваме флага за подсказките
+                tipsEnabled = originalTipsEnabled;
+                
+                // Ако има callback (т.е. стартираме обучение), го изпълняваме
+                if (typeof callback === 'function') {
+                    callback();
+                }
+                // Връщаме оригиналния onload handler
+                calculatorEl.onload = originalOnloadHandler;
+            };
+
             calculatorEl.src = newSkin;
 
-            // Запазваме новия скин в localStorage
             const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || {};
-            settings.calculatorSkin = newSkin; // Запазваме името на файла
+            settings.calculatorSkin = newSkin;
             localStorage.setItem('CXCalc_appSettings', JSON.stringify(settings));
             return;
         }
@@ -2013,6 +2053,14 @@
         tipElement.style.top = `${top}px`;
         tipElement.style.left = `${left}px`;
 
+        // Adjust tail position to point to the target's center
+        const tail = tipElement.querySelector('.tip-tail');
+        if (tail) {
+            const tailWidth = 20; // As defined in CSS (border-left + border-right)
+            const tailLeft = targetCenterX - left - (tailWidth / 2);
+            tail.style.left = `${tailLeft}px`;
+        }
+
 
         // Event Listeners
         tipElement.querySelector('.tip-dont-show-again-btn').addEventListener('click', (event) => {
@@ -2034,6 +2082,10 @@
      * @param {'Single' | 'All' | 'newOnly' | 'Reset'} mode The mode of operation.
      */
     function showTips(mode = 'Single') {
+        // АКО ИМА АКТИВЕН МОДАЛЕН ПРОЗОРЕЦ, НЕ ПОКАЗВАЙ ПОДСКАЗКА
+        if (modalIsActive) {
+            return; 
+        }
         document.querySelectorAll('.tip-popup').forEach(el => el.remove());
 
         switch (mode) {
@@ -2046,12 +2098,19 @@
             case 'All':
                 let tipIndex = 0;
                 const showNextTip = () => {
+                    // Преди да покажем нова подсказка, винаги изчистваме всички съществуващи.
+                    document.querySelectorAll('.tip-popup').forEach(el => el.remove());
+
                     if (tipIndex < tips.length) {
                         const currentTip = tips[tipIndex];
                         tipIndex++;
                         createTipElement(currentTip, showNextTip);
                     } else {
                         showNotification('Приятна работа с CX-Calc!', 'success');
+                        if (tutorialSkinSwitch) {
+                            memoryShow(4); // Връщаме скина, без callback
+                            tutorialSkinSwitch = false;
+                        }
                     }
                 };
                 showNextTip();
