@@ -1150,20 +1150,6 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Global handler for touch events on modal buttons
-        document.body.addEventListener('touchend', function(event) {
-            const button = event.target.closest('button');
-            const modal = event.target.closest('.modal');
-
-            // If a button inside a modal is tapped, trigger its click event.
-            // This is a workaround for mobile browsers where the click event
-            // might be suppressed by other touch listeners.
-            if (button && modal) {
-                event.preventDefault();
-                button.click();
-            }
-        });
-
         document.addEventListener('DOMContentLoaded', () => {
         // Global handler for touch events on modal buttons
         document.body.addEventListener('touchend', function(event) {
