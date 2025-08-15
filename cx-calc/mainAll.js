@@ -950,7 +950,7 @@
                 event.preventDefault(); // Prevent context menu on long press
             }, LONG_PRESS_DURATION);
         }
-    }, { passive: false });
+    }, { passive: false }); 
 
     document.addEventListener('touchmove', function(event) {
         if (longPressTimer) {
