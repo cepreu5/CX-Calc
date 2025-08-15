@@ -895,7 +895,11 @@
         }
     });*/
 
-   let longPressTimer;
+    document.addEventListener("contextmenu", function(event) {
+        event.preventDefault(); // блокира контекстното меню
+    });
+
+    let longPressTimer;
     let touchstartX = 0;
     let touchstartY = 0;
     const LONG_PRESS_DURATION = 500; // ms
