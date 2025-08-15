@@ -1002,25 +1002,43 @@
         }
     });
 
-    document.getElementById('saveSettings').addEventListener('click', function(e) {
-        saveSettings();
-        settingsModal.style.display = 'none'; // Close modal after saving
-        setTimeout(() => {
-            modalIsActive = false;
-        }, 0);
+    const saveAction = function(e) {
+        e.preventDefault(); // Prevent ghost click
         e.stopPropagation();
-        e.preventDefault();
-    });
+        const button = document.getElementById('saveSettings');
+        button.innerText = 'Saving...'; // DEBUG
+        try {
+            saveSettings();
+            settingsModal.style.display = 'none'; // Close modal after saving
+            setTimeout(() => {
+                modalIsActive = false;
+            }, 0);
+        } catch (err) {
+            alert('Error in saveSettings: ' + err.message);
+            button.innerText = 'Save'; // Restore text on error
+        }
+    };
+    document.getElementById('saveSettings').addEventListener('click', saveAction);
+    document.getElementById('saveSettings').addEventListener('touchend', saveAction);
 
-    document.getElementById('closeSettingsModalButton').addEventListener('click', function(e) {
-        settingsModal.style.display = 'none'; // Close modal without saving
-        resetLayoutSettingsView();
-        setTimeout(() => {
-            modalIsActive = false;
-        }, 0);
+    const closeAction = function(e) {
+        e.preventDefault(); // Prevent ghost click
         e.stopPropagation();
-        e.preventDefault();
-    });
+        const button = document.getElementById('closeSettingsModalButton');
+        button.innerText = 'Closing...'; // DEBUG
+        try {
+            settingsModal.style.display = 'none'; // Close modal without saving
+            resetLayoutSettingsView();
+            setTimeout(() => {
+                modalIsActive = false;
+            }, 0);
+        } catch (err) {
+            alert('Error in closeSettingsModalButton: ' + err.message);
+            button.innerText = 'Close'; // Restore text on error
+        }
+    };
+    document.getElementById('closeSettingsModalButton').addEventListener('click', closeAction);
+    document.getElementById('closeSettingsModalButton').addEventListener('touchend', closeAction);
 
     window.addEventListener("load", function() {
         // Приложението е заредило успешно.
