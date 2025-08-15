@@ -642,10 +642,8 @@
         for (let i = 1; i <= 4; i++) {
             const statusEl = document.getElementById(`statusArea${i}`);
             if (!statusEl) continue; // Прескачаме, ако елементът не съществува
-
             // За слотове 1-3, зоната трябва да е видима. За слот 4 (Help), тя е винаги активна.
             const isClickable = getComputedStyle(statusEl).opacity > 0 || i === 4;
-
             if (isClickable) {
                 const rect = statusEl.getBoundingClientRect();
                 const withinBounds = (
@@ -654,7 +652,6 @@
                     event.clientY >= rect.top &&
                     event.clientY <= rect.bottom
                 );
-
                 if (withinBounds) {
                     if (i === 4) {
                         if (isCtrlRequired) {
@@ -859,6 +856,56 @@
         }
     }
 
+    let pressTimer;
+    const element = document.getElementById('calculator');
+    const longPressThreshold = 500; // milliseconds
+    let isLongPress = false; // Флаг, който следи дали е имало задържане
+
+    // ТОЗИ LISTENER ЗАМЕСТВА СТАРИЯ document.addEventListener("click", ...)
+    document.addEventListener("click", function(event) {
+        // Ако предходното действие е било задържане, не прави нищо.
+        if (isLongPress) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+        handleCalculatorInteraction(event);
+        // updateDebugInfo();
+    });
+
+    document.addEventListener("contextmenu", function(event) {
+        event.preventDefault(); // Блокира контекстното меню (важно за десктоп и Android)
+        handleCalculatorInteraction(event, { allowWithoutCtrl: true });
+    });
+
+    element.addEventListener('touchstart', (e) => {
+        isLongPress = false; // Нулираме флага при всяко ново докосване
+        pressTimer = setTimeout(() => {
+            // Установяваме, че действието е задържане
+            isLongPress = true;
+            
+            // Тъй като 'e' е TouchEvent, трябва да подадем правилните координати
+            const touch = e.touches[0] || e.changedTouches[0];
+            const fakeEvent = { clientX: touch.clientX, clientY: touch.clientY, ctrlKey: true }; // Симулираме Ctrl+Click
+
+            handleCalculatorInteraction(fakeEvent, { allowWithoutCtrl: true });
+            console.log('Long press detected!');
+        }, longPressThreshold);
+    });
+    
+    element.addEventListener('touchend', (e) => {
+        clearTimeout(pressTimer);
+        // Важно: Предотвратяваме 'click' само ако е имало задържане
+        if (isLongPress) {
+            e.preventDefault();
+        }
+    });
+
+    element.addEventListener('touchmove', () => {
+        // Ако пръстът се премести, отменяме таймера
+        clearTimeout(pressTimer);
+    });
+
     /*function updateDebugInfo() {
         const debugDiv = document.getElementById('debug-dev');
         if (debugDiv) {
@@ -882,7 +929,7 @@
         }
     }*/
 
-    let pressTimer;
+    /* let pressTimer;
     const element = document.getElementById('calculator');
     const longPressThreshold = 500; // milliseconds
     var touchProcessed = false; // Флаг за обработка на дълго натискане
@@ -916,7 +963,7 @@
     element.addEventListener('touchmove', () => {
         // Ако пръстът се премести, отменяме таймера
         clearTimeout(pressTimer);
-    });
+    });*/
 
     document.getElementById('saveSettings').addEventListener('click', function(e) {
         saveSettings();
