@@ -860,6 +860,7 @@
     const element = document.getElementById('calculator');
     const longPressThreshold = 500; // milliseconds
     let isLongPress = false; // Флаг, който следи дали е имало задържане
+    var isFullyLoaded = false;
 
     // ТОЗИ LISTENER ЗАМЕСТВА СТАРИЯ document.addEventListener("click", ...)
     document.addEventListener("click", function(event) {
@@ -873,8 +874,20 @@
         // updateDebugInfo();
     });
 
-    document.addEventListener("contextmenu", function(event) {
+    /*document.addEventListener("contextmenu", function(event) {
         event.preventDefault(); // Блокира контекстното меню (важно за десктоп и Android)
+        handleCalculatorInteraction(event, { allowWithoutCtrl: true });
+    });*/
+
+    document.addEventListener("contextmenu", function(event) {
+        event.preventDefault(); // Винаги блокираме менюто
+        // Ако задържането вече е обработено от setTimeout, не правим нищо
+        if (isLongPress) {
+            return;
+        }
+        // Ако contextmenu се изпълни пръв, изчистваме таймера,
+        // за да не се изпълни действието втори път.
+        clearTimeout(pressTimer);
         handleCalculatorInteraction(event, { allowWithoutCtrl: true });
     });
 
@@ -1083,6 +1096,8 @@
             loadingOverlay.style.opacity = '0';
             setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500); // Премахваме го след анимацията
         }
+        isFullyLoaded = true;
+        console.log("Calculator is fully loaded and ready for interaction.");
         // --- PWA Install Prompt Logic for iOS ---
         // Логиката е тук, за да сме сигурни, че loading overlay е изчезнал
         // и банерът е достъпен за клик.
