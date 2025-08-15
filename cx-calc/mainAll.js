@@ -1150,160 +1150,115 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        document.addEventListener('DOMContentLoaded', () => {
-        // Global handler for touch events on modal buttons
-        document.body.addEventListener('touchend', function(event) {
-            const button = event.target.closest('button');
-            const modal = event.target.closest('.modal');
+    // Global handler for touch events on modal buttons
+    document.body.addEventListener('touchend', function(event) {
+        const button = event.target.closest('button');
+        const modal = event.target.closest('.modal');
 
-            // If a button inside a modal is tapped, trigger its click event.
-            // This is a workaround for mobile browsers where the click event
-            // might be suppressed by other touch listeners.
-            if (button && modal) {
-                event.preventDefault();
-                button.click();
-            }
-        });
-
-        // Затваряне на модал с ESC клавиш
-
-        // --- Универсално затваряне на модален прозорец при клик извън съдържанието ---
-        // Този listener е закачен за целия документ и работи за всички елементи с клас .modal
-        document.addEventListener('click', (event) => {
-            // Проверяваме дали е кликнато директно върху овърлея на модален прозорец (който има клас .modal)
-            // event.target е самият .modal елемент, а не .modal-content
-            if (event.target.classList.contains('modal')) {
-                // Ключова стъпка: Спираме разпространението на събитието.
-                // Това предотвратява "пробиването" на клика до елементите под модала (напр. бутоните на калкулатора),
-                // след като модалът бъде скрит.
-                event.stopPropagation();
-
-                // Скриваме модалния прозорец
-                event.target.style.display = 'none';
-
-                // Ако е бил прозорецът за настройки, връщаме го в начален изглед
-                if (event.target.id === 'settingsModal') {
-                    resetLayoutSettingsView();
-                }
-                // Деактивираме флага за модален прозорец
-                modalIsActive = false;
-            }
-        });
-        document.addEventListener('keydown', (e) => {
-            const key = e.key;
-            // Escape винаги работи за затваряне на модални прозорци
-            if (key === 'Escape' || key === 'Esc') {
-                if (settingsModal.style.display !== 'none') {
-                    resetLayoutSettingsView();
-                }
-                historyModal.style.display = 'none';
-                helpModal.style.display = 'none';
-                settingsModal.style.display = 'none';
-                modalIsActive = false;
-                return;
-            }
-            // Блокираме другите клавиши, ако има отворен модален прозорец
-            if (modalIsActive) {
-                return;
-            }
-            // Предотвратяваме стандартното поведение, ако е нужно
-            if (['Enter', '/', '*', '(', ')'].includes(key)) {
-                e.preventDefault();
-            }
-            // Специална обработка за '%'
-            if (key === '%') {
-                if ((/[+\-*/]$/.test(userInput))) return;
-                userInput = userInput.replace(',', '.');
-                userInput = eval(userInput);
-                userInput = (parseFloat(userInput) / 100).toFixed(2).replace('.', ',');
-                appendNumber("=");
-                return;
-            }
-            const keyMap = { 'Enter': '=', '=': '=', 'Backspace': 'B', 'Delete': 'B', ',': ',', '.': ',', 'c': 'C', 'C': 'C', '(': '(', ')': ')' };
-            if (keyMap[key]) {
-                appendNumber(keyMap[key]);
-            } else if ("0123456789+-*/".includes(key)) {
-                appendNumber(key);
-            }
-        });
-        // Добавяме слушател за бутона за проверка на версия
-        const checkVersionBtn = document.getElementById('checkVersionBtn');
-        if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
-
-        // --- Слушатели за бутоните за управление на подсказките ---
-        const resetTipsButton = document.getElementById('resetTipsButton');
-        if (resetTipsButton) {
-            resetTipsButton.addEventListener('click', (event) => {
-                event.stopPropagation();
-                settingsModal.style.display = 'none';
-                modalIsActive = false;
-                resetLayoutSettingsView();
-                if (typeof showTips === 'function') {
-                    tutorialSkinSwitch = true;
-                    memoryShow(4, showTips); // Switch skin, then start tutorial
-                }
-            });
+        // If a button inside a modal is tapped, trigger its click event.
+        // This is a workaround for mobile browsers where the click event
+        // might be suppressed by other touch listeners.
+        if (button && modal) {
+            event.preventDefault();
+            button.click();
         }
+    });
 
-        // --- Динамично показване на версията от localStorage ---
-        const helpFooterInfo = document.getElementById('help-footer-info');
-        const emailLink = `<a href="mailto:cx.sites.online@gmail.com" style="color: inherit; text-decoration: none;">cx.sites.online@gmail.com</a>`;
+    // Затваряне на модал с ESC клавиш
 
-        // Показваме веднага версията от localStorage. Това е единственото четене при зареждане.
-        const currentVersion = localStorage.getItem('CXCalc_appVersion');
-        if (helpFooterInfo) {
-            const versionText = currentVersion || 'N/A';
-            helpFooterInfo.innerHTML = `Версия ${versionText} &bull; Контакт: ${emailLink}`;
-        }
-
-        loadHistory();
-
-        // Delegated touchend listener for mobile-friendly settings buttons
-        document.getElementById('settingsModal').addEventListener('touchend', function(event) {
-            const target = event.target;
-            const button = target.closest('button'); // Handle clicks on icons inside buttons
-            if (!button) return;
-
-            let actionHandled = true;
-            // Stop propagation immediately to prevent other listeners from interfering
+    // --- Универсално затваряне на модален прозорец при клик извън съдържанието ---
+    // Този listener е закачен за целия документ и работи за всички елементи с клас .modal
+    document.addEventListener('click', (event) => {
+        // Проверяваме дали е кликнато директно върху овърлея на модален прозорец (който има клас .modal)
+        // event.target е самият .modal елемент, а не .modal-content
+        if (event.target.classList.contains('modal')) {
+            // Ключова стъпка: Спираме разпространението на събитието.
+            // Това предотвратява "пробиването" на клика до елементите под модала (напр. бутоните на калкулатора),
+            // след като модалът бъде скрит.
             event.stopPropagation();
 
-            switch (button.id) {
-                case 'saveSettings':
-                    saveSettings();
-                    break;
-                case 'closeSettingsModalButton':
-                    settingsModal.style.display = 'none';
-                    resetLayoutSettingsView();
-                    setTimeout(() => { modalIsActive = false; }, 0);
-                    break;
-                case 'checkVersionBtn':
-                    checkForUpdates();
-                    break;
-                case 'resetTipsButton':
-                    settingsModal.style.display = 'none';
-                    modalIsActive = false;
-                    resetLayoutSettingsView();
-                    if (typeof showTips === 'function') {
-                        tutorialSkinSwitch = true;
-                        memoryShow(4, showTips);
-                    }
-                    break;
-                // NOTE: Add other button IDs from the settings modal here if they don't work on touch
-                default:
-                    actionHandled = false;
-            }
+            // Скриваме модалния прозорец
+            event.target.style.display = 'none';
 
-            if (actionHandled) {
-                // Prevent the ghost click that causes issues on mobile
-                event.preventDefault();
+            // Ако е бил прозорецът за настройки, връщаме го в начален изглед
+            if (event.target.id === 'settingsModal') {
+                resetLayoutSettingsView();
+            }
+            // Деактивираме флага за модален прозорец
+            modalIsActive = false;
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        // Escape винаги работи за затваряне на модални прозорци
+        if (key === 'Escape' || key === 'Esc') {
+            if (settingsModal.style.display !== 'none') {
+                resetLayoutSettingsView();
+            }
+            historyModal.style.display = 'none';
+            helpModal.style.display = 'none';
+            settingsModal.style.display = 'none';
+            modalIsActive = false;
+            return;
+        }
+        // Блокираме другите клавиши, ако има отворен модален прозорец
+        if (modalIsActive) {
+            return;
+        }
+        // Предотвратяваме стандартното поведение, ако е нужно
+        if (['Enter', '/', '*', '(', ')'].includes(key)) {
+            e.preventDefault();
+        }
+        // Специална обработка за '%'
+        if (key === '%') {
+            if ((/[+\-*/]$/.test(userInput))) return;
+            userInput = userInput.replace(',', '.');
+            userInput = eval(userInput);
+            userInput = (parseFloat(userInput) / 100).toFixed(2).replace('.', ',');
+            appendNumber("=");
+            return;
+        }
+        const keyMap = { 'Enter': '=', '=': '=', 'Backspace': 'B', 'Delete': 'B', ',': ',', '.': ',', 'c': 'C', 'C': 'C', '(': '(', ')': ')' };
+        if (keyMap[key]) {
+            appendNumber(keyMap[key]);
+        } else if ("0123456789+-*/".includes(key)) {
+            appendNumber(key);
+        }
+    });
+    // Добавяме слушател за бутона за проверка на версия
+    const checkVersionBtn = document.getElementById('checkVersionBtn');
+    if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
+
+    // --- Слушатели за бутоните за управление на подсказките ---
+    const resetTipsButton = document.getElementById('resetTipsButton');
+    if (resetTipsButton) {
+        resetTipsButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            settingsModal.style.display = 'none';
+            modalIsActive = false;
+            resetLayoutSettingsView();
+            if (typeof showTips === 'function') {
+                tutorialSkinSwitch = true;
+                memoryShow(4, showTips); // Switch skin, then start tutorial
             }
         });
+    }
 
-        // Initial font size adjustment for both fields based on their (potentially empty) content
-        adjustFontSize(levInput, eurInput);
+    // --- Динамично показване на версията от localStorage ---
+    const helpFooterInfo = document.getElementById('help-footer-info');
+    const emailLink = `<a href="mailto:cx.sites.online@gmail.com" style="color: inherit; text-decoration: none;">cx.sites.online@gmail.com</a>`;
 
-    });
+    // Показваме веднага версията от localStorage. Това е единственото четене при зареждане.
+    const currentVersion = localStorage.getItem('CXCalc_appVersion');
+    if (helpFooterInfo) {
+        const versionText = currentVersion || 'N/A';
+        helpFooterInfo.innerHTML = `Версия ${versionText} &bull; Контакт: ${emailLink}`;
+    }
+
+    loadHistory();
+    // Initial font size adjustment for both fields based on their (potentially empty) content
+    adjustFontSize(levInput, eurInput);
+});
 
     // Следене на преоразмеряването на прозореца
     window.addEventListener("resize", function (e) {
