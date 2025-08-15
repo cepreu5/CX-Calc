@@ -987,6 +987,7 @@
         if (isTouchHandled) {
             event.stopPropagation();
             event.preventDefault();
+            isTouchHandled = false; // Reset for subsequent clicks.
             return;
         }
         const normalizedEvent = normalizeEvent(event);
