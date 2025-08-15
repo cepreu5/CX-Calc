@@ -197,7 +197,7 @@
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
 
-        // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
+        // Зареждаме паметта отделно от 'CXCalc_CalcMem', тъй като тя се управлява от status.js
         const savedMem = JSON.parse(localStorage.getItem('CXCalc_CalcMem'));
         if (savedMem && Array.isArray(savedMem)) {
             Mem = savedMem;
@@ -719,7 +719,7 @@
             Mem[i] = 0;
             clearStatus(i);
         }
-        localStorage.setItem('CalcMem', JSON.stringify(Mem));
+        localStorage.setItem('CXCalc_CalcMem', JSON.stringify(Mem));
     }
 
     async function pasteNumber() {
@@ -755,7 +755,7 @@
         appendNumber("C"); // изтриваме дисплея
         userInput = ""; // изчистваме userInput
         Mem = [0, 0, 0, 0]; // изчистваме паметта
-        localStorage.setItem('CalcMem', JSON.stringify(Mem)); // запазваме паметта
+        localStorage.setItem('CXCalc_CalcMem', JSON.stringify(Mem)); // запазваме паметта
         document.getElementById("clearHistoryButton").click(); // изтриваме историята, ако е налична
     }
 
@@ -882,14 +882,111 @@
         }
     }*/
 
-    document.addEventListener("click", function(event) {
+    /* document.addEventListener("click", function(event) {
         handleCalculatorInteraction(event);
         // updateDebugInfo();
     });
 
-    document.addEventListener("contextmenu", function(event) {
-        event.preventDefault(); // блокира контекстното меню
-        handleCalculatorInteraction(event, { allowWithoutCtrl: true });
+      Copilot: document.addEventListener('click', function(event) {
+        const target = event.target;
+        if (!target) return;
+        if (target.closest('.calculator-container') || target.closest('.calculator-img')) {
+            handleCalculatorInteraction(event, { allowWithoutCtrl: false });
+        }
+    });*/
+
+   let longPressTimer;
+    let touchstartX = 0;
+    let touchstartY = 0;
+    const LONG_PRESS_DURATION = 500; // ms
+    const TOUCH_MOVE_THRESHOLD = 10; // pixels
+    let isTouchHandled = false;
+
+    document.addEventListener('touchcancel', function(event) {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    });
+
+    // Helper to create a consistent event object for the handler
+    function normalizeEvent(e) {
+        if (e.touches || e.changedTouches) {
+            const touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+            return {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                target: touch.target,
+                ctrlKey: e.ctrlKey, // Keep original event's ctrlKey
+                sourceEvent: e // Keep reference to original event
+            };
+        }
+        return { // It's already a mouse event
+            clientX: e.clientX,
+            clientY: e.clientY,
+            target: e.target,
+            ctrlKey: e.ctrlKey,
+            sourceEvent: e
+        };
+    }
+
+    document.addEventListener('touchstart', function(event) {
+        const target = event.target;
+        if (!target) return;
+        if (event.touches.length === 1 && (target.closest('.calculator-container') || target.closest('.calculator-img'))) {
+            isTouchHandled = false;
+            touchstartX = event.touches[0].clientX;
+            touchstartY = event.touches[0].clientY;
+
+            longPressTimer = setTimeout(() => {
+                const normalizedEvent = normalizeEvent(event);
+                handleCalculatorInteraction(normalizedEvent, { allowWithoutCtrl: true }); // Long press
+                longPressTimer = null;
+                isTouchHandled = true; // Mark as handled to prevent touchend/click
+                event.preventDefault(); // Prevent context menu on long press
+            }, LONG_PRESS_DURATION);
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function(event) {
+        if (longPressTimer) {
+            const dist = Math.sqrt(
+                Math.pow(event.touches[0].clientX - touchstartX, 2) +
+                Math.pow(event.touches[0].clientY - touchstartY, 2)
+            );
+            if (dist > TOUCH_MOVE_THRESHOLD) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        }
+    });
+
+    document.addEventListener('touchend', function(event) {
+        if (longPressTimer) { // Timer still running means it's a short press (tap)
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+            const normalizedEvent = normalizeEvent(event);
+            handleCalculatorInteraction(normalizedEvent, { allowWithoutCtrl: false });
+            // Prevent the browser from firing a "ghost click"
+            event.preventDefault();
+        } else if (isTouchHandled) {
+            // This was a long press that was already handled in touchstart.
+            // We just need to prevent any default action on touchend, like the context menu.
+            event.preventDefault();
+        }
+    });
+
+    document.addEventListener("click", function(event) {
+        // This listener now primarily serves non-touch devices.
+        // On touch devices, preventDefault in touchend should stop this.
+        // The isTouchHandled flag is an extra safeguard against double actions on long press.
+        if (isTouchHandled) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
+        const normalizedEvent = normalizeEvent(event);
+        handleCalculatorInteraction(normalizedEvent);
     });
 
     document.getElementById('saveSettings').addEventListener('click', function(e) {
@@ -931,7 +1028,7 @@
                 const layout = calcNewCoordinates();
                 keys = layout.keys;
                 displayCoords = layout.displayCoords;
-                resizeFont();
+                adjustFontSize(displaylv, display);
             };
 
             // Закачаме event listener ПРЕДИ да сменим src, за да сме сигурни, че ще се задейства.
@@ -1879,11 +1976,6 @@
         element1.style.fontSize = fontSize + "px";
         element2.style.fontSize = fontSize + "px";
         document.body.removeChild(measuringDiv);
-    }
-
-    function resizeFont() {
-        const height = display.clientHeight; // Взимаме височината на дисплея
-        display.style.fontSize = displaylv.style.fontSize = (height * 0.99) + 'px'; // % от височината
     }
 
 // tips ------------------
