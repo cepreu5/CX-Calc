@@ -981,17 +981,25 @@
     });
 
     document.addEventListener("click", function(event) {
+        const target = event.target;
+
         // This listener now primarily serves non-touch devices.
         // On touch devices, preventDefault in touchend should stop this.
         // The isTouchHandled flag is an extra safeguard against double actions on long press.
         if (isTouchHandled) {
+            // This was a ghost click from a long press. Consume it and do nothing else.
             event.stopPropagation();
             event.preventDefault();
-            isTouchHandled = false; // Reset for subsequent clicks.
+            isTouchHandled = false;
             return;
         }
-        const normalizedEvent = normalizeEvent(event);
-        handleCalculatorInteraction(normalizedEvent);
+
+        // This listener should only handle interactions with the calculator itself.
+        // Clicks on modals or other UI elements are handled by their own specific listeners.
+        if (target.closest('.calculator-container')) {
+            const normalizedEvent = normalizeEvent(event);
+            handleCalculatorInteraction(normalizedEvent);
+        }
     });
 
     document.getElementById('saveSettings').addEventListener('click', function(e) {
