@@ -197,7 +197,7 @@
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
 
-        // Зареждаме паметта отделно от 'CXCalc_CalcMem', тъй като тя се управлява от status.js
+        // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
         const savedMem = JSON.parse(localStorage.getItem('CXCalc_CalcMem'));
         if (savedMem && Array.isArray(savedMem)) {
             Mem = savedMem;
@@ -719,7 +719,7 @@
             Mem[i] = 0;
             clearStatus(i);
         }
-        localStorage.setItem('CXCalc_CalcMem', JSON.stringify(Mem));
+        localStorage.setItem('CalcMem', JSON.stringify(Mem));
     }
 
     async function pasteNumber() {
@@ -755,7 +755,7 @@
         appendNumber("C"); // изтриваме дисплея
         userInput = ""; // изчистваме userInput
         Mem = [0, 0, 0, 0]; // изчистваме паметта
-        localStorage.setItem('CXCalc_CalcMem', JSON.stringify(Mem)); // запазваме паметта
+        localStorage.setItem('CalcMem', JSON.stringify(Mem)); // запазваме паметта
         document.getElementById("clearHistoryButton").click(); // изтриваме историята, ако е налична
     }
 
@@ -882,127 +882,43 @@
         }
     }*/
 
-    /* document.addEventListener("click", function(event) {
+    let pressTimer;
+    const element = document.getElementById('calculator');
+    const longPressThreshold = 500; // milliseconds
+    var touchProcessed = false; // Флаг за обработка на дълго натискане
+    
+    document.addEventListener("click", function(event) {
         handleCalculatorInteraction(event);
         // updateDebugInfo();
     });
 
-      Copilot: document.addEventListener('click', function(event) {
-        const target = event.target;
-        if (!target) return;
-        if (target.closest('.calculator-container') || target.closest('.calculator-img')) {
-            handleCalculatorInteraction(event, { allowWithoutCtrl: false });
-        }
-    });*/
-
     document.addEventListener("contextmenu", function(event) {
         event.preventDefault(); // блокира контекстното меню
+        if (touchProcessed) return; // ако вече е обработено не правим нищо
+        handleCalculatorInteraction(event, { allowWithoutCtrl: true });
     });
 
-    let longPressTimer;
-    let touchstartX = 0;
-    let touchstartY = 0;
-    const LONG_PRESS_DURATION = 500; // ms
-    const TOUCH_MOVE_THRESHOLD = 10; // pixels
-    let isTouchHandled = false;
-
-    document.addEventListener('touchcancel', function(event) {
-        if (longPressTimer) {
-            clearTimeout(longPressTimer);
-            longPressTimer = null;
-        }
+    element.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Предотвратява default поведението на браузъра (като приближаване на екрана).
+        touchProcessed = false;
+        pressTimer = setTimeout(() => {
+            // Изпълнява се, ако продължителността на натискане е над прага
+            handleCalculatorInteraction(e, { allowWithoutCtrl: true });
+            touchProcessed = true;
+            console.log('Long press detected!');
+        }, longPressThreshold);
+    });
+    
+    element.addEventListener('touchend', () => {
+        clearTimeout(pressTimer);
     });
 
-    // Helper to create a consistent event object for the handler
-    function normalizeEvent(e) {
-        if (e.touches || e.changedTouches) {
-            const touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
-            return {
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                target: touch.target,
-                ctrlKey: e.ctrlKey, // Keep original event's ctrlKey
-                sourceEvent: e // Keep reference to original event
-            };
-        }
-        return { // It's already a mouse event
-            clientX: e.clientX,
-            clientY: e.clientY,
-            target: e.target,
-            ctrlKey: e.ctrlKey,
-            sourceEvent: e
-        };
-    }
-
-    document.addEventListener('touchstart', function(event) {
-        const target = event.target;
-        if (!target) return;
-        if (event.touches.length === 1 && (target.closest('.calculator-container') || target.closest('.calculator-img'))) {
-            isTouchHandled = false;
-            touchstartX = event.touches[0].clientX;
-            touchstartY = event.touches[0].clientY;
-
-            longPressTimer = setTimeout(() => {
-                const normalizedEvent = normalizeEvent(event);
-                handleCalculatorInteraction(normalizedEvent, { allowWithoutCtrl: true }); // Long press
-                longPressTimer = null;
-                isTouchHandled = true; // Mark as handled to prevent touchend/click
-                event.preventDefault(); // Prevent context menu on long press
-            }, LONG_PRESS_DURATION);
-        }
-    }, { passive: false }); 
-
-    document.addEventListener('touchmove', function(event) {
-        if (longPressTimer) {
-            const dist = Math.sqrt(
-                Math.pow(event.touches[0].clientX - touchstartX, 2) +
-                Math.pow(event.touches[0].clientY - touchstartY, 2)
-            );
-            if (dist > TOUCH_MOVE_THRESHOLD) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        }
+    element.addEventListener('touchmove', () => {
+        // Ако пръстът се премести, отменяме таймера
+        clearTimeout(pressTimer);
     });
 
-    document.addEventListener('touchend', function(event) {
-        if (longPressTimer) { // Timer still running means it's a short press (tap)
-            clearTimeout(longPressTimer);
-            longPressTimer = null;
-            const normalizedEvent = normalizeEvent(event);
-            handleCalculatorInteraction(normalizedEvent, { allowWithoutCtrl: false });
-            // Prevent the browser from firing a "ghost click"
-            event.preventDefault();
-        } else if (isTouchHandled) {
-            // This was a long press that was already handled in touchstart.
-            // We just need to prevent any default action on touchend, like the context menu.
-            event.preventDefault();
-        }
-    });
-
-    document.addEventListener("click", function(event) {
-        const target = event.target;
-
-        // This listener now primarily serves non-touch devices.
-        // On touch devices, preventDefault in touchend should stop this.
-        // The isTouchHandled flag is an extra safeguard against double actions on long press.
-        if (isTouchHandled) {
-            // This was a ghost click from a long press. Consume it and do nothing else.
-            event.stopPropagation();
-            event.preventDefault();
-            isTouchHandled = false;
-            return;
-        }
-
-        // This listener should only handle interactions with the calculator itself.
-        // Clicks on modals or other UI elements are handled by their own specific listeners.
-        if (target.closest('.calculator-container')) {
-            const normalizedEvent = normalizeEvent(event);
-            handleCalculatorInteraction(normalizedEvent);
-        }
-    });
-
-        document.getElementById('saveSettings').addEventListener('click', function(e) {
+    document.getElementById('saveSettings').addEventListener('click', function(e) {
         saveSettings();
         settingsModal.style.display = 'none'; // Close modal after saving
         setTimeout(() => {
@@ -1041,7 +957,7 @@
                 const layout = calcNewCoordinates();
                 keys = layout.keys;
                 displayCoords = layout.displayCoords;
-                adjustFontSize(displaylv, display);
+                resizeFont();
             };
 
             // Закачаме event listener ПРЕДИ да сменим src, за да сме сигурни, че ще се задейства.
@@ -1150,115 +1066,102 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-    // Global handler for touch events on modal buttons
-    document.body.addEventListener('touchend', function(event) {
-        const button = event.target.closest('button');
-        const modal = event.target.closest('.modal');
+        // Затваряне на модал с ESC клавиш
 
-        // If a button inside a modal is tapped, trigger its click event.
-        // This is a workaround for mobile browsers where the click event
-        // might be suppressed by other touch listeners.
-        if (button && modal) {
-            event.preventDefault();
-            button.click();
-        }
-    });
+        // --- Универсално затваряне на модален прозорец при клик извън съдържанието ---
+        // Този listener е закачен за целия документ и работи за всички елементи с клас .modal
+        document.addEventListener('click', (event) => {
+            // Проверяваме дали е кликнато директно върху овърлея на модален прозорец (който има клас .modal)
+            // event.target е самият .modal елемент, а не .modal-content
+            if (event.target.classList.contains('modal')) {
+                // Ключова стъпка: Спираме разпространението на събитието.
+                // Това предотвратява "пробиването" на клика до елементите под модала (напр. бутоните на калкулатора),
+                // след като модалът бъде скрит.
+                event.stopPropagation();
 
-    // Затваряне на модал с ESC клавиш
+                // Скриваме модалния прозорец
+                event.target.style.display = 'none';
 
-    // --- Универсално затваряне на модален прозорец при клик извън съдържанието ---
-    // Този listener е закачен за целия документ и работи за всички елементи с клас .modal
-    document.addEventListener('click', (event) => {
-        // Проверяваме дали е кликнато директно върху овърлея на модален прозорец (който има клас .modal)
-        // event.target е самият .modal елемент, а не .modal-content
-        if (event.target.classList.contains('modal')) {
-            // Ключова стъпка: Спираме разпространението на събитието.
-            // Това предотвратява "пробиването" на клика до елементите под модала (напр. бутоните на калкулатора),
-            // след като модалът бъде скрит.
-            event.stopPropagation();
-
-            // Скриваме модалния прозорец
-            event.target.style.display = 'none';
-
-            // Ако е бил прозорецът за настройки, връщаме го в начален изглед
-            if (event.target.id === 'settingsModal') {
-                resetLayoutSettingsView();
-            }
-            // Деактивираме флага за модален прозорец
-            modalIsActive = false;
-        }
-    });
-    document.addEventListener('keydown', (e) => {
-        const key = e.key;
-        // Escape винаги работи за затваряне на модални прозорци
-        if (key === 'Escape' || key === 'Esc') {
-            if (settingsModal.style.display !== 'none') {
-                resetLayoutSettingsView();
-            }
-            historyModal.style.display = 'none';
-            helpModal.style.display = 'none';
-            settingsModal.style.display = 'none';
-            modalIsActive = false;
-            return;
-        }
-        // Блокираме другите клавиши, ако има отворен модален прозорец
-        if (modalIsActive) {
-            return;
-        }
-        // Предотвратяваме стандартното поведение, ако е нужно
-        if (['Enter', '/', '*', '(', ')'].includes(key)) {
-            e.preventDefault();
-        }
-        // Специална обработка за '%'
-        if (key === '%') {
-            if ((/[+\-*/]$/.test(userInput))) return;
-            userInput = userInput.replace(',', '.');
-            userInput = eval(userInput);
-            userInput = (parseFloat(userInput) / 100).toFixed(2).replace('.', ',');
-            appendNumber("=");
-            return;
-        }
-        const keyMap = { 'Enter': '=', '=': '=', 'Backspace': 'B', 'Delete': 'B', ',': ',', '.': ',', 'c': 'C', 'C': 'C', '(': '(', ')': ')' };
-        if (keyMap[key]) {
-            appendNumber(keyMap[key]);
-        } else if ("0123456789+-*/".includes(key)) {
-            appendNumber(key);
-        }
-    });
-    // Добавяме слушател за бутона за проверка на версия
-    const checkVersionBtn = document.getElementById('checkVersionBtn');
-    if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
-
-    // --- Слушатели за бутоните за управление на подсказките ---
-    const resetTipsButton = document.getElementById('resetTipsButton');
-    if (resetTipsButton) {
-        resetTipsButton.addEventListener('click', (event) => {
-            event.stopPropagation();
-            settingsModal.style.display = 'none';
-            modalIsActive = false;
-            resetLayoutSettingsView();
-            if (typeof showTips === 'function') {
-                tutorialSkinSwitch = true;
-                memoryShow(4, showTips); // Switch skin, then start tutorial
+                // Ако е бил прозорецът за настройки, връщаме го в начален изглед
+                if (event.target.id === 'settingsModal') {
+                    resetLayoutSettingsView();
+                }
+                // Деактивираме флага за модален прозорец
+                modalIsActive = false;
             }
         });
-    }
+        document.addEventListener('keydown', (e) => {
+            const key = e.key;
+            // Escape винаги работи за затваряне на модални прозорци
+            if (key === 'Escape' || key === 'Esc') {
+                if (settingsModal.style.display !== 'none') {
+                    resetLayoutSettingsView();
+                }
+                historyModal.style.display = 'none';
+                helpModal.style.display = 'none';
+                settingsModal.style.display = 'none';
+                modalIsActive = false;
+                return;
+            }
+            // Блокираме другите клавиши, ако има отворен модален прозорец
+            if (modalIsActive) {
+                return;
+            }
+            // Предотвратяваме стандартното поведение, ако е нужно
+            if (['Enter', '/', '*', '(', ')'].includes(key)) {
+                e.preventDefault();
+            }
+            // Специална обработка за '%'
+            if (key === '%') {
+                if ((/[+\-*/]$/.test(userInput))) return;
+                userInput = userInput.replace(',', '.');
+                userInput = eval(userInput);
+                userInput = (parseFloat(userInput) / 100).toFixed(2).replace('.', ',');
+                appendNumber("=");
+                return;
+            }
+            const keyMap = { 'Enter': '=', '=': '=', 'Backspace': 'B', 'Delete': 'B', ',': ',', '.': ',', 'c': 'C', 'C': 'C', '(': '(', ')': ')' };
+            if (keyMap[key]) {
+                appendNumber(keyMap[key]);
+            } else if ("0123456789+-*/".includes(key)) {
+                appendNumber(key);
+            }
+        });
+        // Добавяме слушател за бутона за проверка на версия
+        const checkVersionBtn = document.getElementById('checkVersionBtn');
+        if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
 
-    // --- Динамично показване на версията от localStorage ---
-    const helpFooterInfo = document.getElementById('help-footer-info');
-    const emailLink = `<a href="mailto:cx.sites.online@gmail.com" style="color: inherit; text-decoration: none;">cx.sites.online@gmail.com</a>`;
+        // --- Слушатели за бутоните за управление на подсказките ---
+        const resetTipsButton = document.getElementById('resetTipsButton');
+        if (resetTipsButton) {
+            resetTipsButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                settingsModal.style.display = 'none';
+                modalIsActive = false;
+                resetLayoutSettingsView();
+                if (typeof showTips === 'function') {
+                    tutorialSkinSwitch = true;
+                    memoryShow(4, showTips); // Switch skin, then start tutorial
+                }
+            });
+        }
 
-    // Показваме веднага версията от localStorage. Това е единственото четене при зареждане.
-    const currentVersion = localStorage.getItem('CXCalc_appVersion');
-    if (helpFooterInfo) {
-        const versionText = currentVersion || 'N/A';
-        helpFooterInfo.innerHTML = `Версия ${versionText} &bull; Контакт: ${emailLink}`;
-    }
+        // --- Динамично показване на версията от localStorage ---
+        const helpFooterInfo = document.getElementById('help-footer-info');
+        const emailLink = `<a href="mailto:cx.sites.online@gmail.com" style="color: inherit; text-decoration: none;">cx.sites.online@gmail.com</a>`;
 
-    loadHistory();
-    // Initial font size adjustment for both fields based on their (potentially empty) content
-    adjustFontSize(levInput, eurInput);
-});
+        // Показваме веднага версията от localStorage. Това е единственото четене при зареждане.
+        const currentVersion = localStorage.getItem('CXCalc_appVersion');
+        if (helpFooterInfo) {
+            const versionText = currentVersion || 'N/A';
+            helpFooterInfo.innerHTML = `Версия ${versionText} &bull; Контакт: ${emailLink}`;
+        }
+
+        loadHistory();
+        // Initial font size adjustment for both fields based on their (potentially empty) content
+        adjustFontSize(levInput, eurInput);
+
+    });
 
     // Следене на преоразмеряването на прозореца
     window.addEventListener("resize", function (e) {
@@ -2002,6 +1905,11 @@
         element1.style.fontSize = fontSize + "px";
         element2.style.fontSize = fontSize + "px";
         document.body.removeChild(measuringDiv);
+    }
+
+    function resizeFont() {
+        const height = display.clientHeight; // Взимаме височината на дисплея
+        display.style.fontSize = displaylv.style.fontSize = (height * 0.99) + 'px'; // % от височината
     }
 
 // tips ------------------
