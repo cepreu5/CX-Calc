@@ -1002,43 +1002,25 @@
         }
     });
 
-    const saveAction = function(e) {
-        e.preventDefault(); // Prevent ghost click
+        document.getElementById('saveSettings').addEventListener('click', function(e) {
+        saveSettings();
+        settingsModal.style.display = 'none'; // Close modal after saving
+        setTimeout(() => {
+            modalIsActive = false;
+        }, 0);
         e.stopPropagation();
-        const button = document.getElementById('saveSettings');
-        button.innerText = 'Saving...'; // DEBUG
-        try {
-            saveSettings();
-            settingsModal.style.display = 'none'; // Close modal after saving
-            setTimeout(() => {
-                modalIsActive = false;
-            }, 0);
-        } catch (err) {
-            alert('Error in saveSettings: ' + err.message);
-            button.innerText = 'Save'; // Restore text on error
-        }
-    };
-    document.getElementById('saveSettings').addEventListener('click', saveAction);
-    document.getElementById('saveSettings').addEventListener('touchend', saveAction);
+        e.preventDefault();
+    });
 
-    const closeAction = function(e) {
-        e.preventDefault(); // Prevent ghost click
+    document.getElementById('closeSettingsModalButton').addEventListener('click', function(e) {
+        settingsModal.style.display = 'none'; // Close modal without saving
+        resetLayoutSettingsView();
+        setTimeout(() => {
+            modalIsActive = false;
+        }, 0);
         e.stopPropagation();
-        const button = document.getElementById('closeSettingsModalButton');
-        button.innerText = 'Closing...'; // DEBUG
-        try {
-            settingsModal.style.display = 'none'; // Close modal without saving
-            resetLayoutSettingsView();
-            setTimeout(() => {
-                modalIsActive = false;
-            }, 0);
-        } catch (err) {
-            alert('Error in closeSettingsModalButton: ' + err.message);
-            button.innerText = 'Close'; // Restore text on error
-        }
-    };
-    document.getElementById('closeSettingsModalButton').addEventListener('click', closeAction);
-    document.getElementById('closeSettingsModalButton').addEventListener('touchend', closeAction);
+        e.preventDefault();
+    });
 
     window.addEventListener("load", function() {
         // Приложението е заредило успешно.
@@ -1168,6 +1150,35 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Global handler for touch events on modal buttons
+        document.body.addEventListener('touchend', function(event) {
+            const button = event.target.closest('button');
+            const modal = event.target.closest('.modal');
+
+            // If a button inside a modal is tapped, trigger its click event.
+            // This is a workaround for mobile browsers where the click event
+            // might be suppressed by other touch listeners.
+            if (button && modal) {
+                event.preventDefault();
+                button.click();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+        // Global handler for touch events on modal buttons
+        document.body.addEventListener('touchend', function(event) {
+            const button = event.target.closest('button');
+            const modal = event.target.closest('.modal');
+
+            // If a button inside a modal is tapped, trigger its click event.
+            // This is a workaround for mobile browsers where the click event
+            // might be suppressed by other touch listeners.
+            if (button && modal) {
+                event.preventDefault();
+                button.click();
+            }
+        });
+
         // Затваряне на модал с ESC клавиш
 
         // --- Универсално затваряне на модален прозорец при клик извън съдържанието ---
@@ -1260,6 +1271,49 @@
         }
 
         loadHistory();
+
+        // Delegated touchend listener for mobile-friendly settings buttons
+        document.getElementById('settingsModal').addEventListener('touchend', function(event) {
+            const target = event.target;
+            const button = target.closest('button'); // Handle clicks on icons inside buttons
+            if (!button) return;
+
+            let actionHandled = true;
+            // Stop propagation immediately to prevent other listeners from interfering
+            event.stopPropagation();
+
+            switch (button.id) {
+                case 'saveSettings':
+                    saveSettings();
+                    break;
+                case 'closeSettingsModalButton':
+                    settingsModal.style.display = 'none';
+                    resetLayoutSettingsView();
+                    setTimeout(() => { modalIsActive = false; }, 0);
+                    break;
+                case 'checkVersionBtn':
+                    checkForUpdates();
+                    break;
+                case 'resetTipsButton':
+                    settingsModal.style.display = 'none';
+                    modalIsActive = false;
+                    resetLayoutSettingsView();
+                    if (typeof showTips === 'function') {
+                        tutorialSkinSwitch = true;
+                        memoryShow(4, showTips);
+                    }
+                    break;
+                // NOTE: Add other button IDs from the settings modal here if they don't work on touch
+                default:
+                    actionHandled = false;
+            }
+
+            if (actionHandled) {
+                // Prevent the ghost click that causes issues on mobile
+                event.preventDefault();
+            }
+        });
+
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
 
