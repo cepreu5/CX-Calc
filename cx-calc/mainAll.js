@@ -749,6 +749,23 @@
         pasteNumber(); // поставяме числото от клипборда
     }
 
+    function getCurrentDateTimeInfo() {
+        const daysBg = [
+            "неделя", "понеделник", "вторник", "сряда",
+            "четвъртък", "петък", "събота"
+        ];
+        const now = new Date();
+        const dayOfWeek = daysBg[now.getDay()];
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const date = `${day}.${month}.${year}`;
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const time = `${hours}:${minutes}`;
+        return `${dayOfWeek}, 📆${date}, ${time}⌚`
+    }
+    
     function allClear() {
         appendNumber("C"); // изтриваме дисплея
         userInput = ""; // изчистваме userInput
@@ -789,6 +806,9 @@
                     switchNumber();
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === 'C') {
                     allClear();
+                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '=') {
+                    const DT = getCurrentDateTimeInfo();
+                    tempShow(DT, 5);
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '*') {
                     const result = sanitizeAndEvaluateInput(userInput, 'percent');
                     if (result !== null) {
@@ -1550,29 +1570,41 @@
         }
     }
 
+    function tempShow(Str, len=1) {
+        const originalValue = displaylv.textContent; // Запазваме оригиналната стойност на levInput
+        const originalEurValue = display.textContent; // Запазваме оригиналната стойност на eurInput (div)
+        const originalBgColor = displaylv.style.backgroundColor;
+        const originalEurBgColor = display.style.backgroundColor; // Запазваме оригиналния фон на eurInput (div)
+        // Показваме стойността в eurInput (div)
+        display.textContent = Str;
+        adjustFontSize(displaylv, display);
+        display.style.backgroundColor = 'rgba(255, 223, 186, 0.5)'; // Светло оранжево за индикация
+        // Връщаме оригиналните стойности след 1 секундa
+        setTimeout(() => {
+            display.textContent = originalEurValue;
+            display.style.backgroundColor = originalEurBgColor;
+        }, len*1000);
+    }
+
     //memoryShow: Временно показва стойността от даден слот на паметта в горния дисплей, без да го променя
     function memoryShow(slot, callback) { // Добавен е 'callback'
         if (slot == 4) {
             const calculatorEl = document.getElementById("calculator");
             const newSkin = calculatorEl.src.includes("CalculatorA.png") ? "Calculator0.png" : "CalculatorA.png";
-
             // Запазваме оригиналния onload, за да го възстановим
             if (!originalOnloadHandler) {
                 originalOnloadHandler = calculatorEl.onload;
             }
-
             // Временно деактивираме подсказките, за да не се покаже tip при смяната
             const originalTipsEnabled = tipsEnabled;
             tipsEnabled = false;
-
             calculatorEl.onload = () => {
                 // Изпълняваме оригиналната функция за преизчисляване на layout
                 if (typeof originalOnloadHandler === 'function') {
                     originalOnloadHandler();
                 }
                 // Възстановяваме флага за подсказките
-                tipsEnabled = originalTipsEnabled;
-                
+                tipsEnabled = originalTipsEnabled;                
                 // Ако има callback (т.е. стартираме обучение), го изпълняваме
                 if (typeof callback === 'function') {
                     callback();
@@ -1580,9 +1612,7 @@
                 // Връщаме оригиналния onload handler
                 calculatorEl.onload = originalOnloadHandler;
             };
-
             calculatorEl.src = newSkin;
-
             // Only save the skin if it's NOT part of the tutorial skin switch
             if (!tutorialSkinSwitch) {
                 const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
@@ -1595,21 +1625,9 @@
             console.warn(`Памет Mem[${slot}] е недефинирана.`);
             return;
         }
-        const originalValue = displaylv.textContent; // Запазваме оригиналната стойност на levInput
-        const originalEurValue = display.textContent; // Запазваме оригиналната стойност на eurInput (div)
-        const originalBgColor = displaylv.style.backgroundColor;
-        const originalEurBgColor = display.style.backgroundColor; // Запазваме оригиналния фон на eurInput (div)
         // Форматираме и показваме стойността от паметта
         const memValueStr = groupByThree(formatNumber(Mem[slot]));
-        // Показваме стойността в eurInput (div)
-        display.textContent = memValueStr;
-        adjustFontSize(displaylv, display);
-        display.style.backgroundColor = 'rgba(255, 223, 186, 0.5)'; // Светло оранжево за индикация
-        // Връщаме оригиналните стойности след 3 секунди
-        setTimeout(() => {
-            display.textContent = originalEurValue;
-            display.style.backgroundColor = originalEurBgColor;
-        }, 1000);
+        tempShow(memValueStr);
     }
 
     function memoryRecall(slot) {
