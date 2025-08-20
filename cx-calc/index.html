@@ -89,9 +89,9 @@
         justify-content: space-between;
         gap: 15px;
     ">
-        <span style="flex-grow: 1; text-align: center;">За да инсталирате, натиснете
+        <span style="flex-grow: 1; text-align: center;">За да работите без връзка с интернет, натиснете
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-bottom: 3px;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-            и изберете "Добави към началния екран".
+            и изберете "Добави към началния екран
         </span>
         <div style="display: flex; align-items: center; gap: 15px; flex-shrink: 0;">
             <button id="decline-ios-install" style="font-size: 13px; padding: 3px 8px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
@@ -109,6 +109,7 @@
     </div>-->
     <div class="calculator-container" id="calculatorContainer">     
         <img src="Calculator0.png" ID="calculator" class="calculator-img" alt="Калкулатор">
+        <div class="ctoverlay" id="ctoverlay"></div> <!-- calculator touch overlay -->
         <div id="currency" contenteditable="false" ></div>
         <div id="currencyLev" contenteditable="false" ></div>
         <div id="eurInput" class="calculator-display" contenteditable="false"></div>

@@ -34,6 +34,10 @@
     const closeHelpModalButton = document.getElementById('closeHelpModalButton');
     const clearHistoryButton = document.getElementById('clearHistoryButton');
     const closeHelpModalButtonTop = document.getElementById('closeHelpModalButtonTop');
+    // Прихващане на координати и блокиране на context менюто
+    const ctoverlay = document.getElementById('ctoverlay');
+    // Блокиране на системното меню
+    ctoverlay.addEventListener('contextmenu', e => e.preventDefault());
 
     var MainPointsO = {
         Keys:       {x: 43, y: 235},
@@ -878,7 +882,8 @@
     }
 
     let pressTimer;
-    const element = document.getElementById('calculator');
+    // const element = document.getElementById('calculator');
+    const element = document.getElementById('ctoverlay');
     const longPressThreshold = 500; // milliseconds
     let isLongPress = false; // Флаг, който следи дали е имало задържане
     var isFullyLoaded = false;
@@ -2024,7 +2029,7 @@
         },
         {
             id: 'tip-paste',
-            text: 'Резултатът от пресмятанията се запомня автоматично в клипборда, така че можете лесно да го поставите навсякъде.',
+            text: 'Резултатът от пресмятанията се запомня автоматично в клипборда, така че можете лесно да го поставите в други приложения.',
             target: 'display', // A generic target for the display area
         }
     ];

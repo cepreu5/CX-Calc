@@ -24,6 +24,17 @@ body.ready {
      Той задейства показването на .calculator-container. */
 }
 
+.ctoverlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: transparent;
+  z-index: 2;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
 .calculator-container {
     opacity: 0; /* Скриваме калкулатора по подразбиране */
     position: fixed;
