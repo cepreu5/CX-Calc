@@ -20,6 +20,7 @@
     let layoutSettingsVisible = false; // Следи дали са показани настройките за зони (Settings2)
     var showWarning = false; // Флаг за показване на предупреждение за курса
     var tipsEnabled = true; // Флаг за показване на подсказки
+    let installPromptWasShown = false; // New global variable
     // Променливи за Web Audio API за по-бърз звук
     let audioContext;
     let clickBuffer = null;
@@ -283,10 +284,10 @@
     function getKeyValue(row, col) {
         const keyMap = [
             ["L", "€", "C", "B"],
-            ["7", "8", "9", "/"],
-            ["4", "5", "6", "*"],
+            ["7", "8", "9", "="],
+            ["4", "5", "6", "+"],
             ["1", "2", "3", "-"],
-            ["0", ",", "=", "+"]
+            ["0", ",", "/", "*"]
         ];
         return keyMap[row][col];
     }
@@ -689,25 +690,50 @@
         return parseFloat(result).toFixed(2).replace('.', ',');
     }
 
+    function goFullscreenEmulated() {
+        // Скрива скрола и позиционира overlay/калкулатора fixed
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        window.scrollTo(0, 1); // Скролира малко, за да скрие адрес бара на iOS
+    }
+
+    function exitFullscreenEmulated() {
+        // Възстановява скрола
+        document.body.style.overflow = 'auto';
+        document.documentElement.style.overflow = 'auto';
+        // Не е необходимо да скролираме обратно, браузърът ще се справи сам
+    }
+    
+
     function goFullscreen() {
-      const el = document.documentElement;
-      if (el.requestFullscreen) {
-        el.requestFullscreen();
-      } else if (el.webkitRequestFullscreen) {
-        el.webkitRequestFullscreen();
-      } else if (el.msRequestFullscreen) {
-        el.msRequestFullscreen();
-      }
+        const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
+        if (isIOS) {
+            goFullscreenEmulated();
+        } else {
+            const el = document.documentElement;
+            if (el.requestFullscreen) {
+                el.requestFullscreen();
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            } else if (el.msRequestFullscreen) {
+                el.msRequestFullscreen();
+            }
+        }
     }
 
     function exitFullscreen() {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
+        const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
+        if (isIOS) {
+            exitFullscreenEmulated();
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
     }
 
     function toggleFullscreen() {
@@ -1097,8 +1123,11 @@
             if (typeof initTips === 'function' && typeof showTips === 'function') {
                 initTips();
                 if (tipsEnabled) { // Will be true on first ever run
-                    tutorialSkinSwitch = true;
-                    memoryShow(4, showTips); // Switch skin, then start tutorial
+                    // Introduce a small delay to allow PWA banner to render first
+                    setTimeout(() => {
+                        tutorialSkinSwitch = true;
+                        memoryShow(4, showTips); // Switch skin, then start tutorial
+                    }, 200); // 200ms delay
                 }
             }
             // --- END OF TIPS INTEGRATION ---
@@ -1136,17 +1165,12 @@
             const iosPrompt = document.getElementById('ios-install-prompt');
             const dismissIosBtn = document.getElementById('dismiss-ios-prompt');
             const declineIosBtn = document.getElementById('decline-ios-install');
+            const countdownSpan = document.getElementById('countdownSpan');
+
+
             if (iosPrompt && dismissIosBtn && declineIosBtn) {
-                iosPrompt.style.display = 'flex';
-                // Бутонът 'Отказ' скрива банера и запазва избора за постоянно
-                declineIosBtn.addEventListener('click', () => {
-                    iosPrompt.style.display = 'none';
-                    localStorage.setItem('CXCalc_pwaInstallDeclined', 'true');
-                }, { once: true });
-                // Бутонът 'x' само скрива банера за текущата сесия
-                dismissIosBtn.addEventListener('click', () => {
-                    iosPrompt.style.display = 'none';
-                }, { once: true });
+                installPromptWasShown = true; // Set flag
+                setupDismissablePrompt(iosPrompt, dismissIosBtn, declineIosBtn, countdownSpan);
             }
         }
         // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
@@ -1154,8 +1178,6 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Затваряне на модал с ESC клавиш
-
         // --- Универсално затваряне на модален прозорец при клик извън съдържанието ---
         // Този listener е закачен за целия документ и работи за всички елементи с клас .modal
         document.addEventListener('click', (event) => {
@@ -1341,44 +1363,86 @@
     }
 
     let deferredPrompt;
-    if (localStorage.getItem('CXCalc_pwaInstallDeclined') === 'true') {
-        console.log('Потребителят вече е отказал инсталацията.');
-    } else {
+
+    function setupDismissablePrompt(promptElement, dismissButton, declineButton, countdownSpan, countdownSeconds = 20) {
+        promptElement.style.display = 'flex';
+        let countdown = countdownSeconds;
+        if (countdownSpan) {
+            countdownSpan.textContent = ` (${countdown})`;
+        }
+
+        let interval;
+        let installHandler; // Declare installHandler here to make it accessible in cleanup
+
+        const cleanup = () => {
+            clearInterval(interval);
+            promptElement.style.display = 'none';
+            dismissButton.removeEventListener('click', dismissHandler);
+            if (declineButton) {
+                declineButton.removeEventListener('click', declineHandler);
+            }
+            // Special handling for the main install prompt
+            if (promptElement.id === 'install-bar') {
+                const installButton = document.getElementById('install');
+                installButton.removeEventListener('click', installHandler);
+            }
+        };
+
+        const dismissHandler = () => {
+            cleanup();
+        };
+
+        const declineHandler = () => {
+            localStorage.setItem('CXCalc_pwaInstallDeclined', 'true');
+            cleanup();
+        };
+
+        // This handler is specific to the 'beforeinstallprompt' event
+        installHandler = () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                });
+            }
+            cleanup();
+        };
+
+        dismissButton.addEventListener('click', dismissHandler, { once: true });
+        if (declineButton) {
+            declineButton.addEventListener('click', declineHandler, { once: true });
+        }
+
+        // Special handling for the main install prompt
+        if (promptElement.id === 'install-bar') {
+            const installButton = document.getElementById('install');
+            installButton.addEventListener('click', installHandler, { once: true });
+        }
+
+
+        interval = setInterval(() => {
+            countdown--;
+            if (countdownSpan) {
+                countdownSpan.textContent = ` (${String(countdown).padStart(2, '0')})`;
+            }
+            if (countdown <= 0) {
+                cleanup();
+            }
+        }, 1000);
+    }
+
+    if (localStorage.getItem('CXCalc_pwaInstallDeclined') !== 'true') {
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             const installBar = document.getElementById('install-bar');
             const installButton = document.getElementById('install');
-            const dismissButton = document.getElementById('dismiss');
+            const dismissButton = document.getElementById('dismiss-install'); // New ID
+            const declineButton = document.getElementById('decline-install'); // New ID
             const countdownSpan = document.getElementById('install-countdown');
 
-            installBar.style.display = 'flex';
-            let countdown = 20;
-            countdownSpan.textContent = ` (${countdown})`;
-
-            const interval = setInterval(() => {
-                countdown--;
-                countdownSpan.textContent = ` (${String(countdown).padStart(2, '0')})`;
-                if (countdown <= 0) cleanup();
-            }, 1000);
-            const installHandler = () => {
-                deferredPrompt.prompt();
-                deferredPrompt = null;
-                cleanup();
-            };
-            const dismissHandler = () => {
-                localStorage.setItem('CXCalc_pwaInstallDeclined', 'true');
-                deferredPrompt = null;
-                cleanup();
-            };
-            function cleanup() {
-                clearInterval(interval);
-                installBar.style.display = 'none';
-                installButton.removeEventListener('click', installHandler);
-                dismissButton.removeEventListener('click', dismissHandler);
-            }
-            installButton.addEventListener('click', installHandler);
-            dismissButton.addEventListener('click', dismissHandler);
+            installPromptWasShown = true; // Set flag
+            setupDismissablePrompt(installBar, dismissButton, declineButton, countdownSpan); // Correct parameters
         });
     }
 
@@ -1588,6 +1652,7 @@
         setTimeout(() => {
             display.textContent = originalEurValue;
             display.style.backgroundColor = originalEurBgColor;
+            adjustFontSize(displaylv, display); // <--- ADD THIS LINE
         }, len*1000);
     }
 
@@ -2112,8 +2177,19 @@
 
         container.appendChild(tipElement);
 
+        // Function to handle clicks outside the tip
+        const handleOutsideClick = (event) => {
+            // If the click is outside the tipElement and not on a child of tipElement
+            if (!tipElement.contains(event.target) && event.target !== tipElement) {
+                closeTip(event);
+            }
+        };
+
+        // Add event listener to the document
+        document.addEventListener('click', handleOutsideClick);
+
         tipElement.addEventListener('click', (event) => {
-            event.stopPropagation();
+            event.stopPropagation(); // Prevent this click from bubbling up to document and triggering handleOutsideClick
         });
 
         const closeTip = (event) => {
@@ -2123,6 +2199,8 @@
             if (container.contains(tipElement)) {
                 container.removeChild(tipElement);
             }
+            // Remove the global click listener when the tip is closed
+            document.removeEventListener('click', handleOutsideClick);
             if (onClose) {
                 onClose();
             }
@@ -2149,7 +2227,7 @@
         tipElement.style.top = `${top}px`;
         tipElement.style.left = `${left}px`;
 
-        // Adjust tail position to point to the target's center
+        // Adjust tail position to point to the target\'s center
         const tail = tipElement.querySelector('.tip-tail');
         if (tail) {
             const tailWidth = 20; // As defined in CSS (border-left + border-right)
@@ -2166,6 +2244,15 @@
      * Main function to control the display of the tips tutorial.
      */
     function showTips() {
+        // NEW: Check if an install prompt is visible and wait for it to disappear
+        const installBar = document.getElementById('install-bar');
+        const iosPrompt = document.getElementById('ios-install-prompt');
+        if ((installBar && installBar.style.display !== 'none') || (iosPrompt && iosPrompt.style.display !== 'none')) {
+            console.log("Install prompt is visible, delaying tutorial start...");
+            setTimeout(showTips, 500); // Check again in 500ms
+            return;
+        }
+
         // АКО ИМА АКТИВЕН МОДАЛЕН ПРОЗОРЕЦ, НЕ ПОКАЗВАЙ ПОДСКАЗКА
         if (modalIsActive) {
             return; 
@@ -2199,4 +2286,3 @@
         };
         showNextTip();
     }
-
