@@ -24,6 +24,7 @@
     // Променливи за Web Audio API за по-бърз звук
     let audioContext;
     let clickBuffer = null;
+    var handMode = 'right'; // 'left' or 'right'
 
     const MAX_HISTORY_ITEMS = 30;
     const historyButton = document.getElementById('historyButton');
@@ -53,6 +54,24 @@
         CurrencyLevOffset: {x: -40, y: 15}
     };
 
+    const keyMapR = [ // Right-handed by default
+        ["L", "€", "C", "B"],
+        ["7", "8", "9", "="],
+        ["4", "5", "6", "+"],
+        ["1", "2", "3", "-"],
+        ["0", ",", "/", "*"]
+    ];
+
+    const keyMapL = [
+        ["B", "C", "€", "L"],
+        ["=", "7", "8", "9"],
+        ["+", "4", "5", "6"],
+        ["-", "1", "2", "3"],
+        ["*", "/", ",", "0"]
+    ];
+
+    var keyMap = keyMapR;
+
     // Обект с настройките по подразбиране
     const defaultSettings = {
         exchangeRate: 1.95583,
@@ -62,6 +81,7 @@
         showRateWarningEnabled: true,
         calcBottomOffset: 0,
         initialDisplay: 'lev', // 'eur' или 'lev'
+        handMode: 'right', // 'left' or 'right'
         tipsEnabled: true, // Показване на подсказки при стартиране
         pwaInstallDeclined: false,
         calculatorSkin: 'Calculator0.png' // Скин по подразбиране
@@ -111,12 +131,13 @@
             soundEffectsEnabled: document.getElementById('soundEffectsCheckbox').checked,
             calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
+            handMode: document.getElementById('handModeLeft').checked ? 'left' : 'right',
             pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
             calculatorSkin: currentSettings.calculatorSkin || defaultSettings.calculatorSkin, // Запазваме текущия скин
             tipsEnabled: false
         };
         localStorage.setItem('CXCalc_appSettings', JSON.stringify(newAppSettings));
-
+        keyMap = handMode === 'left' ? keyMapL : keyMapR;
         // --- ПРИЛАГАНЕ НА ПРОМЕНИТЕ ---
         // 3. Презареждаме страницата, за да се приложат всички промени консистентно
         console.log("Настройките са запазени. Страницата ще бъде презаредена.");
@@ -185,6 +206,16 @@
           }
       }
       
+      // Попълваме кой радио бутон за ръка да бъде избран
+      const handModeRight = document.getElementById('handModeRight');
+      const handModeLeft = document.getElementById('handModeLeft');
+      if (handModeRight && handModeLeft) {
+          if (handMode === 'left') {
+              handModeLeft.checked = true;
+          } else {
+              handModeRight.checked = true;
+          }
+      }
     }
 
     function loadSettings() {
@@ -202,7 +233,8 @@
         calcBottom = settings.calcBottomOffset;
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
-
+        handMode = settings.handMode;
+        keyMap = handMode === 'left' ? keyMapL : keyMapR;
         // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
         const savedMem = JSON.parse(localStorage.getItem('CXCalc_CalcMem'));
         if (savedMem && Array.isArray(savedMem)) {
@@ -211,7 +243,11 @@
 
         // Задаваме облика на калкулатора според запазената настройка
         if (calculator && settings.calculatorSkin) {
-            calculator.src = settings.calculatorSkin;
+            let skin = settings.calculatorSkin;
+            if (handMode === 'left') {
+                skin = skin.replace('.png', 'L.png');
+            }
+            calculator.src = skin;
         }
 
         // Прилага визуални настройки, които са нужни веднага при зареждане
@@ -282,13 +318,6 @@
     }
 
     function getKeyValue(row, col) {
-        const keyMap = [
-            ["L", "€", "C", "B"],
-            ["7", "8", "9", "="],
-            ["4", "5", "6", "+"],
-            ["1", "2", "3", "-"],
-            ["0", ",", "/", "*"]
-        ];
         return keyMap[row][col];
     }
 
@@ -690,26 +719,47 @@
         return parseFloat(result).toFixed(2).replace('.', ',');
     }
 
+    /*/ детекция за iOS / iPadOS
+    const isIOS = (/iP(hone|od|ad)/.test(navigator.platform))
+             || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+             || /iPhone|iPad|iPod/.test(navigator.userAgent);
+
+    // За отстраняване на грешки
+    console.log('isIOS:', isIOS, 'platform:', navigator.platform, 'ua:', navigator.userAgent);
+
     function goFullscreenEmulated() {
-        // Скрива скрола и позиционира overlay/калкулатора fixed
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
-        window.scrollTo(0, 1); // Скролира малко, за да скрие адрес бара на iOS
+        // добавя клас, който фиксира layout и скрива скрол
+        document.documentElement.classList.add('fullscreen-emulated');
+        document.body.classList.add('fullscreen-emulated');
+        // малко забавяне за да разрешим repaint преди скрол
+        setTimeout(() => {
+            try {
+                window.scrollTo(0, 1); // опит за скриване на address bar
+            } catch (e) {
+                console.warn('scrollTo failed', e);
+            }
+        }, 50);
     }
 
     function exitFullscreenEmulated() {
-        // Възстановява скрола
-        document.body.style.overflow = 'auto';
-        document.documentElement.style.overflow = 'auto';
-        // Не е необходимо да скролираме обратно, браузърът ще се справи сам
-    }
-    
+        // Премахваме емулативния fullscreen: връщаме overflow и класа
+        document.documentElement.classList.remove('fullscreen-emulated');
+        document.body.classList.remove('fullscreen-emulated');
+
+        // Възстановяваме възможността за скрол и опитваме да позиционираме страницата в началото
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        try {
+            window.scrollTo(0, 0);
+        } catch (e) {
+            alert('scrollTo failed on exit');
+        }
+    }*/
 
     function goFullscreen() {
-        const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
-        if (isIOS) {
-            goFullscreenEmulated();
-        } else {
+        //if (isIOS) {
+        //    goFullscreenEmulated();
+        //} else {
             const el = document.documentElement;
             if (el.requestFullscreen) {
                 el.requestFullscreen();
@@ -718,14 +768,15 @@
             } else if (el.msRequestFullscreen) {
                 el.msRequestFullscreen();
             }
-        }
+        //}
     }
 
+
+
     function exitFullscreen() {
-        const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
-        if (isIOS) {
-            exitFullscreenEmulated();
-        } else {
+        //if (isIOS) {
+        //    exitFullscreenEmulated();
+        //} else {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
             } else if (document.webkitExitFullscreen) {
@@ -733,7 +784,7 @@
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
             }
-        }
+        // }
     }
 
     function toggleFullscreen() {
@@ -782,7 +833,7 @@
     function getCurrentDateTimeInfo() {
         const daysBg = [
             "неделя", "понеделник", "вторник", "сряда",
-            "четвъртък", "петък", "събота"
+            "четв.", "петък", "събота"
         ];
         const now = new Date();
         const dayOfWeek = daysBg[now.getDay()];
@@ -1230,7 +1281,8 @@
                 appendNumber("=");
                 return;
             }
-            const keyMap = { 'Enter': '=', '=': '=', 'Backspace': 'B', 'Delete': 'B', ',': ',', '.': ',', 'c': 'C', 'C': 'C', '(': '(', ')': ')' };
+            // Специална обработка за клавиатурата
+            const keyMap = { 'Enter': '=', 'Backspace': 'B', 'Delete': 'B', '.': ',', 'c': 'C'};
             if (keyMap[key]) {
                 appendNumber(keyMap[key]);
             } else if ("0123456789+-*/".includes(key)) {
@@ -1660,7 +1712,13 @@
     function memoryShow(slot, callback) { // Добавен е 'callback'
         if (slot == 4) {
             const calculatorEl = document.getElementById("calculator");
-            const newSkin = calculatorEl.src.includes("CalculatorA.png") ? "Calculator0.png" : "CalculatorA.png";
+            let baseSkin = "Calculator0.png";
+            let altSkin = "CalculatorA.png";
+            if (handMode === 'left') {
+                baseSkin = "Calculator0L.png";
+                altSkin = "CalculatorAL.png";
+            }
+            const newSkin = calculatorEl.src.includes(altSkin) ? baseSkin : altSkin;
             // Запазваме оригиналния onload, за да го възстановим
             if (!originalOnloadHandler) {
                 originalOnloadHandler = calculatorEl.onload;
@@ -1686,7 +1744,7 @@
             // Only save the skin if it's NOT part of the tutorial skin switch
             if (!tutorialSkinSwitch) {
                 const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
-                settings.calculatorSkin = newSkin;
+                settings.calculatorSkin = newSkin.endsWith('L.png') ? newSkin.replace('L.png', '.png') : newSkin;
                 localStorage.setItem('CXCalc_appSettings', JSON.stringify(settings));
             }
             return;
@@ -1987,7 +2045,7 @@
         });
     }
 
-// fontcalc.js ------------------------
+    // fontcalc.js ------------------------
 
     function getTextWidth(text, inputElement) {
         const span = document.createElement("span");

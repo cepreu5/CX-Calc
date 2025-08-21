@@ -171,19 +171,29 @@
                             <input type="text" id="currencyLevSymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
                         <!-- New setting for calculator bottom offset -->
-                        <label for="calcBottomOffset">Поле отдолу/Звук:</label>
+                        <label for="calcBottomOffset">Поле отдолу:</label>
                         <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
                             <input type="number" id="calcBottomOffset" min="0" max="500" value="0" style="width: 60px;">
-                            <input type="checkbox" id="soundEffectsCheckbox" checked>
+                            Звук: <input type="checkbox" id="soundEffectsCheckbox" checked>
                         </div>
                         <!-- Initial Display Mode -->
-                        <label style="font-weight: bold;">Активен дисплей:</label>
+                        <label style="font-weight: bold;">Стартов дисплей:</label>
                         <div style="grid-column: 2 / -1; display: flex; justify-content: flex-start; gap: 20px; align-items: center;">
                             <label for="initialDisplayEur" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                                 <input type="radio" name="initialDisplay" id="initialDisplayEur" value="eur"> Горен
                             </label>
                             <label for="initialDisplayLev" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                                 <input type="radio" name="initialDisplay" id="initialDisplayLev" value="lev" checked> Долен
+                            </label>
+                        </div>
+                        <!-- Hand Mode -->
+                        <label style="font-weight: bold;">Работа с:</label>
+                        <div style="grid-column: 2 / -1; display: flex; justify-content: flex-start; gap: 20px; align-items: center;">
+                            <label for="handModeRight" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="handMode" id="handModeRight" value="right" checked> дясна
+                            </label>
+                            <label for="handModeLeft" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="handMode" id="handModeLeft" value="left"> лява ръка
                             </label>
                         </div>
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">

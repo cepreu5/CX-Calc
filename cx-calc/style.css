@@ -30,8 +30,8 @@ body.ready {
   width: 100vw; height: 100vh;
   background: transparent;
   z-index: 2;
-  user-select: none;
   -webkit-user-select: none;
+  user-select: none;
   touch-action: none;
 }
 
