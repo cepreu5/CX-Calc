@@ -6,7 +6,8 @@
     const display = document.querySelector('#eurInput');
     var calculator = null; // Изображението на калкулатора
     var calcBottom = 0;
-
+    var calcLeft = 0;
+    var calcRight = 0;
     var screenWidth = window.innerWidth;
     var imageWidth, imageHeight, aspectRatioW, aspectRatioH;
     var imageWidthO, imageHeightO;
@@ -80,6 +81,8 @@
         soundEffectsEnabled: false,
         showRateWarningEnabled: true,
         calcBottomOffset: 0,
+        calcLeftOffset: 0,
+        calcRightOffset: 0,
         initialDisplay: 'lev', // 'eur' или 'lev'
         handMode: 'right', // 'left' or 'right'
         tipsEnabled: true, // Показване на подсказки при стартиране
@@ -97,6 +100,7 @@
     var originalOnloadHandler = null; // Ще пази оригиналния onload handler
 
     function saveSettings() {
+        settingsModal.style.opacity = '1';
         // --- ЗАПИС НА НАСТРОЙКИТЕ ---
         // 1. Актуализираме MainPointsO с новите стойности от полетата
         for (const key in MainPointsO) {
@@ -130,6 +134,8 @@
             showRateWarningEnabled: document.getElementById('rateWarningCheckbox').checked,
             soundEffectsEnabled: document.getElementById('soundEffectsCheckbox').checked,
             calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
+            calcLeftOffset: parseInt(document.getElementById('calcLeftOffset').value, 10) || 0,
+            calcRightOffset: parseInt(document.getElementById('calcRightOffset').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
             handMode: document.getElementById('handModeLeft').checked ? 'left' : 'right',
             pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
@@ -142,6 +148,8 @@
         // 3. Презареждаме страницата, за да се приложат всички промени консистентно
         console.log("Настройките са запазени. Страницата ще бъде презаредена.");
         location.reload();
+        //calcResize ();
+
     }
 
     function populateLayoutSettings() {
@@ -174,6 +182,37 @@
           // Вземи текущата стойност от CSS променливата или по подразбиране 100
           const val = getComputedStyle(document.documentElement).getPropertyValue('--calc-bottom-offset').trim() || "0px";
           calcBottomOffsetInput.value = parseInt(val, 10);
+          calcBottomOffsetInput.addEventListener('input', (e) => {
+              const newOffset = e.target.value;
+              document.documentElement.style.setProperty('--calc-bottom-offset', `${newOffset}px`);
+              settingsModal.style.opacity = '0.8';
+              // The timeout should be longer than the CSS transition duration (160ms)
+              setTimeout(calcResize, 200);
+          });
+      }
+      const calcLeftOffsetInput = document.getElementById('calcLeftOffset');
+      if (calcLeftOffsetInput) {
+          // Вземи текущата стойност от CSS променливата или по подразбиране 100
+          const val = getComputedStyle(document.documentElement).getPropertyValue('--calc-left-offset').trim() || "0px";
+          calcLeftOffsetInput.value = parseInt(val, 10);
+          calcLeftOffsetInput.addEventListener('input', (e) => {
+              const newOffset = e.target.value;
+              document.documentElement.style.setProperty('--calc-left-offset', `${newOffset}px`);
+              settingsModal.style.opacity = '0.8';
+              setTimeout(calcResize, 200);
+          });
+      }
+      const calcRightOffsetInput = document.getElementById('calcRightOffset');
+      if (calcRightOffsetInput) {
+          // Вземи текущата стойност от CSS променливата или по подразбиране 100
+          const val = getComputedStyle(document.documentElement).getPropertyValue('--calc-right-offset').trim() || "0px";
+          calcRightOffsetInput.value = parseInt(val, 10);
+          calcRightOffsetInput.addEventListener('input', (e) => {
+              const newOffset = e.target.value;
+              document.documentElement.style.setProperty('--calc-right-offset', `${newOffset}px`);
+              settingsModal.style.opacity = '0.8';
+              setTimeout(calcResize, 200);
+          });
       }
       // Попълни currencySymbolInput
       const currencySymbolInput = document.getElementById('currencySymbolInput');
@@ -216,6 +255,16 @@
               handModeRight.checked = true;
           }
       }
+        // --- Динамично показване на версията от localStorage ---
+        const helpFooterInfo = document.getElementById('help-footer-info');
+        const emailLink = `<a href="mailto:cx.sites.online@gmail.com" style="color: inherit; text-decoration: none;">cx.sites.online@gmail.com</a>`;
+
+        // Показваме веднага версията от localStorage. Това е единственото четене при зареждане.
+        const currentVersion = localStorage.getItem('CXCalc_appVersion');
+        if (helpFooterInfo) {
+            const versionText = currentVersion || 'N/A';
+            helpFooterInfo.innerHTML = `Версия ${versionText} &bull; Контакт: ${emailLink}`;
+        }
     }
 
     function loadSettings() {
@@ -231,6 +280,8 @@
         tipsEnabled = settings.tipsEnabled;
         soundEffectsEnabled = settings.soundEffectsEnabled;
         calcBottom = settings.calcBottomOffset;
+        calcLeft = settings.calcLeftOffset;
+        calcRight = settings.calcRightOffset;
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
         handMode = settings.handMode;
@@ -252,6 +303,8 @@
 
         // Прилага визуални настройки, които са нужни веднага при зареждане
         document.documentElement.style.setProperty('--calc-bottom-offset', `${calcBottom}px`);
+        document.documentElement.style.setProperty('--calc-left-offset', `${calcLeft}px`);
+        document.documentElement.style.setProperty('--calc-right-offset', `${calcRight}px`);
         // Проверява дали да покаже предупреждение за курса, ако е различен от стандартния
         if (EXCHANGE_RATE !== defaultSettings.exchangeRate) {
             showWarning = true;
@@ -855,6 +908,20 @@
         document.getElementById("clearHistoryButton").click(); // изтриваме историята, ако е налична
     }
 
+    function resetCalc() {
+        if (confirm('Сигурни ли сте, че искате да върнете първоначалните настройки?')) {
+            // Добавяме и изтриване на историята при нулиране
+            if (typeof clearHistory === 'function') {
+                clearHistory();
+                console.log('Историята е изтрита.');
+            }
+            localStorage.removeItem('CXCalc_MainPointsO');
+            localStorage.removeItem('CXCalc_appSettings');
+            console.log('Всички запазени настройки (CXCalc_MainPointsO, CXCalc_appSettings) са изтрити.');
+            location.reload();
+        }
+    }
+
     function handleCalculatorInteraction(event, options = {}) {
         // Ако е активен модален прозорец, прекратяваме всякаква обработка на калкулатора.
         if (modalIsActive) {
@@ -938,19 +1005,7 @@
                                        event.clientX > containerRect.right ||
                                        event.clientY < containerRect.top ||
                                        event.clientY > containerRect.bottom;
-            if (isOutsideContainer) {
-                if (confirm('Сигурни ли сте, че искате да върнете първоначалните настройки?')) {
-                    // Добавяме и изтриване на историята при нулиране
-                    if (typeof clearHistory === 'function') {
-                        clearHistory();
-                        console.log('Историята е изтрита.');
-                    }
-                    localStorage.removeItem('CXCalc_MainPointsO');
-                    localStorage.removeItem('CXCalc_appSettings');
-                    console.log('Всички запазени настройки (CXCalc_MainPointsO, CXCalc_appSettings) са изтрити.');
-                    location.reload();
-                }
-            }
+            if (isOutsideContainer) resetCalc();
         }
         // Звук, ако е имало валидно взаимодействие
         if (interactionHandled) {
@@ -1091,7 +1146,7 @@
         e.preventDefault();
     });
 
-    document.getElementById('closeSettingsModalButton').addEventListener('click', function(e) {
+    /*document.getElementById('closeSettingsModalButton').addEventListener('click', function(e) {
         settingsModal.style.display = 'none'; // Close modal without saving
         resetLayoutSettingsView();
         setTimeout(() => {
@@ -1099,7 +1154,8 @@
         }, 0);
         e.stopPropagation();
         e.preventDefault();
-    });
+        location.reload();
+    });*/
 
     window.addEventListener("load", function() {
         // Приложението е заредило успешно.
@@ -1225,6 +1281,7 @@
             }
         }
         // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
+        // calcResize ();
         appendNumber("C");
     });
 
@@ -1292,6 +1349,8 @@
         // Добавяме слушател за бутона за проверка на версия
         const checkVersionBtn = document.getElementById('checkVersionBtn');
         if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
+        const resetBtn = document.getElementById('resetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', resetCalc);
 
         // --- Слушатели за бутоните за управление на подсказките ---
         const resetTipsButton = document.getElementById('resetTipsButton');
@@ -1308,32 +1367,26 @@
             });
         }
 
-        // --- Динамично показване на версията от localStorage ---
-        const helpFooterInfo = document.getElementById('help-footer-info');
-        const emailLink = `<a href="mailto:cx.sites.online@gmail.com" style="color: inherit; text-decoration: none;">cx.sites.online@gmail.com</a>`;
-
-        // Показваме веднага версията от localStorage. Това е единственото четене при зареждане.
-        const currentVersion = localStorage.getItem('CXCalc_appVersion');
-        if (helpFooterInfo) {
-            const versionText = currentVersion || 'N/A';
-            helpFooterInfo.innerHTML = `Версия ${versionText} &bull; Контакт: ${emailLink}`;
-        }
-
         loadHistory();
+        // calcResize ();
         // Initial font size adjustment for both fields based on their (potentially empty) content
         adjustFontSize(levInput, eurInput);
 
     });
 
-    // Следене на преоразмеряването на прозореца
-    window.addEventListener("resize", function (e) {
+    function calcResize() {
         getImageVisualSize();
         scaleMainPoints(aspectRatioW, aspectRatioH);
         const layout = calcNewCoordinates();
         keys = layout.keys;
         displayCoords = layout.displayCoords;
         adjustFontSize(levInput, eurInput)
-    })
+    };
+    
+    // Следене на преоразмеряването на прозореца
+    window.addEventListener("resize", function () {
+        calcResize ()
+    });
 
     function resetLayoutSettingsView() {
         document.getElementById('Settings1').style.display = 'grid';
@@ -1346,13 +1399,16 @@
             // Превключваме към изглед с настройките за зоните
             document.getElementById('Settings1').style.display = 'none';
             document.getElementById('Settings2').style.display = 'grid';
+            document.getElementById('settingsModal').style.opacity = '1.0';
             layoutSettingsVisible = true;
         } else {
             // Затваряме модала и показваме зоните върху калкулатора
             showOv(); // Тази функция вече затваря модала
-            resetLayoutSettingsView(); // Връщаме изгледа в начално състояние за следващия път
+            setTimeout(() => {resetLayoutSettingsView(); ovFlag = true; showOv();}, 5000);// Връщаме изгледа в начално състояние за следващия път
+            //setTimeout(() => document.getElementById('saveSettings').click(), 5000);
         }
     }
+
     function showOv() {
         if (!ovFlag) {
             const layout = calcNewCoordinates();

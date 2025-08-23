@@ -4,6 +4,8 @@
     --settings-label-color: #383838;
     --container-bg-color: #b1aba6;
     --calc-bottom-offset: 0px; /* Отместване за долната част на калкулатора */
+    --calc-left-offset: 0px;  /* Отместване от лявата страна */
+    --calc-right-offset: 0px; /* Отместване от дясната страна */
 }
 
 body {
@@ -38,19 +40,22 @@ body.ready {
 .calculator-container {
     opacity: 0; /* Скриваме калкулатора по подразбиране */
     position: fixed;
-    left: 0;
-    right: 0;
+    left: var(--calc-left-offset);
+    right: var(--calc-right-offset);
+    margin: 0;
     bottom: calc(env(safe-area-inset-bottom, 0) + var(--calc-bottom-offset));
-    display: flex;
     align-items: flex-end;
     justify-content: center;
-    width: 100%;
     height: auto; /* Динамична височина спрямо съдържанието */
     padding: 10px env(safe-area-inset-left, 0) env(safe-area-inset-bottom, 10px) env(safe-area-inset-right, 0);
-    box-sizing: border-box;
     background-color: #BFB8B4;
     z-index: 0;
-    transition: opacity 0.5s ease-in-out; /* Добавяме плавен преход за показване */
+    top: auto;
+    box-sizing: border-box;
+    width: auto; /* ще бъде изчислен автоматично от left/right */
+    max-width: none;
+    display: block;
+    /*transition: left 160ms ease, right 160ms ease, bottom 160ms ease; */   
 }
 
 body.ready .calculator-container {
@@ -127,7 +132,7 @@ body.ready .calculator-container {
     grid-template-columns: auto 80px 1fr; /* Label, X input, Y input */
     gap: 8px 5px;      /* 8px вертикално, 2px хоризонтално */
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 2px;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -259,7 +264,7 @@ body.ready .calculator-container {
 .help-modal-content {
     max-width: 600px;
     margin: auto;
-    padding: 16px;
+    padding: 10px;
     background: #cbc4c0;
     border-radius: 8px;
     font-family: sans-serif;
@@ -363,7 +368,7 @@ body.ready .calculator-container {
 }*/
 
 .help-modal-footer {
-    margin-top: 12px;
+    margin-top: 0;
     display: flex;
     justify-content: flex-end; /* Подрежда елементите вдясно */
     align-items: center;       /* Центрира елементите вертикално */

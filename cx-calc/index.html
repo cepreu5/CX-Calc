@@ -170,20 +170,14 @@
                             <input type="text" id="currencySymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                             <input type="text" id="currencyLevSymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
-                        <!-- New setting for calculator bottom offset -->
-                        <label for="calcBottomOffset">Поле отдолу:</label>
-                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
-                            <input type="number" id="calcBottomOffset" min="0" max="500" value="0" style="width: 60px;">
-                            Звук: <input type="checkbox" id="soundEffectsCheckbox" checked>
-                        </div>
                         <!-- Initial Display Mode -->
                         <label style="font-weight: bold;">Стартов дисплей:</label>
                         <div style="grid-column: 2 / -1; display: flex; justify-content: flex-start; gap: 20px; align-items: center;">
                             <label for="initialDisplayEur" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                                <input type="radio" name="initialDisplay" id="initialDisplayEur" value="eur"> Горен
+                                <input type="radio" name="initialDisplay" id="initialDisplayEur" value="eur"> горен
                             </label>
                             <label for="initialDisplayLev" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                                <input type="radio" name="initialDisplay" id="initialDisplayLev" value="lev" checked> Долен
+                                <input type="radio" name="initialDisplay" id="initialDisplayLev" value="lev" checked> долен
                             </label>
                         </div>
                         <!-- Hand Mode -->
@@ -196,6 +190,26 @@
                                 <input type="radio" name="handMode" id="handModeLeft" value="left"> лява ръка
                             </label>
                         </div>
+                        <label style="font-weight: bold;">Звук:</label>
+                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
+                            <input type="checkbox" id="soundEffectsCheckbox" checked>
+                        </div>
+                        <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                        <label>Поле (px):</label><br>
+                        <div style="grid-column: 1 / -1; display: grid; grid-template-columns: auto auto auto; justify-content: start; align-items: center; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <label for="calcLeftOffset" style="font-size: 0.9em;">ляво</label>
+                                <input type="number" id="calcLeftOffset" min="-500" max="500" value="0" style="width: 45px;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <label for="calcRightOffset" style="font-size: 0.9em;">дясно</label>
+                                <input type="number" id="calcRightOffset" min="-500" max="500" value="0" style="width: 45px;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <label for="calcBottomOffset" style="font-size: 0.9em;">отдолу</label>
+                                <input type="number" id="calcBottomOffset" min="-500" max="500" value="0" style="width: 45px;">
+                            </div>
+                        </div>
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                         <!-- Tutorial Settings Section -->
                         <label>Инструкции:</label>
@@ -204,12 +218,16 @@
                         </div>
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                         <!--<label>Приложение:</label>-->
-                        <div style="grid-column: 1 / -1;">
-                            <button id="checkVersionBtn" class="action-button" style="width: 100%; min-height: 32px; box-sizing: border-box; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; gap: 10px;">
+                            <button id="checkVersionBtn" class="action-button" style="min-height: 32px; box-sizing: border-box; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                                 <span>Проверка за нова версия</span>
                             </button>
-                            <span id="help-footer-info" style="justify-content: center; font-size: 0.9em; color: #555;">
+                            <button id="resetBtn" class="action-button" style="min-height: 32px; box-sizing: border-box; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #d13438; color: white; padding: 0 15px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                                <span>Reset</span>
+                            </button>
+                            <span id="help-footer-info" style="grid-column: 1 / -1; justify-content: center; text-align: center; font-size: 0.9em; color: #555; padding-top: 1px;">
                                 <!-- Попълва се от JavaScript -->
                             </span>
                         </div>
@@ -265,15 +283,15 @@
                     </div>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 20px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">
                 <button id="ovBtnSettings" class="action-button"  style="display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="toggleLayoutSettingsView()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="3"></line></svg>
                     <span>Зони</span>
                 </button>
-                <button id="closeSettingsModalButton" class="action-button" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <!--<button id="closeSettingsModalButton" class="action-button" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     <span>Затвори</span>
-                </button>
+                </button>-->
                 <button id="saveSettings" class="action-button" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                     <span>Запис</span>
@@ -405,9 +423,6 @@
             </div>
 
             <div class="help-modal-footer">
-                <!-- <span id="help-footer-info" style="font-size: 0.8em; color: #555;">
-                    <!~~ Попълва се от JavaScript ~~>
-                </span> -->
                 <button id="closeHelpModalButton" class="help-action-button" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     <span>Затвори</span>
