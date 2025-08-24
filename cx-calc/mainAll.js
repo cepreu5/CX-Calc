@@ -153,6 +153,42 @@
     }
 
     function populateLayoutSettings() {
+        function transpView() {
+            document.getElementById('closeSettingsModalButton').style.display = 'none';
+            document.getElementById('ovBtnSettings').style.display = 'none';
+            document.getElementById('mh1').style.display = 'none';
+            document.getElementById('mh2').style.display = 'none';
+
+const allowedIds = ['calcLeftOffset', 'calcRightOffset', 'calcBottomOffset'];
+
+document.querySelectorAll('#Settings1 *').forEach(el => {
+  const isAllowed = allowedIds.some(id => {
+    const input = document.getElementById(id);
+    return el === input || el.contains(input) || input.contains(el) || el.tagName === 'LABEL' && input && el.htmlFor === id;
+  });
+  if (!isAllowed) {
+    el.style.display = 'none'; //opacity = '0';
+    el.style.pointerEvents = 'none';
+  }
+});
+
+            settingsModal.style.opacity = '0.8';
+            /*document.querySelectorAll('#calcLeftOffset, #calcRightOffset, #calcBottomOffset').forEach(input => {
+                document.getElementById('Settings1').classList.add('dim-Settings1');
+                
+            });
+            settingsModal.style.opacity = '0.8';
+              const ids = ['calcLeftOffset', 'calcRightOffset', 'calcBottomOffset'];
+                ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.display = 'block'; // или 'inline-block', 'flex' — според нуждите
+                    el.style.opacity = '1';
+                }
+                });*/
+              // The timeout should be longer than the CSS transition
+              setTimeout(calcResize, 200);
+        }
       for (const key in MainPointsO) {
         if (MainPointsO.hasOwnProperty(key)) {
           const obj = MainPointsO[key];
@@ -185,9 +221,7 @@
           calcBottomOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-bottom-offset', `${newOffset}px`);
-              settingsModal.style.opacity = '0.8';
-              // The timeout should be longer than the CSS transition duration (160ms)
-              setTimeout(calcResize, 200);
+              transpView();
           });
       }
       const calcLeftOffsetInput = document.getElementById('calcLeftOffset');
@@ -198,8 +232,7 @@
           calcLeftOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-left-offset', `${newOffset}px`);
-              settingsModal.style.opacity = '0.8';
-              setTimeout(calcResize, 200);
+              transpView();
           });
       }
       const calcRightOffsetInput = document.getElementById('calcRightOffset');
@@ -210,8 +243,7 @@
           calcRightOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-right-offset', `${newOffset}px`);
-              settingsModal.style.opacity = '0.8';
-              setTimeout(calcResize, 200);
+              transpView();
           });
       }
       // Попълни currencySymbolInput
@@ -1146,7 +1178,7 @@
         e.preventDefault();
     });
 
-    /*document.getElementById('closeSettingsModalButton').addEventListener('click', function(e) {
+    document.getElementById('closeSettingsModalButton').addEventListener('click', function(e) {
         settingsModal.style.display = 'none'; // Close modal without saving
         resetLayoutSettingsView();
         setTimeout(() => {
@@ -1154,8 +1186,8 @@
         }, 0);
         e.stopPropagation();
         e.preventDefault();
-        location.reload();
-    });*/
+        // location.reload();
+    });
 
     window.addEventListener("load", function() {
         // Приложението е заредило успешно.
@@ -1298,7 +1330,7 @@
                 event.stopPropagation();
 
                 // Скриваме модалния прозорец
-                event.target.style.display = 'none';
+                if (event.target.id !== 'settingsModal') event.target.style.display = 'none';
 
                 // Ако е бил прозорецът за настройки, връщаме го в начален изглед
                 if (event.target.id === 'settingsModal') {
@@ -1400,6 +1432,7 @@
             document.getElementById('Settings1').style.display = 'none';
             document.getElementById('Settings2').style.display = 'grid';
             document.getElementById('settingsModal').style.opacity = '1.0';
+            document.getElementById('closeSettingsModalButton').hidden = false;
             layoutSettingsVisible = true;
         } else {
             // Затваряме модала и показваме зоните върху калкулатора
