@@ -158,35 +158,20 @@
             document.getElementById('ovBtnSettings').style.display = 'none';
             document.getElementById('mh1').style.display = 'none';
             document.getElementById('mh2').style.display = 'none';
-
-const allowedIds = ['calcLeftOffset', 'calcRightOffset', 'calcBottomOffset'];
-
-document.querySelectorAll('#Settings1 *').forEach(el => {
-  const isAllowed = allowedIds.some(id => {
-    const input = document.getElementById(id);
-    return el === input || el.contains(input) || input.contains(el) || el.tagName === 'LABEL' && input && el.htmlFor === id;
-  });
-  if (!isAllowed) {
-    el.style.display = 'none'; //opacity = '0';
-    el.style.pointerEvents = 'none';
-  }
-});
-
-            settingsModal.style.opacity = '0.8';
-            /*document.querySelectorAll('#calcLeftOffset, #calcRightOffset, #calcBottomOffset').forEach(input => {
-                document.getElementById('Settings1').classList.add('dim-Settings1');
-                
+            document.getElementById('settingsModal').style.backgroundColor = 'transparent';
+            document.getElementById('settingsModal').style.width = '150px';// : 100%;
+            const allowedIds = ['calcLeftOffset', 'calcRightOffset', 'calcBottomOffset'];
+            document.querySelectorAll('#Settings1 *').forEach(el => {
+                const isAllowed = allowedIds.some(id => {
+                    const input = document.getElementById(id);
+                    return el === input || el.contains(input) || input.contains(el) || el.tagName === 'LABEL' && input && el.htmlFor === id;
+                });
+                if (!isAllowed) {
+                    el.style.display = 'none';
+                    el.style.pointerEvents = 'none';
+                }
             });
             settingsModal.style.opacity = '0.8';
-              const ids = ['calcLeftOffset', 'calcRightOffset', 'calcBottomOffset'];
-                ids.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.style.display = 'block'; // или 'inline-block', 'flex' — според нуждите
-                    el.style.opacity = '1';
-                }
-                });*/
-              // The timeout should be longer than the CSS transition
               setTimeout(calcResize, 200);
         }
       for (const key in MainPointsO) {
