@@ -947,9 +947,9 @@
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === ',') {
                     appendNumber(")");
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '+') {
-                    toggleFullscreen();
-                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '/') {
                     pasteNumber();
+                } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '/') {
+                    toggleFullscreen();
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === 'L') {
                     switchNumber();
                 } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === 'C') {
@@ -2020,7 +2020,7 @@
     function addHistoryEntry(operation, levValue, eurValue) {
         const formattedLev = groupByThree(formatNumber(levValue));
         const formattedEur = groupByThree(formatNumber(eurValue));
-        let entry = `${formattedLev} лв. = ${formattedEur} €`;
+        let entry = `${formattedLev} лв. = ${formattedEur}€`;
         if (`${groupByThree(formatNumber(levValue))}` == "" || `${groupByThree(formatNumber(eurValue))}` == "") {
             if (formattedLev === "") {
                 entry = `${formattedEur}`;
