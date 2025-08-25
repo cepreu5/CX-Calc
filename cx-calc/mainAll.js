@@ -158,7 +158,7 @@
             document.getElementById('ovBtnSettings').style.display = 'none';
             document.getElementById('mh1').style.display = 'none';
             document.getElementById('mh2').style.display = 'none';
-            document.getElementById('settingsModal').style.backgroundColor = 'transparent';
+            // document.getElementById('settingsModal').style.backgroundColor = 'transparent';
             document.getElementById('settingsModal').style.width = '150px';// : 100%;
             const allowedIds = ['calcLeftOffset', 'calcRightOffset', 'calcBottomOffset'];
             document.querySelectorAll('#Settings1 *').forEach(el => {
