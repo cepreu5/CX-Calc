@@ -227,24 +227,36 @@
                             </span>
                         </div>
                     </span>
-                    <span ID="Settings3" class="layout-settings-grid" style="border: 0px; display: none; grid-column: 1 / -1; text-align: center;">
-                        <span style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 5px;">
-                            Поле (в пиксели):
-                        </span>
-                        <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 5px;">
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <label for="calcLeftOffset" style="font-size: 0.9em; width: 50px; text-align: right;">ляво</label>
-                                <input type="number" id="calcLeftOffset" min="-500" max="500" value="0" style="width: 40px;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <label for="calcRightOffset" style="font-size: 0.9em; width: 50px; text-align: right;">дясно</label>
-                                <input type="number" id="calcRightOffset" min="-500" max="500" value="0" style="width: 40px;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <label for="calcBottomOffset" style="font-size: 0.9em; width: 50px; text-align: right;">отдолу</label>
-                                <input type="number" id="calcBottomOffset" min="-500" max="500" value="0" style="width: 40px;">
+                    <span ID="Settings3" class="layout-settings-grid" style="border: 0px; display: none; grid-column: 1 / -1;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 100%; grid-column: 1 / -1;">
+                            <div class="offset-title" style="margin-bottom: 5px;">Поле (в пиксели):</div>
+                            <div class="offset-control-container">
+                                <div class="offset-inputs">
+                                    <div class="offset-input-wrapper" data-input-id="calcLeftOffset">
+                                        <label for="calcLeftOffset">ляво</label>
+                                        <input type="text" id="calcLeftOffset" value="0" readonly class="offset-input">
+                                    </div>
+                                    <div class="offset-input-wrapper" data-input-id="calcRightOffset">
+                                        <label for="calcRightOffset">дясно</label>
+                                        <input type="text" id="calcRightOffset" value="0" readonly class="offset-input">
+                                    </div>
+                                    <div class="offset-input-wrapper active-offset" data-input-id="calcBottomOffset">
+                                        <label for="calcBottomOffset">отдолу</label>
+                                        <input type="text" id="calcBottomOffset" value="0" readonly class="offset-input">
+                                    </div>
+                                </div>
+                                <div class="wheel-container">
+                                    <div class="wheel-arrow-up">▲</div>
+                                    <div class="wheel" id="offsetWheel">
+                                        <div class="wheel-spinner" id="offsetWheelSpinner"></div>
+                                    </div>
+                                    <div class="wheel-arrow-down">▼</div>
+                                </div>
                             </div>
                         </div>
+                        <input type="number" id="calcLeftOffset_hidden" min="-500" max="500" value="0" style="display: none;">
+                        <input type="number" id="calcRightOffset_hidden" min="-500" max="500" value="0" style="display: none;">
+                        <input type="number" id="calcBottomOffset_hidden" min="-500" max="500" value="0" style="display: none;">
                     </span>
                     <span ID="Settings2" class="layout-settings-grid" style="border: 0px; display: none; grid-column: 1 / -1;">
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">

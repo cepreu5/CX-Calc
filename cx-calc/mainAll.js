@@ -133,9 +133,9 @@
             currencyLevSymbol: document.getElementById('currencyLevSymbolInput').value.trim() || defaultSettings.currencyLevSymbol,
             showRateWarningEnabled: document.getElementById('rateWarningCheckbox').checked,
             soundEffectsEnabled: document.getElementById('soundEffectsCheckbox').checked,
-            calcBottomOffset: parseInt(document.getElementById('calcBottomOffset').value, 10) || 0,
-            calcLeftOffset: parseInt(document.getElementById('calcLeftOffset').value, 10) || 0,
-            calcRightOffset: parseInt(document.getElementById('calcRightOffset').value, 10) || 0,
+            calcBottomOffset: parseInt(document.getElementById('calcBottomOffset_hidden').value, 10) || 0,
+            calcLeftOffset: parseInt(document.getElementById('calcLeftOffset_hidden').value, 10) || 0,
+            calcRightOffset: parseInt(document.getElementById('calcRightOffset_hidden').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
             handMode: document.getElementById('handModeLeft').checked ? 'left' : 'right',
             pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
@@ -198,11 +198,12 @@
       if (exchangeRateInput) {
           exchangeRateInput.value = EXCHANGE_RATE;
       }
-      const calcBottomOffsetInput = document.getElementById('calcBottomOffset');
+      const calcBottomOffsetInput = document.getElementById('calcBottomOffset_hidden');
       if (calcBottomOffsetInput) {
           // Вземи текущата стойност от CSS променливата или по подразбиране 100
           const val = getComputedStyle(document.documentElement).getPropertyValue('--calc-bottom-offset').trim() || "0px";
           calcBottomOffsetInput.value = parseInt(val, 10);
+          document.getElementById('calcBottomOffset').value = calcBottomOffsetInput.value;
           calcBottomOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-bottom-offset', `${newOffset}px`);
@@ -210,11 +211,12 @@
               // transpView();
           });
       }
-      const calcLeftOffsetInput = document.getElementById('calcLeftOffset');
+      const calcLeftOffsetInput = document.getElementById('calcLeftOffset_hidden');
       if (calcLeftOffsetInput) {
           // Вземи текущата стойност от CSS променливата или по подразбиране 100
           const val = getComputedStyle(document.documentElement).getPropertyValue('--calc-left-offset').trim() || "0px";
           calcLeftOffsetInput.value = parseInt(val, 10);
+          document.getElementById('calcLeftOffset').value = calcLeftOffsetInput.value;
           calcLeftOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-left-offset', `${newOffset}px`);
@@ -222,11 +224,12 @@
               // transpView();
           });
       }
-      const calcRightOffsetInput = document.getElementById('calcRightOffset');
+      const calcRightOffsetInput = document.getElementById('calcRightOffset_hidden');
       if (calcRightOffsetInput) {
           // Вземи текущата стойност от CSS променливата или по подразбиране 100
           const val = getComputedStyle(document.documentElement).getPropertyValue('--calc-right-offset').trim() || "0px";
           calcRightOffsetInput.value = parseInt(val, 10);
+          document.getElementById('calcRightOffset').value = calcRightOffsetInput.value;
           calcRightOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-right-offset', `${newOffset}px`);
@@ -481,7 +484,8 @@
         activeDisplay.classList.add('active-display');
         passiveDisplay.classList.remove('active-display');
 
-    /*/ --- Визуализация на активна валута с bullet ---
+    /*
+    // --- Визуализация на активна валута с bullet ---
     const currencyLevEl = document.getElementById('currencyLev');
     const currencyEurEl = document.getElementById('currency');
     if (levMode) {
@@ -556,7 +560,7 @@
         return expression
             .replace(/(\d)(?=\()/g, '$1*')   // Digit followed by (
             .replace(/(?<=\))(\d)/g, '*$1')   // Digit preceded by )
-            .replace(/\)\(/g, ')*(');        // A ) followed by a (
+            .replace(/\)\( /g, ')*(');        // A ) followed by a (
     }
 
     function appendNumber(value) {
@@ -592,8 +596,8 @@
                     result = parseFloat(result).toFixed(2);
                     userInput = result.toString().replace(/\./g, ',');
                     navigator.clipboard.writeText(userInput)
-                    .then(() => {
-                        console.log("Резултатът е копиран в клипборда! ✅"); })
+                    .then(() => { 
+                        console.log("Резултатът е копиран в клипборда! ✅"); }) 
                     .catch(err => { console.error("Грешка при копиране в клипборда:", err); });
                 } catch (error) {
                     console.error("Грешка в изчисленията", error);
@@ -673,7 +677,7 @@
 
     function controlActions(key) {
         if (key.value === '+') {
-            if (!fullscrFlag) goFullscreen()
+            if (!fullscrFlag) goFullscreen() 
             else exitFullscreen();
             fullscrFlag = !fullscrFlag;
         } else if (key.value === '*') {
@@ -792,7 +796,8 @@
         return parseFloat(result).toFixed(2).replace('.', ',');
     }
 
-    /*/ детекция за iOS / iPadOS
+    /*
+    // детекция за iOS / iPadOS
     const isIOS = (/iP(hone|od|ad)/.test(navigator.platform))
              || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
              || /iPhone|iPad|iPod/.test(navigator.userAgent);
@@ -1384,7 +1389,7 @@
                 document.getElementById('closeSettingsModalButton').style.display = 'none';
                 document.getElementById('mh1').style.display = 'none';
                 document.getElementById('mh2').style.display = 'none';
-                settingsModal.style.opacity = '0.8';
+                // settingsModal.style.opacity = '0.8';
                 /// setTimeout(calcResize, 200);
             });
         }
@@ -1961,7 +1966,7 @@
         keys.forEach(key => {
             const keyElement = document.createElement("div");
             keyElement.className = "overlay-marker";
-            keyElement.style.position = "fixed";// "absolute";
+            keyElement.style.position = "fixed";
             keyElement.style.left = `${key.x}px`;
             keyElement.style.top = `${key.y}px`;
             keyElement.style.width = `${MainPoints.KeySize.x}px`;
@@ -2240,7 +2245,7 @@
         },
         {
             id: 'tip-history-and-settings',
-            text: 'История. Задръжте бутона за отваряне на Настройки (на компютър: Ctrl+Клик). От Настройки можете да определите позицията и размера на калкулатора, така че да е максимално удобен за работа. Може да зададете и предпочитания за работа с дясна или лява ръка.',
+            text: 'История. Задръжте бутона за отваряне на Настройки (на компютър: Ctrl+Клик).', // Добавено: Обяснение за настройките
             target: '€', // The value of the key to attach to
         },
         {
@@ -2251,7 +2256,7 @@
         {
             id: 'tip-copy',
             text: 'Извлича от съдържанието на клипборда първото число (ако има такова).',
-            target: '+', // A generic target for the display area
+            target: '/', // A generic target for the display area
         },
         {
             id: 'tip-paste',
@@ -2447,3 +2452,134 @@
         };
         showNextTip();
     }
+// --- Offset Wheel Scroller Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    const offsetWrappers = document.querySelectorAll('.offset-input-wrapper');
+    const wheelSpinner = document.getElementById('offsetWheelSpinner');
+    const arrowUp = document.querySelector('.wheel-arrow-up');
+    const arrowDown = document.querySelector('.wheel-arrow-down');
+    const wheelContainer = document.querySelector('.wheel-container');
+
+    if (!wheelSpinner) return;
+
+    let activeInputWrapper = document.querySelector('.offset-input-wrapper.active-offset');
+    let activeInput = activeInputWrapper ? document.getElementById(activeInputWrapper.dataset.inputId) : null;
+    let hiddenInput = activeInput ? document.getElementById(activeInput.id + '_hidden') : null;
+
+    const numberHeight = 40; // Corresponds to .wheel-number height in CSS
+    const visibleNumbers = 7; // Should be an odd number
+
+    function populateWheel(centerValue) {
+        if(!wheelSpinner) return;
+        wheelSpinner.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        const centerIndex = Math.floor(visibleNumbers / 2);
+
+        for (let i = 0; i < visibleNumbers; i++) {
+            const offset = (i - centerIndex) * 5; // Step of 5
+            const num = Math.round(centerValue / 5) * 5 + offset;
+            const numberEl = document.createElement('div');
+            numberEl.className = 'wheel-number';
+            numberEl.textContent = num;
+            if (i === centerIndex) {
+                numberEl.classList.add('active');
+            }
+            fragment.appendChild(numberEl);
+        }
+        wheelSpinner.appendChild(fragment);
+        
+        wheelSpinner.style.transition = 'none';
+        wheelSpinner.style.transform = `translateY(-${centerIndex * numberHeight}px)`;
+
+        void wheelSpinner.offsetHeight; 
+
+        wheelSpinner.style.transition = 'transform 0.2s ease-out';
+    }
+
+    function setActiveInput(wrapper) {
+        if (activeInputWrapper) {
+            activeInputWrapper.classList.remove('active-offset');
+        }
+        activeInputWrapper = wrapper;
+        activeInputWrapper.classList.add('active-offset');
+        const newId = activeInputWrapper.dataset.inputId;
+        activeInput = document.getElementById(newId);
+        hiddenInput = document.getElementById(newId + '_hidden');
+        const currentValue = parseInt(hiddenInput.value, 10);
+        populateWheel(currentValue);
+    }
+
+    function updateValue(change) {
+        if (!activeInput || !hiddenInput) return;
+
+        let currentValue = parseInt(hiddenInput.value, 10);
+        const min = -500;
+        const max = 500;
+
+        let newValue = currentValue + change;
+        if (newValue < min) newValue = min;
+        if (newValue > max) newValue = max;
+
+        if (newValue !== currentValue) {
+            const centerIndex = Math.floor(visibleNumbers / 2);
+            const initialY = -(centerIndex * numberHeight);
+            const direction = change > 0 ? -1 : 1;
+            
+            wheelSpinner.style.transform = `translateY(${initialY + direction * numberHeight}px)`;
+
+            setTimeout(() => {
+                populateWheel(newValue);
+                activeInput.value = newValue;
+                hiddenInput.value = newValue;
+                hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }, 200);
+        }
+    }
+
+    offsetWrappers.forEach(wrapper => {
+        wrapper.addEventListener('click', () => setActiveInput(wrapper));
+    });
+
+    if (arrowUp) arrowUp.addEventListener('click', () => updateValue(5));
+    if (arrowDown) arrowDown.addEventListener('click', () => updateValue(-5));
+
+    document.addEventListener('keydown', (e) => {
+        if (settingsModal.style.display !== 'none' && document.getElementById('offsetWheel')) {
+             if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                updateValue(5);
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                updateValue(-5);
+            }
+        }
+    });
+
+    let touchStartY = 0;
+    let touchDeltaY = 0;
+    
+    if(wheelContainer) {
+        wheelContainer.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        wheelContainer.addEventListener('touchmove', (e) => {
+            touchDeltaY = e.touches[0].clientY - touchStartY;
+        }, { passive: true });
+
+        wheelContainer.addEventListener('touchend', () => {
+            if (Math.abs(touchDeltaY) > 20) { // Threshold
+                if (touchDeltaY > 0) {
+                    updateValue(-5); // Swipe down
+                } else {
+                    updateValue(5); // Swipe up
+                }
+            }
+            touchDeltaY = 0; // Reset
+        });
+    }
+
+    if (activeInputWrapper) {
+       setActiveInput(activeInputWrapper);
+    }
+});
