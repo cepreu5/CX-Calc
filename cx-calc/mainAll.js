@@ -1392,8 +1392,7 @@
         // --- Слушатели за бутоните за управление на подсказките ---
         const resetTipsButton = document.getElementById('resetTipsButton');
         if (resetTipsButton) {
-            resetTipsButton.addEventListener('click', (event) => {
-                event.stopPropagation();
+            resetTipsButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 settingsModal.style.display = 'none';
@@ -2241,7 +2240,7 @@
         },
         {
             id: 'tip-history-and-settings',
-            text: 'История. Задръжте бутона за отваряне на Настройки (на компютър: Ctrl+Клик).',
+            text: 'История. Задръжте бутона за отваряне на Настройки (на компютър: Ctrl+Клик). От Настройки можете да определите позицията и размера на калкулатора, така че да е максимално удобен за работа. Може да зададете и предпочитания за работа с дясна или лява ръка.',
             target: '€', // The value of the key to attach to
         },
         {
@@ -2252,7 +2251,7 @@
         {
             id: 'tip-copy',
             text: 'Извлича от съдържанието на клипборда първото число (ако има такова).',
-            target: '/', // A generic target for the display area
+            target: '+', // A generic target for the display area
         },
         {
             id: 'tip-paste',
