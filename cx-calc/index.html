@@ -195,26 +195,21 @@
                             <input type="checkbox" id="soundEffectsCheckbox" checked>
                         </div>
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
-                        <label>Поле (в пиксели):</label><br>
-                        <div style="grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: start; align-items: center; gap: 5px;">
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <label for="calcLeftOffset" style="font-size: 0.9em; width: 50px; text-align: right;">ляво</label>
-                                <input type="number" id="calcLeftOffset" min="-500" max="500" value="0" style="width: 40px;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <label for="calcRightOffset" style="font-size: 0.9em; width: 50px; text-align: right;">дясно</label>
-                                <input type="number" id="calcRightOffset" min="-500" max="500" value="0" style="width: 40px;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <label for="calcBottomOffset" style="font-size: 0.9em; width: 50px; text-align: right;">отдолу</label>
-                                <input type="number" id="calcBottomOffset" min="-500" max="500" value="0" style="width: 40px;">
-                            </div>
-                        </div>
+                        <label>Регулиране на позицията и размера:</label><br>
+                        <button id="fldSettings" class="action-button" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="3"></line></svg>
+                            <span>Полета</span>
+                        </button>
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                         <!-- Tutorial Settings Section -->
                         <label>Инструкции:</label>
-                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <button id="resetTipsButton" class="action-button" style="padding: 5px 10px; font-size: 0.8em; flex-grow: 0; min-height: 28px;">Рестартирай</button>
+                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                            <!--<button id="resetTipsButton" class="action-button" style="padding: 5px 10px; font-size: 0.8em; flex-grow: 0; min-height: 28px;">Рестартирай</button>-->
+                            <button id="resetTipsButton" class="action-button" style="flex-grow: 0; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #d13438; color: white;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                                <span>Рестартирай</span>
+                            </button>
+
                         </div>
                         <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                         <!--<label>Приложение:</label>-->
@@ -230,6 +225,25 @@
                             <span id="help-footer-info" style="grid-column: 1 / -1; justify-content: center; text-align: center; font-size: 0.9em; color: #555; padding-top: 1px;">
                                 <!-- Попълва се от JavaScript -->
                             </span>
+                        </div>
+                    </span>
+                    <span ID="Settings3" class="layout-settings-grid" style="border: 0px; display: none; grid-column: 1 / -1; text-align: center;">
+                        <span style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 5px;">
+                            Поле (в пиксели):
+                        </span>
+                        <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 5px;">
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <label for="calcLeftOffset" style="font-size: 0.9em; width: 50px; text-align: right;">ляво</label>
+                                <input type="number" id="calcLeftOffset" min="-500" max="500" value="0" style="width: 40px;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <label for="calcRightOffset" style="font-size: 0.9em; width: 50px; text-align: right;">дясно</label>
+                                <input type="number" id="calcRightOffset" min="-500" max="500" value="0" style="width: 40px;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <label for="calcBottomOffset" style="font-size: 0.9em; width: 50px; text-align: right;">отдолу</label>
+                                <input type="number" id="calcBottomOffset" min="-500" max="500" value="0" style="width: 40px;">
+                            </div>
                         </div>
                     </span>
                     <span ID="Settings2" class="layout-settings-grid" style="border: 0px; display: none; grid-column: 1 / -1;">
@@ -283,7 +297,7 @@
                     </div>
                 </div>
             </div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">
                 <button id="ovBtnSettings" class="action-button"  style="display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="toggleLayoutSettingsView()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="3"></line></svg>
                     <span>Зони</span>

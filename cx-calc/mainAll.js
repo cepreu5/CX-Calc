@@ -153,7 +153,7 @@
     }
 
     function populateLayoutSettings() {
-        function transpView() {
+        /*function transpView() {
             document.getElementById('closeSettingsModalButton').style.display = 'none';
             document.getElementById('ovBtnSettings').style.display = 'none';
             document.getElementById('mh1').style.display = 'none';
@@ -173,7 +173,7 @@
             });
             settingsModal.style.opacity = '0.8';
               setTimeout(calcResize, 200);
-        }
+        }*/
       for (const key in MainPointsO) {
         if (MainPointsO.hasOwnProperty(key)) {
           const obj = MainPointsO[key];
@@ -206,7 +206,8 @@
           calcBottomOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-bottom-offset', `${newOffset}px`);
-              transpView();
+              setTimeout(calcResize, 200);
+              // transpView();
           });
       }
       const calcLeftOffsetInput = document.getElementById('calcLeftOffset');
@@ -217,7 +218,8 @@
           calcLeftOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-left-offset', `${newOffset}px`);
-              transpView();
+              setTimeout(calcResize, 200);
+              // transpView();
           });
       }
       const calcRightOffsetInput = document.getElementById('calcRightOffset');
@@ -228,7 +230,8 @@
           calcRightOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-right-offset', `${newOffset}px`);
-              transpView();
+              setTimeout(calcResize, 200);
+              // transpView();
           });
       }
       // Попълни currencySymbolInput
@@ -1363,17 +1366,36 @@
                 appendNumber(key);
             }
         });
+        
         // Добавяме слушател за бутона за проверка на версия
         const checkVersionBtn = document.getElementById('checkVersionBtn');
         if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
+        
         const resetBtn = document.getElementById('resetBtn');
         if (resetBtn) resetBtn.addEventListener('click', resetCalc);
+        
+        const fldSettingsBtn = document.getElementById('fldSettings');
+        if (fldSettingsBtn) {
+            fldSettingsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('Settings1').style.display = 'none';
+                document.getElementById('Settings3').style.display = 'grid';
+                document.getElementById('ovBtnSettings').style.display = 'none';
+                document.getElementById('closeSettingsModalButton').style.display = 'none';
+                document.getElementById('mh1').style.display = 'none';
+                document.getElementById('mh2').style.display = 'none';
+                settingsModal.style.opacity = '0.8';
+                /// setTimeout(calcResize, 200);
+            });
+        }
 
         // --- Слушатели за бутоните за управление на подсказките ---
         const resetTipsButton = document.getElementById('resetTipsButton');
         if (resetTipsButton) {
             resetTipsButton.addEventListener('click', (event) => {
                 event.stopPropagation();
+                e.stopPropagation();
+                e.preventDefault();
                 settingsModal.style.display = 'none';
                 modalIsActive = false;
                 resetLayoutSettingsView();
@@ -1408,7 +1430,15 @@
     function resetLayoutSettingsView() {
         document.getElementById('Settings1').style.display = 'grid';
         document.getElementById('Settings2').style.display = 'none';
+        document.getElementById('Settings3').style.display = 'none'; // Добавено: скрива и тази секция
+        // Добавено: Показваме отново скритите бутони
+        document.getElementById('ovBtnSettings').style.display = 'flex';
+        document.getElementById('closeSettingsModalButton').style.display = 'flex';
         layoutSettingsVisible = false;
+        document.getElementById('mh1').style.display = 'flex';
+        document.getElementById('mh2').style.display = 'flex';
+        settingsModal.style.opacity = '1.0';
+
     }
 
     function toggleLayoutSettingsView() {
