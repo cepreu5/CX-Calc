@@ -8,7 +8,7 @@ const OFFLINE_PAGE = new URL('index.html', self.location).href;
 const ASSETS = [
   OFFLINE_PAGE,
   'style.css',
-  'mainnAll.js',
+  'mainAll.js',
   'click.wav',
   'Calculator0.png',
   'CalculatorA.png',
