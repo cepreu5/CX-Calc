@@ -227,9 +227,8 @@
       const calcRightOffsetInput = document.getElementById('calcRightOffset_hidden');
       if (calcRightOffsetInput) {
           // Вземи текущата стойност от CSS променливата или по подразбиране 100
-          const val = getComputedStyle(document.documentElement).getPropertyValue('--calc-right-offset').trim() || "0px";
-          calcRightOffsetInput.value = parseInt(val, 10);
-          document.getElementById('calcRightOffset').value = calcRightOffsetInput.value;
+          calcRightOffsetInput.value = calcRight;
+          document.getElementById('calcRightOffset').value = calcRight;
           calcRightOffsetInput.addEventListener('input', (e) => {
               const newOffset = e.target.value;
               document.documentElement.style.setProperty('--calc-right-offset', `${newOffset}px`);
@@ -769,8 +768,17 @@
                         if (isCtrlRequired) {
                             memoryShow(4); // Смяна на скин
                         } else {
-                            helpModal.style.display = 'flex'; // Показване на помощ
-                            modalIsActive = true;
+                            const helpModal = document.getElementById('helpModal');
+                            if (helpModal) {
+                                helpModal.classList.remove('show-content');
+                                helpModal.style.display = 'flex';
+                                modalIsActive = true;
+                                setTimeout(() => {
+                                    if (helpModal.style.display === 'flex') {
+                                        helpModal.classList.add('show-content');
+                                    }
+                                }, 3000);
+                            }
                         }
                         return true; // Кликът е обработен
                     } else { // i е 1, 2, или 3
@@ -1389,6 +1397,7 @@
                 document.getElementById('closeSettingsModalButton').style.display = 'none';
                 document.getElementById('mh1').style.display = 'none';
                 document.getElementById('mh2').style.display = 'none';
+                document.getElementById('calcBottomOffset').click();
                 // settingsModal.style.opacity = '0.8';
                 /// setTimeout(calcResize, 200);
             });
@@ -1409,6 +1418,22 @@
                 }
             });
         }
+
+        historyList.addEventListener('click', (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            const li = event.target.closest('li');
+            if (!li || !li.dataset.lev) return;
+
+            const valueToLoad = levMode ? li.dataset.lev : li.dataset.eur;
+
+            if (valueToLoad) {
+                userInput = valueToLoad.replace(/\s/g, '');
+                updateDisplays(userInput, userInput, 'L');
+                historyModal.style.display = 'none';
+                modalIsActive = false;
+            }
+        });
 
         loadHistory();
         // calcResize ();
@@ -2089,16 +2114,11 @@
 
     function formatExpression(expression) {
         expression = expression.replace(/\s+/g, '');
-        // Израз с две числа и оператор между тях
-        const regex = /(\d+(?:[.,]\d+)?)[\s]*([+\-*/×÷])[\s]*(\d+(?:[.,]\d+)?)/;
+        const regex = /(\d+(?:[,.]\d+)?)([+\-*/×÷])(\d+(?:[,.]\d+)?)/;
         return expression.replace(regex, (_, raw1, operator, raw2) => {
-            // Унифициране: ако има запетая – я заменяме с точка
-            const n1 = parseFloat(raw1.replace(',', '.'));
-            const n2 = parseFloat(raw2.replace(',', '.'));
-            // Форматиране: 2 знака след десетичния знак
-            const formatted1 = n1.toFixed(2).replace('.', ',');
-            const formatted2 = n2.toFixed(2).replace('.', ',');
-            return `${formatted1} ${operator} ${formatted2}`;
+            const num1 = groupByThree(raw1, false);
+            const num2 = groupByThree(raw2, false);
+            return `${num1} ${operator} ${num2}`;
         });
     }
 
@@ -2110,14 +2130,38 @@
             historyList.appendChild(li);
             return;
         }
+
         history.forEach(record => {
             const li = document.createElement('li');
-            li.textContent = "";
+            li.style.cursor = 'pointer';
+
+            let fullText = '';
             if (/[+\-*/×÷]/.test(record.operation)) {
-                li.textContent = `${formatExpression(record.operation)} -> `;
+                fullText = `${formatExpression(record.operation)} &rarr; ${record.result}`;
+            } else {
+                const operationNumber = parseFloat(record.operation.replace(',', '.'));
+                const resultNumberRaw = record.result.split('=')[0].replace(/\s/g, '').replace('лв.', '').replace(',', '.');
+                const resultNumber = parseFloat(resultNumberRaw);
+
+                if (Math.abs(operationNumber - resultNumber) > 0.001 && !isNaN(operationNumber)) {
+                    fullText = `${groupByThree(record.operation, false)} &rarr; ${record.result}`;
+                } else {
+                    fullText = record.result;
+                }
             }
-            li.textContent += `${record.result}`;
-            // li.textContent = `${record.operation} = ${record.result}`;
+            li.innerHTML = fullText;
+
+            // Store values in data attributes for robust retrieval
+            if (record.result.includes('лв') && record.result.includes('€')) {
+                const parts = record.result.split('=');
+                li.dataset.lev = parts[0].replace('лв.', '').trim();
+                li.dataset.eur = parts[1].replace('€', '').trim();
+            } else {
+                const singleValue = record.result.replace(/[лв€]/g, '').trim();
+                li.dataset.lev = singleValue;
+                li.dataset.eur = singleValue;
+            }
+
             historyList.appendChild(li);
         });
     }
@@ -2245,22 +2289,22 @@
         },
         {
             id: 'tip-history-and-settings',
-            text: 'История. Задръжте бутона за отваряне на Настройки (на компютър: Ctrl+Клик).  От Настройки можете да определите позицията и размера на калкулатора, така че да е максимално удобен за работа. Може да зададете и предпочитания за работа с дясна или лява ръка.',
+            text: 'История. Задръжте бутона за отваряне на <b>Настройки</b> (на компютър: Ctrl+Клик).  От <b>Настройки</b> може да определите позицията и размера на калкулатора, така че да е максимално удобен за работа. Може да зададете и предпочитания за работа с дясна или лява ръка.',
             target: '€', // The value of the key to attach to
         },
         {
             id: 'tip-display-switch',
-            text: 'Клик върху някой от дисплеите превключва активния дисплей (или натискане на бутона с две стрелки).',
+            text: 'Клик върху някой от дисплеите превключва активния дисплей (със същото действие е и бутонът <img src="Switch.png">).',
             target: 'display', // A generic target for the display area
         },
         {
             id: 'tip-copy',
             text: 'Извлича от съдържанието на клипборда първото число (ако има такова).',
-            target: '/', // A generic target for the display area
+            target: '+', // A generic target for the display area
         },
         {
             id: 'tip-paste',
-            text: 'Резултатът от пресмятанията се запомня автоматично в клипборда, така че можете лесно да го поставите в други приложения.',
+            text: 'Резултатът от пресмятанията се запомня автоматично в клипборда, така че може лесно да го поставите в други приложения.',
             target: 'display', // A generic target for the display area
         }
     ];
