@@ -1726,7 +1726,7 @@
         console.log('Stored current file sizes:', currentSizes);
     }
 
-            function checkForUpdates() {
+    function checkForUpdates() {
         const checkVersionBtn = document.getElementById('checkVersionBtn');
         if (!navigator.onLine) {
             showNotification('Няма връзка с интернет. Проверката е невъзможна.', 'error');
@@ -1736,41 +1736,34 @@
             showNotification('Service Worker не се поддържа.', 'error');
             return;
         }
-
         const btnTextSpan = checkVersionBtn.querySelector('span');
         const originalText = btnTextSpan ? btnTextSpan.textContent : 'Провери за версия';
         if (btnTextSpan) btnTextSpan.textContent = 'Проверява се...';
         checkVersionBtn.disabled = true;
-
         navigator.serviceWorker.getRegistration().then(async registration => {
             if (!registration) {
                 showNotification('Service Worker не е регистриран.', 'error');
                 resetButtonState();
                 return;
             }
-
             const filesToMonitor = [
                 'index.html',
                 'mainAll.js',
                 'style.css'
             ];
-
             let updateNeeded = false;
             const storedSizes = JSON.parse(localStorage.getItem('CXCalc_fileSizes')) || {};
             const serverSizes = {};
-
             for (const file of filesToMonitor) {
                 const serverSize = await getFileSizeFromServer(file);
                 serverSizes[file] = serverSize;
                 console.log(`File: ${file}, Stored Size: ${storedSizes[file]}, Server Size: ${serverSize}`);
-
                 if (serverSize !== null && storedSizes[file] !== serverSize) {
                     console.log(`Размерът на ${file} се различава. Нужен е ъпдейт.`);
                     updateNeeded = true;
                     break; // Found a difference, no need to check further
                 }
             }
-
             if (updateNeeded) {
                 console.log('Налична е нова версия въз основа на разлики в размера на файловете.');
                 registration.update().then(() => {
