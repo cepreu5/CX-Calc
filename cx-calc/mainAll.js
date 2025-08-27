@@ -1726,7 +1726,7 @@
         console.log('Stored current file sizes:', currentSizes);
     }
 
-        function checkForUpdates() {
+            function checkForUpdates() {
         const checkVersionBtn = document.getElementById('checkVersionBtn');
         if (!navigator.onLine) {
             showNotification('Няма връзка с интернет. Проверката е невъзможна.', 'error');
@@ -1783,7 +1783,8 @@
                         showNotification('Активира се нова версия. Презареждане...', 'info', 4000, true);
                     } else {
                         console.log('SW update triggered, but no new/waiting SW found immediately.');
-                        showNotification('Проверка за нова версия завърши. Презареждане...', 'info', 4000, true);
+                        showNotification('Проверка за нова версия завърши.', 'info', 4000, false); // Changed to false
+                        resetButtonState(); // Reset button state if no reload
                     }
                     localStorage.setItem('CXCalc_fileSizes', JSON.stringify(serverSizes));
                 }).catch(error => {
