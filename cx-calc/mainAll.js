@@ -1293,6 +1293,7 @@
         }
         isFullyLoaded = true;
         console.log("Calculator is fully loaded and ready for interaction.");
+        storeCurrentFileSizes();
         // --- PWA Install Prompt Logic for iOS ---
         // Логиката е тук, за да сме сигурни, че loading overlay е изчезнал
         // и банерът е достъпен за клик.
@@ -1681,60 +1682,132 @@
         }, duration);
     }
 
-    function checkForUpdates() {
-        const checkVersionBtn = document.getElementById('checkVersionBtn');
+    // Function to get file size from server using HEAD request
+    async function getFileSizeFromServer(url) {
+        try {
+            const response = await fetch(url, { method: 'HEAD', cache: 'no-store' }); // no-store to ensure fresh data
+            if (response.ok) {
+                const contentLength = response.headers.get('Content-Length');
+                return contentLength ? parseInt(contentLength, 10) : null;
+            }
+        } catch (error) {
+            console.error(`Error fetching size for ${url}:`, error);
+        }
+        return null;
+    }
 
-        // 1. Проверяваме за интернет връзка ПРЕДИ всичко останало.
+    // Function to store current file sizes in localStorage
+    async function storeCurrentFileSizes() {
+        const filesToCheck = [
+            'index.html',
+            'mainAll.js',
+            'style.css'
+        ];
+        const currentSizes = {};
+        for (const file of filesToCheck) {
+            // Fetch the file itself to get its size from the *currently loaded* version
+            // This is a workaround as direct access to cached file size is not trivial
+            // This will fetch from cache if available, otherwise from network
+            try {
+                const response = await fetch(file);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    currentSizes[file] = blob.size;
+                } else {
+                    console.warn(`Could not get size for ${file}: ${response.status}`);
+                    currentSizes[file] = null;
+                }
+            } catch (error) {
+                console.error(`Error getting current size for ${file}:`, error);
+                currentSizes[file] = null;
+            }
+        }
+        localStorage.setItem('CXCalc_fileSizes', JSON.stringify(currentSizes));
+        console.log('Stored current file sizes:', currentSizes);
+    }
+
+        function checkForUpdates() {
+        const checkVersionBtn = document.getElementById('checkVersionBtn');
         if (!navigator.onLine) {
             showNotification('Няма връзка с интернет. Проверката е невъзможна.', 'error');
-            return; // Прекратяваме, ако сме офлайн.
+            return;
         }
         if (!('serviceWorker' in navigator)) {
             showNotification('Service Worker не се поддържа.', 'error');
             return;
         }
 
-        navigator.serviceWorker.getRegistration().then(registration => {
+        const btnTextSpan = checkVersionBtn.querySelector('span');
+        const originalText = btnTextSpan ? btnTextSpan.textContent : 'Провери за версия';
+        if (btnTextSpan) btnTextSpan.textContent = 'Проверява се...';
+        checkVersionBtn.disabled = true;
+
+        navigator.serviceWorker.getRegistration().then(async registration => {
             if (!registration) {
                 showNotification('Service Worker не е регистриран.', 'error');
+                resetButtonState();
                 return;
             }
 
-            // Намираме span елемента вътре в бутона, за да променяме само неговия текст.
-            const btnTextSpan = checkVersionBtn.querySelector('span');
-            if (!btnTextSpan) {
-                console.error("Не е намерен текстов елемент (span) в бутона за проверка на версия.");
-                return;
-            }
-            const originalText = btnTextSpan.textContent;
-            btnTextSpan.textContent = 'Проверява се...';
-            checkVersionBtn.disabled = true; // Деактивираме бутона, докато проверяваме.
+            const filesToMonitor = [
+                'index.html',
+                'mainAll.js',
+                'style.css'
+            ];
 
-            registration.update().then(() => {
-                if (registration.installing) {
-                    console.log('SW: Намерен е нов service worker, инсталира се...');
-                    showNotification('Инсталира се нова версия...', 'info');
-                } else if (registration.waiting) {
-                    console.log('SW: Намерен е чакащ service worker. Изпраща се команда за активиране...');
-                    showNotification('Активира се нова версия...', 'info');
-                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                } else {
-                    // Показваме съобщението само ако проверката е била успешна.
-                    // В офлайн режим никога няма да стигнем дотук.
-                    showNotification('Вие използвате последната версия.', 'success'); 
+            let updateNeeded = false;
+            const storedSizes = JSON.parse(localStorage.getItem('CXCalc_fileSizes')) || {};
+            const serverSizes = {};
+
+            for (const file of filesToMonitor) {
+                const serverSize = await getFileSizeFromServer(file);
+                serverSizes[file] = serverSize;
+                console.log(`File: ${file}, Stored Size: ${storedSizes[file]}, Server Size: ${serverSize}`);
+
+                if (serverSize !== null && storedSizes[file] !== serverSize) {
+                    console.log(`Размерът на ${file} се различава. Нужен е ъпдейт.`);
+                    updateNeeded = true;
+                    break; // Found a difference, no need to check further
                 }
-            }).catch(error => {
-                console.error('Грешка при проверка за нова версия:', error);
-                showNotification('Грешка при проверката за нова версия.', 'error');
-            }).finally(() => {
-                if (!registration.installing && !registration.waiting) {
-                    setTimeout(() => {
-                        if (btnTextSpan) btnTextSpan.textContent = originalText;
-                        checkVersionBtn.disabled = false;
-                    }, 3000);
-                }
-            });
+            }
+
+            if (updateNeeded) {
+                console.log('Налична е нова версия въз основа на разлики в размера на файловете.');
+                registration.update().then(() => {
+                    if (registration.installing) {
+                        console.log('SW: Намерен е нов service worker, инсталира се...');
+                        showNotification('Инсталира се нова версия. Презареждане...', 'info', 4000, true);
+                    } else if (registration.waiting) {
+                        console.log('SW: Намерен е чакащ service worker. Изпраща се команда за активиране...');
+                        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        showNotification('Активира се нова версия. Презареждане...', 'info', 4000, true);
+                    } else {
+                        console.log('SW update triggered, but no new/waiting SW found immediately.');
+                        showNotification('Проверка за нова версия завърши. Презареждане...', 'info', 4000, true);
+                    }
+                    localStorage.setItem('CXCalc_fileSizes', JSON.stringify(serverSizes));
+                }).catch(error => {
+                    console.error('Грешка при стартиране на SW update:', error);
+                    showNotification('Грешка при инсталиране на нова версия.', 'error');
+                    resetButtonState();
+                });
+            } else {
+                console.log('Вие използвате последната версия (размерите на файловете съвпадат).');
+                showNotification('Вие използвате последната версия.', 'success');
+                resetButtonState();
+            }
+        }).catch(error => {
+            console.error('Грешка при проверка за нова версия:', error);
+            showNotification('Грешка при проверката за нова версия.', 'error');
+            resetButtonState();
         });
+
+        function resetButtonState() {
+            setTimeout(() => {
+                if (btnTextSpan) btnTextSpan.textContent = originalText;
+                checkVersionBtn.disabled = false;
+            }, 3000);
+        }
     }
 
 // ------------ status.js
