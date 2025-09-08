@@ -8,7 +8,7 @@ const OFFLINE_PAGE = new URL('index.html', self.location).href;
 const ASSETS = [
   OFFLINE_PAGE,
   'style.css',
-  'mainnAll.js',
+  'mainAll.js',
   'click.wav',
   'Calculator0.png',
   'CalculatorA.png',
@@ -31,10 +31,29 @@ const ASSETS = [
   'Switch.png',
   'Settings.png',
   'Paste.png',
-  'Plus.png',
+  'Full.png',
   'Help.png',
   'Eq.png',
-  'manifest.webmanifest'
+  'manifest.webmanifest',
+  'sounds/0.mp3',
+  'sounds/1.mp3',
+  'sounds/2.mp3',
+  'sounds/3.mp3',
+  'sounds/4.mp3',
+  'sounds/5.mp3',
+  'sounds/6.mp3',
+  'sounds/7.mp3',
+  'sounds/8.mp3',
+  'sounds/9.mp3',
+  'sounds/comma.mp3',
+  'sounds/plus.mp3',
+  'sounds/minus.mp3',
+  'sounds/mul.mp3',
+  'sounds/div.mp3',
+  'sounds/eq.mp3',
+  'sounds/clear.mp3',
+  'sounds/lv.mp3',
+  'sounds/eur.mp3'  
 ].map(path => new URL(path, self.location).href);
 
 // 1. Инсталирай SW и кеширай всички статични ресурси
@@ -161,7 +180,11 @@ self.addEventListener('fetch', event => {
             .then(resp => {
                 if (resp.ok && request.method === 'GET') {
                     const clone = resp.clone();
-                    caches.open(CACHE_NAME).then(c => c.put(request, clone));
+                    if (!request.url.endsWith('.mp3')) {
+                        caches.open(CACHE_NAME).then(c => c.put(request, clone));
+                    } else {
+                        console.log('Пропуснато кеширане на mp3:', request.url);
+                    }
                 }
                 return resp;
             })
