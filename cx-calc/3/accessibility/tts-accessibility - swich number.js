@@ -4,10 +4,13 @@
   if (ttsToggle) {
       const savedState = localStorage.getItem('CXCalc_tts_enabled');
       ttsToggle.checked = (savedState === 'true');
+
       const soundCheckbox = document.getElementById('soundEffectsCheckbox');
+
       function handleSoundAndTTS() {
           const isTtsEnabled = ttsToggle.checked;
           if (!soundCheckbox) return;
+
           if (isTtsEnabled) {
               soundCheckbox.disabled = true;
               if (soundCheckbox.checked) {
@@ -24,8 +27,10 @@
               soundCheckbox.disabled = false;
           }
       }
+
       // Run on page load
       handleSoundAndTTS();
+
       // Run on every change of the TTS toggle
       ttsToggle.addEventListener('change', () => {
           localStorage.setItem('CXCalc_tts_enabled', ttsToggle.checked);
@@ -33,6 +38,7 @@
           // Reload is required for the accessibility script itself to be fully enabled/disabled
           window.location.reload();
       });
+
       if (savedState !== 'true') return;
   }
 
@@ -82,8 +88,10 @@
             if (live) live.textContent = text; 
             return reject('Speech synthesis not supported');
           }
+
           let textToSpeak = String(text);
           const isBulgarianVoice = voice && voice.lang.toLowerCase().startsWith('bg');
+
           if (opts.cncy) {
             let currencyWord = '';
             if (opts.cncy === 'eur') {
@@ -95,16 +103,20 @@
               textToSpeak += ' ' + currencyWord;
             }
           }
+
           if (textToSpeak) {
             cancelSpeech();
           }
+          
           const utt = new SpeechSynthesisUtterance(textToSpeak);
+          
           utt.lang = opts.lang || (isBulgarianVoice ? 'bg-BG' : 'en-US');
           if (voice) utt.voice = voice;
           utt.rate = typeof opts.rate === 'number' ? opts.rate : 1;
           utt.pitch = typeof opts.pitch === 'number' ? opts.pitch : 1;
           currentUtterance = utt;
           if (live) live.textContent = text;
+          
           utt.onend = () => {
             currentUtterance = null;
             resolve();
@@ -118,6 +130,7 @@
                 reject(e); // For any other error, we reject.
             }
           };
+
           synth.speak(utt);
         }
         catch(err){ 
@@ -131,6 +144,7 @@
 
   function normalizeLabel(val){
     const isBulgarianVoice = voice && voice.lang.toLowerCase().startsWith('bg');
+
     const mapBG = {
         ',': 'запетая',
         '=': 'равно',
@@ -138,11 +152,12 @@
         '-': 'минус',
         '*': 'умножено по',
         '/': 'делено на',
-        'CE': 'из триване',
-        'C': 'из триване',
+        'CE': 'изстриване',
+        'C': 'изстриване',
         'лв.': 'лева',
         '€': 'евро'
     };
+
     const mapEN = {
         ',': 'comma',
         '=': 'equals',
@@ -152,9 +167,10 @@
         '/': 'divided by',
         'CE': 'clear',
         'C': 'clear',
-        'лв.': 'leva',
+        'лв.': 'lev',
         '€': 'euro'
     };
+
     const map = isBulgarianVoice ? mapBG : mapEN;
     return map[val] || String(val);
   }
@@ -170,14 +186,43 @@
 
   // Patching helpers (saved originals)
   let originalAppendNumber = null;
+  let originalSwitchNumber = null;
+  let originalPasteNumber = null;
+  let isSwitchingNumber = false;
+
+  function patchSwitchNumber() {
+    if (!window.switchNumber || originalSwitchNumber) return false;
+    originalSwitchNumber = window.switchNumber;
+    window.switchNumber = function() {
+        isSwitchingNumber = true;
+        originalSwitchNumber.apply(this, arguments);
+    }
+    return true;
+  }
+
+  function patchPasteNumber() {
+      if (!window.pasteNumber || originalPasteNumber) return false;
+      originalPasteNumber = window.pasteNumber;
+      window.pasteNumber = async function() {
+          try {
+              await originalPasteNumber.apply(this, arguments);
+          } finally {
+              isSwitchingNumber = false;
+          }
+      }
+      return true;
+  }
 
   function patchAppendNumber(){
     if (!window.appendNumber || originalAppendNumber) return false;
     originalAppendNumber = window.appendNumber;
+
     let isPrimed = false;
+
     window.appendNumber = function(arg){
       const enabledEl = document.getElementById('tts-toggle');
       const isSpeechEnabled = (enabledEl ? enabledEl.checked : (localStorage.getItem('cxcalc_tts_enabled') !== 'false'));
+
       // New handler for '€' when speech is ON
       if (arg === '€' && isSpeechEnabled) {
         const active = levMode ? document.getElementById('levInput') : document.getElementById('eurInput');
@@ -189,14 +234,18 @@
         speak(formatNumberForSpeech(textToSpeak) || (isBulgarianVoice ? 'празно' : 'empty'));
         return; // PREVENT original historyOpen() from being called
       }
+
       const res = originalAppendNumber.apply(this, arguments);
+
       if (!isSpeechEnabled) {
         return res;
       }
+
       if (!isPrimed) {
         speak('');
         isPrimed = true;
       }
+
       if (arg === 'B') {
         const active = levMode ? document.getElementById('levInput') : document.getElementById('eurInput');
         let textToSpeak = (active.textContent || active.value || '').trim().replace(/\s/g, '');
@@ -207,17 +256,21 @@
         speak(formatNumberForSpeech(textToSpeak) || (isBulgarianVoice ? 'празно' : 'empty'));
         return res;
       }
+
       try{
-        // 'L' and '€' are handled specially, so we don't speak their labels.
-        if (arg !== 'L' && arg !== '€' && arg !== '=') {
+        // 'L' and '€' are handled specially. Do not speak their labels.
+        // Also, do not speak anything if we are in the middle of a switchNumber operation.
+        if (arg !== 'L' && arg !== '€' && arg !== '=' && !isSwitchingNumber) {
             const toSpeak = normalizeLabel(arg);
             if (toSpeak) speak(toSpeak);
         }
       }catch(e){ console.error('tts patch speak key error', e); }
+
       if (arg === '=') {
         (async () => {
             try{
               await speak(normalizeLabel('='));
+
               let active = levMode ? document.getElementById('levInput') : document.getElementById('eurInput');
               let text = active ? (active.textContent || active.value || '').trim() : '';
               let textToSpeak1 = text.replace(/\s/g, '');
@@ -226,6 +279,7 @@
               }
               const cncy1 = levMode ? 'lv' : 'eur';
               if (textToSpeak1) await speak(formatNumberForSpeech(textToSpeak1), {cncy: cncy1});
+
               let inactive = !levMode ? document.getElementById('levInput') : document.getElementById('eurInput');
               let text2 = inactive ? (inactive.textContent || inactive.value || '').trim() : '';
               let textToSpeak2 = text2.replace(/\s/g, '');
@@ -235,7 +289,7 @@
               const cncy2 = !levMode ? 'lv' : 'eur';
               if (textToSpeak2) await speak(formatNumberForSpeech(textToSpeak2), {cncy: cncy2});
             } catch(e) {
-                if (e && e.error !== 'interrupted') console.error('tts patch speak result error', e); 
+                if (e && e.error !== 'interrupted') console.error('tts patch speak result error', e);
             }
         })();
       }
@@ -257,6 +311,8 @@
       } else {
         console.warn('TTS: window.toggleDisplayMode not found for patching.');
       }
+      patchSwitchNumber();
+      patchPasteNumber();
       patchAppendNumber();
       console.log('cx-tts: initialized patches');
     }catch(e){ console.error('cx-tts init error', e); }
