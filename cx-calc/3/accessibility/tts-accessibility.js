@@ -4,35 +4,48 @@
   if (ttsToggle) {
       const savedState = localStorage.getItem('CXCalc_tts_enabled');
       ttsToggle.checked = (savedState === 'true');
-      const soundCheckbox = document.getElementById('soundEffectsCheckbox');
-      function handleSoundAndTTS() {
+
+      function handleTtsStateChange() {
           const isTtsEnabled = ttsToggle.checked;
-          if (!soundCheckbox) return;
+          const soundCheckbox = document.getElementById('soundEffectsCheckbox');
+          const currencySymbolInput = document.getElementById('currencySymbolInput');
+          const currencyLevSymbolInput = document.getElementById('currencyLevSymbolInput');
+
           if (isTtsEnabled) {
-              soundCheckbox.disabled = true;
-              if (soundCheckbox.checked) {
-                  soundCheckbox.checked = false;
-                  const appSettings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || {};
-                  appSettings.soundEffectsEnabled = false;
-                  localStorage.setItem('CXCalc_appSettings', JSON.stringify(appSettings));
-                  // Also update the global variable from mainAll.js to stop sounds in the current session
-                  if (typeof window.soundEffectsEnabled !== 'undefined') {
-                      window.soundEffectsEnabled = false;
+              // Disable controls when TTS is ON
+              if (soundCheckbox) {
+                  soundCheckbox.disabled = true;
+                  if (soundCheckbox.checked) {
+                      soundCheckbox.checked = false;
+                      const appSettings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || {};
+                      appSettings.soundEffectsEnabled = false;
+                      localStorage.setItem('CXCalc_appSettings', JSON.stringify(appSettings));
+                      if (typeof window.soundEffectsEnabled !== 'undefined') {
+                          window.soundEffectsEnabled = false;
+                      }
                   }
               }
+              if (currencySymbolInput) currencySymbolInput.disabled = true;
+              if (currencyLevSymbolInput) currencyLevSymbolInput.disabled = true;
+
           } else {
-              soundCheckbox.disabled = false;
+              // Enable controls when TTS is OFF
+              if (soundCheckbox) soundCheckbox.disabled = false;
+              if (currencySymbolInput) currencySymbolInput.disabled = false;
+              if (currencyLevSymbolInput) currencyLevSymbolInput.disabled = false;
           }
       }
+
       // Run on page load
-      handleSoundAndTTS();
+      handleTtsStateChange();
+
       // Run on every change of the TTS toggle
       ttsToggle.addEventListener('change', () => {
           localStorage.setItem('CXCalc_tts_enabled', ttsToggle.checked);
-          handleSoundAndTTS();
-          // Reload is required for the accessibility script itself to be fully enabled/disabled
+          handleTtsStateChange();
           window.location.reload();
       });
+
       if (savedState !== 'true') return;
   }
 
@@ -74,12 +87,12 @@
           const live = document.getElementById('a11y-live');
           const enabledEl = document.getElementById('tts-toggle');
           const enabled = (enabledEl ? enabledEl.checked : (localStorage.getItem('cxcalc_tts_enabled') !== 'false'));
-          if (!enabled){ 
-            if (live) live.textContent = text; 
+          if (!enabled){
+            if (live) live.textContent = text;
             return resolve();
           }
-          if (!synth){ 
-            if (live) live.textContent = text; 
+          if (!synth){
+            if (live) live.textContent = text;
             return reject('Speech synthesis not supported');
           }
           let textToSpeak = String(text);
@@ -101,6 +114,7 @@
           const utt = new SpeechSynthesisUtterance(textToSpeak);
           utt.lang = opts.lang || (isBulgarianVoice ? 'bg-BG' : 'en-US');
           if (voice) utt.voice = voice;
+          utt.volume = typeof opts.volume === 'number' ? opts.volume : 1;
           utt.rate = typeof opts.rate === 'number' ? opts.rate : 1;
           utt.pitch = typeof opts.pitch === 'number' ? opts.pitch : 1;
           currentUtterance = utt;
@@ -112,17 +126,17 @@
           utt.onerror = (e) => {
             currentUtterance = null;
             if (e.error === 'interrupted') {
-                resolve(); // An interruption is not a failure, so we resolve.
+                resolve();
             } else {
                 console.error('cxSpeech utterance error', e);
-                reject(e); // For any other error, we reject.
+                reject(e);
             }
           };
           synth.speak(utt);
         }
-        catch(err){ 
+        catch(err){
             console.error('cxSpeech.speak error', err);
-            const live = document.getElementById('a11y-live'); 
+            const live = document.getElementById('a11y-live');
             if (live) live.textContent = String(text);
             reject(err);
         }
@@ -138,8 +152,8 @@
         '-': 'минус',
         '*': 'умножено по',
         '/': 'делено на',
-        'CE': 'из триване',
-        'C': 'из триване',
+        'CE': 'изтриване',
+        'C': 'изтриване',
         'лв.': 'лева',
         '€': 'евро'
     };
@@ -152,7 +166,7 @@
         '/': 'divided by',
         'CE': 'clear',
         'C': 'clear',
-        'лв.': 'leva',
+        'лв.': 'lev',
         '€': 'euro'
     };
     const map = isBulgarianVoice ? mapBG : mapEN;
@@ -194,8 +208,18 @@
         return res;
       }
       if (!isPrimed) {
-        speak('');
         isPrimed = true;
+        appendNumber("C");
+        // 1. Fire a silent utterance to wake up the engine.
+        speak(' ', { volume: 0 })
+          .then(() => {
+            // 2. Wait a very short moment for the engine to be ready.
+            setTimeout(() => {
+              // 3. Speak the actual welcome message.
+              speak('- - - Включено. Гласовото подпомагане е активно.');
+            }, 100); // 100ms delay
+          });
+        return res;
       }
       if (arg === 'B') {
         const active = levMode ? document.getElementById('levInput') : document.getElementById('eurInput');
@@ -208,7 +232,6 @@
         return res;
       }
       try{
-        // 'L' and '€' are handled specially, so we don't speak their labels.
         if (arg !== 'L' && arg !== '€' && arg !== '=') {
             const toSpeak = normalizeLabel(arg);
             if (toSpeak) speak(toSpeak);
