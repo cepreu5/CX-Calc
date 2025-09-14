@@ -1251,6 +1251,8 @@
                     if (event) event.stopPropagation();
                     const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
                     settings.exchangeRate = defaultSettings.exchangeRate;
+                    settings.currencySymbol = defaultSettings.currencySymbol;
+                    settings.currencyLevSymbol = defaultSettings.currencyLevSymbol;
                     localStorage.setItem('CXCalc_appSettings', JSON.stringify(settings));
                     location.reload(); // Презареждането ще скрие модала
                 };
@@ -1424,17 +1426,47 @@
             event.stopPropagation();
             event.preventDefault();
             const li = event.target.closest('li');
-            if (!li || !li.dataset.lev) return;
-
-            const valueToLoad = levMode ? li.dataset.lev : li.dataset.eur;
-
+            if (!li || li.textContent === 'Няма запазена история.') return;
+            // Взимаме целия текст от реда
+            const text = li.textContent || "";
+            // Ако има '→', взимаме само текста след нея (резултата)
+            const resultText = text.includes('→') ? text.split('→')[1] : text;
+            let levValueStr = '';
+            let eurValueStr = '';
+            // Разделяме резултата по знака '='
+            if (resultText.includes('=')) {
+                const parts = resultText.split('=');
+                // "Почистваме" всяка част от всичко, което не е цифра, запетая или минус
+                const regex = /[^-0-9,]/g;
+                levValueStr = parts[0].replace(regex, '');
+                eurValueStr = parts[1].replace(regex, '');
+            } else {
+                // Ако няма '=', приемаме, че целият низ е една стойност
+                const regex = /[^-0-9,]/g;
+                const singleValue = resultText.replace(regex, '');
+                levValueStr = singleValue;
+                // За да работи коректно, трябва да изчислим другата валута
+                const numValue = parseNumber(singleValue);
+                if (!isNaN(numValue)) {
+                    if (levMode) { // Предполагаме, че единичната стойност е в активната валута
+                        eurValueStr = formatNumber(numValue / EXCHANGE_RATE);
+                    } else {
+                        eurValueStr = formatNumber(numValue); // eur е вече зададено
+                        levValueStr = formatNumber(numValue * EXCHANGE_RATE);
+                    }
+                } else {
+                     eurValueStr = singleValue;
+                }
+            }
+            // Избираме коя стойност да заредим според активния дисплей
+            const valueToLoad = levMode ? levValueStr : eurValueStr;
             if (valueToLoad) {
-                userInput = valueToLoad.replace(/\s/g, '');
+                userInput = valueToLoad.replace(/\\s/g, '');
                 updateDisplays(userInput, userInput, 'L');
                 historyModal.style.display = 'none';
                 modalIsActive = false;
             }
-        });
+        })
 
         loadHistory();
         // calcResize ();
@@ -2164,7 +2196,7 @@
     function addHistoryEntry(operation, levValue, eurValue) {
         const formattedLev = groupByThree(formatNumber(levValue));
         const formattedEur = groupByThree(formatNumber(eurValue));
-        let entry = `${formattedLev} лв. = ${formattedEur}€`;
+        let entry = `${formattedLev} ${CURRENCY_LEV_SYMBOL} = ${formattedEur}${CURRENCY_SYMBOL}`; // @@
         if (`${groupByThree(formatNumber(levValue))}` == "" || `${groupByThree(formatNumber(eurValue))}` == "") {
             if (formattedLev === "") {
                 entry = `${formattedEur}`;
@@ -2207,7 +2239,7 @@
                 fullText = `${formatExpression(record.operation)} &rarr; ${record.result}`;
             } else {
                 const operationNumber = parseFloat(record.operation.replace(',', '.'));
-                const resultNumberRaw = record.result.split('=')[0].replace(/\s/g, '').replace('лв.', '').replace(',', '.');
+                const resultNumberRaw = record.result.split('=')[0].replace(/\s/g, '').replace(CURRENCY_LEV_SYMBOL, '').replace(',', '.');
                 const resultNumber = parseFloat(resultNumberRaw);
 
                 if (Math.abs(operationNumber - resultNumber) > 0.001 && !isNaN(operationNumber)) {
@@ -2219,12 +2251,13 @@
             li.innerHTML = fullText;
 
             // Store values in data attributes for robust retrieval
-            if (record.result.includes('лв') && record.result.includes('€')) {
+            if (record.result.includes(CURRENCY_LEV_SYMBOL) && record.result.includes(CURRENCY_SYMBOL)) {
                 const parts = record.result.split('=');
-                li.dataset.lev = parts[0].replace('лв.', '').trim();
-                li.dataset.eur = parts[1].replace('€', '').trim();
+                li.dataset.lev = parts[0].replace(CURRENCY_LEV_SYMBOL, '').trim();
+                li.dataset.eur = parts[1].replace(CURRENCY_SYMBOL, '').trim();
             } else {
-                const singleValue = record.result.replace(/[лв€]/g, '').trim();
+                const symbolsToRemove = new RegExp([CURRENCY_LEV_SYMBOL, CURRENCY_SYMBOL].join('|'), 'g');
+                const singleValue = record.result.replace(symbolsToRemove, '').trim();
                 li.dataset.lev = singleValue;
                 li.dataset.eur = singleValue;
             }
