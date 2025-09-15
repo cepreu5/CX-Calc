@@ -1,4 +1,10 @@
 // terser mainAll.js --compress --mangle --toplevel --output mainnAll.js
+    const filesToCheck = [
+        'index.html',
+        'mainnAll.js',
+        'style.css'
+    ];
+
     const rows = 5;
     const cols = 4;
     const container = document.querySelector('.calculator-container');
@@ -1727,12 +1733,6 @@
         }
         return null;
     }
-
-    const filesToCheck = [
-        'index.html',
-        'mainnAll.js',
-        'style.css'
-    ];
 
     // Function to store current file sizes in localStorage
     async function storeCurrentFileSizes() {
