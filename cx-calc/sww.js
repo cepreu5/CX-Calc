@@ -1,5 +1,5 @@
 // sw.js – Service Worker за CX-Calc (PWA + офлайн)
-const CACHE_NAME = 'cx-calc-1.1'; // Версия на кеша, редактирай при промяна на ресурсите
+const CACHE_NAME = 'cx-calc-1.2'; // Версия на кеша, редактирай при промяна на ресурсите
 // Важно: промени версията при всяка промяна на кешираните ресурси!
 // Това ще принуди браузъра да изтегли новия кеш и да активира новия SW.
 const OFFLINE_PAGE = new URL('index.html', self.location).href;
@@ -31,7 +31,7 @@ const ASSETS = [
   'Switch.png',
   'Settings.png',
   'Paste.png',
-  'Plus.png',
+  'Full.png',
   'Help.png',
   'Eq.png',
   'manifest.webmanifest'
@@ -173,5 +173,32 @@ self.addEventListener('fetch', event => {
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  if (event.data && event.data.type === 'CLEAR_CACHE_AND_UPDATE') {
+    const filesToUpdate = event.data.files;
+    if (!filesToUpdate || !Array.isArray(filesToUpdate)) {
+        return;
+    }
+    event.waitUntil(
+      caches.open(CACHE_NAME).then(cache => {
+        const updatePromises = filesToUpdate.map(file => {
+          const fileUrl = new URL(file, self.location).href;
+          console.log(`SW: Forcing update for ${fileUrl}`);
+          // Delete from cache first
+          return cache.delete(fileUrl).then(() => {
+            // Then fetch from network, bypassing browser cache
+            return fetch(fileUrl, { cache: 'no-store' }).then(response => {
+              if (response.ok) {
+                console.log(`SW: Fetched and caching new version of ${file}`);
+                return cache.put(fileUrl, response);
+              } else {
+                console.error(`SW: Failed to fetch ${file}`);
+              }
+            });
+          });
+        });
+        return Promise.all(updatePromises);
+      })
+    );
   }
 });

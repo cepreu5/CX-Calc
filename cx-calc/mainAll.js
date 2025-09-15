@@ -1728,20 +1728,25 @@
         return null;
     }
 
+    const filesToCheck = [
+        'index.html',
+        'mainnAll.js',
+        'style.css'
+    ];
+
     // Function to store current file sizes in localStorage
     async function storeCurrentFileSizes() {
-        const filesToCheck = [
-            'index.html',
-            'mainAll.js',
-            'style.css'
-        ];
+        if (localStorage.getItem('CXCalc_fileSizes')) {
+            console.log('File sizes already stored. Skipping initialization.');
+            return;
+        }
         const currentSizes = {};
         for (const file of filesToCheck) {
             // Fetch the file itself to get its size from the *currently loaded* version
             // This is a workaround as direct access to cached file size is not trivial
             // This will fetch from cache if available, otherwise from network
             try {
-                const response = await fetch(file);
+                const response = await fetch(file, {cache: 'no-store'});
                 if (response.ok) {
                     const blob = await response.blob();
                     currentSizes[file] = blob.size;
@@ -1778,26 +1783,25 @@
                 resetButtonState();
                 return;
             }
-            const filesToMonitor = [
-                'index.html',
-                'mainAll.js',
-                'style.css'
-            ];
             let updateNeeded = false;
             const storedSizes = JSON.parse(localStorage.getItem('CXCalc_fileSizes')) || {};
             const serverSizes = {};
-            for (const file of filesToMonitor) {
+            for (const file of filesToCheck) {
                 const serverSize = await getFileSizeFromServer(file);
                 serverSizes[file] = serverSize;
                 console.log(`File: ${file}, Stored Size: ${storedSizes[file]}, Server Size: ${serverSize}`);
                 if (serverSize !== null && storedSizes[file] !== serverSize) {
                     console.log(`Размерът на ${file} се различава. Нужен е ъпдейт.`);
                     updateNeeded = true;
-                    break; // Found a difference, no need to check further
+                    // break; // We will continue checking all files to store all new sizes
                 }
             }
             if (updateNeeded) {
                 console.log('Налична е нова версия въз основа на разлики в размера на файловете.');
+                // Save the new sizes right away
+                localStorage.setItem('CXCalc_fileSizes', JSON.stringify(serverSizes));
+                console.log('Updated stored file sizes:', serverSizes);
+
                 registration.update().then(() => {
                     if (registration.installing) {
                         console.log('SW: Намерен е нов service worker, инсталира се...');
@@ -1807,11 +1811,19 @@
                         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
                         showNotification('Активира се нова версия. Презареждане...', 'info', 4000, true);
                     } else {
-                        console.log('SW update triggered, but no new/waiting SW found immediately.');
-                        showNotification('Проверка за нова версия завърши.', 'info', 4000, false); // Changed to false
-                        resetButtonState(); // Reset button state if no reload
+                        console.log('SW update triggered, but no new/waiting SW found. Forcing cache update.');
+                        if (navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({
+                                type: 'CLEAR_CACHE_AND_UPDATE',
+                                files: filesToCheck
+                            });
+                            // Reload the page to apply the new cache
+                            showNotification('Обновяване на кеша. Презареждане...', 'info', 4000, true);
+                        } else {
+                            showNotification('Service Worker не е активен. Моля, презаредете.', 'error');
+                            resetButtonState();
+                        }
                     }
-                    localStorage.setItem('CXCalc_fileSizes', JSON.stringify(serverSizes));
                 }).catch(error => {
                     console.error('Грешка при стартиране на SW update:', error);
                     showNotification('Грешка при инсталиране на нова версия.', 'error');
