@@ -2406,7 +2406,7 @@
         },
         {
             id: 'tip-display-switch',
-            text: 'Клик върху някой от дисплеите превключва активния дисплей. (<img src="Switch.png"> е със същото действие).',
+            text: 'Клик върху някой от дисплеите превключва активния дисплей.<br>(<img src="Switch.png"> е със същото действие).',
             target: 'display', // A generic target for the display area
         },
         {
