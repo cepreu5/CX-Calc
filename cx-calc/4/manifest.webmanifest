@@ -30,12 +30,6 @@
       "purpose": "any maskable"
     },
     {
-      "src": "Calc128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
       "src": "Calc144.png",
       "sizes": "144x144",
       "type": "image/png",

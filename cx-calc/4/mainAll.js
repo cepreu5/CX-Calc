@@ -32,6 +32,7 @@
     let audioContext;
     let clickBuffer = null;
     var handMode = 'right'; // 'left' or 'right'
+    var standardKeyboard = false;
 
     const MAX_HISTORY_ITEMS = 30;
     const historyButton = document.getElementById('historyButton');
@@ -77,6 +78,14 @@
         ["*", "/", ",", "0"]
     ];
 
+    const keyMapS = [
+        ["€", "C", "B", "/"],
+        ["7", "8", "9", "*"],
+        ["4", "5", "6", "-"],
+        ["1", "2", "3", "+"],
+        ["0", ",", "L", "="]
+    ];
+
     var keyMap = keyMapR;
 
     // Обект с настройките по подразбиране
@@ -91,10 +100,11 @@
         calcRightOffset: 0,
         initialDisplay: 'lev', // 'eur' или 'lev'
         handMode: 'right', // 'left' or 'right'
+        standardKeyboard: false,
         tipsEnabled: true, // Показване на подсказки при стартиране
         pwaInstallDeclined: false,
         calculatorSkin: 'Calculator0.png', // Скин по подразбиране
-        decimalPlaces: 4 // Брой десетични знаци
+        decimalPlaces: 2 // Брой десетични знаци
     };
 
     // Инициализираме глобалните променливи директно от defaultSettings.
@@ -146,13 +156,15 @@
             calcRightOffset: parseInt(document.getElementById('calcRightOffset_hidden').value, 10) || 0,
             initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
             handMode: document.getElementById('handModeLeft').checked ? 'left' : 'right',
+            standardKeyboard: document.getElementById('standardKeyboardCheckbox').checked,
             pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
-            calculatorSkin: currentSettings.calculatorSkin || defaultSettings.calculatorSkin, // Запазваме текущия скин
+            calculatorSkin: document.getElementById('standardKeyboardCheckbox').checked 
+                ? 'CalculatorS.png' 
+                : (currentSettings.calculatorSkin.includes('S.png') ? 'Calculator0.png' : currentSettings.calculatorSkin), // Запазваме текущия скин
             decimalPlaces: parseInt(document.getElementById('decimalPlacesInput').value, 10) || defaultSettings.decimalPlaces,
             tipsEnabled: false
         };
         localStorage.setItem('CXCalc_appSettings', JSON.stringify(newAppSettings));
-        keyMap = handMode === 'left' ? keyMapL : keyMapR;
         // --- ПРИЛАГАНЕ НА ПРОМЕНИТЕ ---
         // 3. Презареждаме страницата, за да се приложат всички промени консистентно
         console.log("Настройките са запазени. Страницата ще бъде презаредена.");
@@ -286,6 +298,10 @@
               handModeRight.checked = true;
           }
       }
+      const standardKeyboardCheckbox = document.getElementById('standardKeyboardCheckbox');
+      if (standardKeyboardCheckbox) {
+          standardKeyboardCheckbox.checked = standardKeyboard;
+      }
       // Попълваме броя десетични знаци
       const decimalPlacesInput = document.getElementById('decimalPlacesInput');
       if (decimalPlacesInput) {
@@ -322,7 +338,14 @@
         // Задаваме активния дисплей при стартиране според запазената стойност
         levMode = (settings.initialDisplay === 'lev');
         handMode = settings.handMode;
-        keyMap = handMode === 'left' ? keyMapL : keyMapR;
+        standardKeyboard = settings.standardKeyboard;
+
+        if (standardKeyboard) {
+            keyMap = keyMapS;
+        } else {
+            keyMap = handMode === 'left' ? keyMapL : keyMapR;
+        }
+        
         // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
         const savedMem = JSON.parse(localStorage.getItem('CXCalc_CalcMem'));
         if (savedMem && Array.isArray(savedMem)) {
@@ -332,8 +355,12 @@
         // Задаваме облика на калкулатора според запазената настройка
         if (calculator && settings.calculatorSkin) {
             let skin = settings.calculatorSkin;
-            if (handMode === 'left') {
-                skin = skin.replace('.png', 'L.png');
+            if (standardKeyboard) {
+                skin = 'CalculatorS.png';
+            } else {
+                if (handMode === 'left') {
+                    skin = skin.replace('.png', 'L.png');
+                }
             }
             calculator.src = skin;
         }
@@ -1965,12 +1992,20 @@
     function memoryShow(slot, callback) { // Добавен е 'callback'
         if (slot == 4) {
             const calculatorEl = document.getElementById("calculator");
-            let baseSkin = "Calculator0.png";
-            let altSkin = "CalculatorA.png";
-            if (handMode === 'left') {
-                baseSkin = "Calculator0L.png";
-                altSkin = "CalculatorAL.png";
+            let baseSkin, altSkin;
+    
+            if (standardKeyboard) {
+                baseSkin = "CalculatorS.png";
+                altSkin = "CalculatorAS.png";
+            } else {
+                baseSkin = "Calculator0.png";
+                altSkin = "CalculatorA.png";
+                if (handMode === 'left') {
+                    baseSkin = "Calculator0L.png";
+                    altSkin = "CalculatorAL.png";
+                }
             }
+
             const newSkin = calculatorEl.src.includes(altSkin) ? baseSkin : altSkin;
             // Запазваме оригиналния onload, за да го възстановим
             if (!originalOnloadHandler) {

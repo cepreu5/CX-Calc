@@ -170,7 +170,15 @@
                             <input type="text" id="currencySymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                             <input type="text" id="currencyLevSymbolInput" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
+                        <label for="decimalPlacesInput">Десетични знаци:</label>
+                        <div style="grid-column: 2 / -1; display: flex; gap: 10px;">
+                            <input type="number" id="decimalPlacesInput" min="2" max="5" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
                         <!-- Initial Display Mode -->
+                        <label style="font-weight: bold;">Стандартен вид:</label>
+                        <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
+                            <input type="checkbox" id="standardKeyboardCheckbox">
+                        </div>
                         <label style="font-weight: bold;">Стартов дисплей:</label>
                         <div style="grid-column: 2 / -1; display: flex; justify-content: flex-start; gap: 20px; align-items: center;">
                             <label for="initialDisplayEur" style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
@@ -194,11 +202,7 @@
                         <div style="grid-column: 2 / -1; display: flex; align-items: center; gap: 15px;">
                             <input type="checkbox" id="soundEffectsCheckbox" checked>
                         </div>
-                        <label for="decimalPlacesInput">Десетични знаци:</label>
-                        <div style="grid-column: 2 / -1; display: flex; gap: 10px;">
-                            <input type="number" id="decimalPlacesInput" min="2" max="5" style="width: 60px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                        </div>
-                        <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                        <hr style="grid-column: 1 / -1; margin: 5px 0; border: none; border-top: 1px solid #ccc;">
                         <label>Регулиране на позицията и размера:</label><br>
                         <button id="fldSettings" class="action-button" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="3"></line></svg>
@@ -215,7 +219,7 @@
                             </button>
 
                         </div>
-                        <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                        <hr style="grid-column: 1 / -1; margin: 5px 0; border: none; border-top: 1px solid #ccc;">
                         <!--<label>Приложение:</label>-->
                         <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; gap: 10px;">
                             <button id="checkVersionBtn" class="action-button" style="min-height: 32px; box-sizing: border-box; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -263,7 +267,7 @@
                         <input type="number" id="calcBottomOffset_hidden" min="-500" max="500" value="0" style="display: none;">
                     </span>
                     <span ID="Settings2" class="layout-settings-grid" style="border: 0px; display: none; grid-column: 1 / -1;">
-                        <hr style="grid-column: 1 / -1; margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                        <hr style="grid-column: 1 / -1; margin: 5px 0; border: none; border-top: 1px solid #ccc;">
                         <!-- Keys -->
                         <label>Клавиатура:</label>
                         <input type="number" id="keysX" data-key="Keys" data-prop="x">
@@ -479,7 +483,7 @@
     }, 10000); // 10 секунди 
 </script>
 
-<script src="mainnAll.js"></script>
+<script src="mainAll.js"></script>
 
 </body>
 </html>
