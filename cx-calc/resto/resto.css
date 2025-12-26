@@ -1,10 +1,10 @@
 .panel {
     width: 95%;
     margin: 0 auto 10px auto;
-    background: rgba(255, 255, 255, 0.95);
+    background: #393a38;
     backdrop-filter: blur(10px);
     border-radius: 16px;
-    padding: 10px;
+    padding: 4px 10px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     box-sizing: border-box;
     position: relative;
@@ -12,21 +12,22 @@
 }
 
 .field-group {
-    margin-bottom: 12px;
+    margin-bottom: 5px;
 }
 
 .field-group:last-child {
-    margin-bottom: 0;
+    margin-bottom: 2px;
 }
 
 .field-label {
     text-align: center;
     font-size: 12px;
     font-weight: 600;
-    color: #333;
+    color: #f7f4f4;
     margin-bottom: 2px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-family: 'Arial', sans-serif;
 }
 
 .input-pair {
@@ -48,7 +49,7 @@
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #ccc;
+    background: #666;
     border: none;
     cursor: pointer;
     font-size: 12px;
@@ -61,7 +62,7 @@
 }
 
 .clear-btn:hover {
-    background: #999;
+    background: #888;
 }
 
 .input-wrapper:hover .clear-btn,
@@ -79,8 +80,8 @@ input[type="text"] {
     border-radius: 6px;
     outline: none;
     transition: all 0.3s ease;
-    background: white;
-    color: #333;
+    background: #555548;
+    color: #d4d3d3;
     text-align: center;
 }
 

@@ -401,7 +401,7 @@ function getImageSize() {
 }
 
 function getImageVisualSize() {
-    let containerWidth = document.body.clientWidth;
+    let containerWidth = document.body.clientWidth - 1;
     let containerHeight = document.body.clientHeight;
     if (!calculator) {
         console.error("Грешка: Не е намерено изображението.");
@@ -431,6 +431,15 @@ function getImageVisualSize() {
     aspectRatioW = imageWidth / imageWidthO; // aspectRatioW е съотношението на ширината на изображението към оригиналната ширина
     aspectRatioH = imageHeight / imageHeightO; // aspectRatioH е съотношението на височината на изображението към оригиналната височина
     console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
+
+    // --- Set Panel Width logic moved here ---
+    const panel = document.querySelector('.panel');
+    if (panel) {
+        // Use the calculated imageWidth which respects object-fit
+        if (imageWidth > 0) {
+            panel.style.maxWidth = `${imageWidth}px`;
+        }
+    }
 }
 
 function getKeyValue(row, col) {
@@ -1009,8 +1018,19 @@ function handleCalculatorInteraction(event, options = {}) {
         if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
             interactionHandled = true;
             const keyValue = key.value;
-            // Обработка на специални клавиши
-            if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '€') {
+
+            // --- Resto Input Interception ---
+            // If the user has focused a resto field, try to send the calculator key there.
+            // If handleRestoInput returns true, it means it handled the key (digit, C, Backspace),
+            // so we should NOT perform the default calculator action.
+            if (typeof window.handleRestoInput === 'function' &&
+                !(event.ctrlKey || options.allowWithoutCtrl) && // Only intercept normal clicks, not Ctrl actions
+                window.handleRestoInput(keyValue)) {
+
+                // Key handled by Resto panel. Do nothing else.
+            }
+            // Обработка на специални клавиши (The original else if chain follows)
+            else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '€') {
                 if (ovFlag) { noOverlay(); ovFlag = false; }
                 settingsModal.style.display = 'flex';
                 modalIsActive = true;
@@ -1254,6 +1274,7 @@ window.addEventListener("load", function () {
             // което гарантира коректни размери, независимо от скина.
             getImageSize();
             getImageVisualSize();
+
             scaleMainPoints(aspectRatioW, aspectRatioH);
             const layout = calcNewCoordinates();
             keys = layout.keys;
@@ -1366,7 +1387,13 @@ window.addEventListener("load", function () {
         }
     }
     // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
-    // calcResize ();
+    // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
+    // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
+    // Използваме леко закъснение и симулираме resize, за да сме сигурни, че всичко е наместено.
+    setTimeout(() => {
+        calcResize();
+        window.dispatchEvent(new Event('resize'));
+    }, 100);
     appendNumber("C");
 });
 

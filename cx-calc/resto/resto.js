@@ -390,6 +390,10 @@ function updateRestoVisuals(remainingEur, mode) {
 // Форматиране при загуба на фокус (blur) за всички текстови полета
 document.querySelectorAll('input[type="text"]').forEach(input => {
     input.addEventListener('blur', function () {
+        // Ако полето все още е "виртуално активно" (т.е. работим с калкулатора),
+        // не го форматираме веднага. Ще го форматираме, когато активността падне.
+        if (this.classList.contains('active-virtual-focus')) return;
+
         let val = this.value.replace(',', '.');
         if (val === '') return;
 
