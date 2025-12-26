@@ -1103,6 +1103,13 @@ document.addEventListener("click", function (event) {
         event.stopPropagation();
         return;
     }
+
+    // --- Fix for Resto Panel Focus ---
+    // If the click is inside the resto panel or an input field, do nothing (let the browser handle focus)
+    if (event.target.closest('.panel') || event.target.tagName === 'INPUT') {
+        return;
+    }
+
     handleCalculatorInteraction(event);
     // updateDebugInfo();
 });
@@ -1401,6 +1408,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Блокираме другите клавиши, ако има отворен модален прозорец
         if (modalIsActive) {
+            return;
+        }
+
+        // --- Fix for Resto Panel Typing ---
+        // Ако потребителят пише в текстово поле, не задействаме калкулатора
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
             return;
         }
         // Предотвратяваме стандартното поведение, ако е нужно

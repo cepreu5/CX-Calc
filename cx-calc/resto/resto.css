@@ -1,10 +1,14 @@
 .panel {
-    width: 360px;
+    width: 95%;
+    margin: 0 auto 10px auto;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 16px;
     padding: 10px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+    position: relative;
+    z-index: 20;
 }
 
 .field-group {
@@ -20,19 +24,20 @@
     font-size: 12px;
     font-weight: 600;
     color: #333;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .input-pair {
     display: flex;
-    gap: 5px;
+    gap: 10px;
+    justify-content: space-between;
 }
 
 .input-wrapper {
     position: relative;
-    display: inline-block;
+    flex: 1;
 }
 
 .clear-btn {
@@ -65,7 +70,8 @@
 }
 
 input[type="text"] {
-    width: 165px;
+    width: 100%;
+    box-sizing: border-box;
     padding: 7px 25px 7px 5px;
     font-size: 15px;
     line-height: 1;
@@ -117,7 +123,7 @@ input[type="text"]:hover {
     background-color: rgb(2, 163, 2) !important;
     color: #fbfefb !important;
     font-weight: 300;
-    font-size: 12px;
+    font-size: 12px !important;
 }
 
 .split-labels {

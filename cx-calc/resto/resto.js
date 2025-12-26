@@ -6,27 +6,20 @@ function roundToTwo(num) {
 // Функция за конвертиране EUR <-> BGN
 // direction: 'eurToBgn' или 'bgnToEur'
 function conveert(value, direction) {
-    let str = value.toString().replace(',', '.');
-    let num = parseFloat(str);
+    if (!value || value === "") return "";
 
-    if (isNaN(num) || num === 0) {
-        return '';
-    }
-
-    let converted;
+    // Използваме глобалните функции от mainAll.js за еднаквост
     if (direction === 'eurToBgn') {
-        converted = num * 1.95583;
+        // EUR -> BGN (convertFromEurToLev)
+        return typeof convertFromEurToLev === 'function'
+            ? convertFromEurToLev(value.toString())
+            : (parseFloat(value.toString().replace(',', '.')) * (typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583)).toFixed(2);
     } else {
-        converted = num / 1.95583;
+        // BGN -> EUR (convertFromLevToEur)
+        return typeof convertFromLevToEur === 'function'
+            ? convertFromLevToEur(value.toString())
+            : (parseFloat(value.toString().replace(',', '.')) / (typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583)).toFixed(2);
     }
-
-    // Закръгляме резултата, за да участва чист в следващи сметки
-    converted = roundToTwo(converted);
-
-    // Ако резулататът е 0 (или много близо), връщаме празен стринг
-    if (Math.abs(converted) < 0.005) return '';
-
-    return converted.toFixed(2);
 }
 
 // ... [validateInput stays same, omitted for brevity if tools allows, but replace_file_content replaces block. 
@@ -182,7 +175,7 @@ function recalculateRestoMixed() {
     if (isManualResto2) {
         let v = parseFloat(resto2.value.replace(',', '.')) || 0;
         // v e BGN. Конвертираме и закръгляме до 2-рия знак преди вадене
-        val2 = roundToTwo(v / 1.95583);
+        val2 = roundToTwo(v / (typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583));
     }
 
     let remainingEur;
@@ -214,7 +207,7 @@ function recalculateRestoMixed() {
         // Но Wait, ако remaining е с обратен знак?
         // Ако трябва да върна 50 (base=-50). Върнал съм 10 (val1=10). Rem=-40.
         // Resto2 трябва да покаже 40 BGN.
-        const remBgn = roundToTwo(Math.abs(remainingEur) * 1.95583);
+        const remBgn = roundToTwo(Math.abs(remainingEur) * (typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583));
         resto2.value = remBgn > 0.005 ? remBgn.toFixed(2) : '';
         updateRestoVisuals(remainingEur, 'manual_left');
     }
@@ -318,7 +311,7 @@ function calculateTotalResto() {
     const due1Value = parseFloat(due1.value.replace(',', '.')) || 0;
     const paid1Value = parseFloat(paid1.value.replace(',', '.')) || 0;
     const paid2Value = parseFloat(paid2.value.replace(',', '.')) || 0;
-    const paid2InEur = paid2Value / 1.95583;
+    const paid2InEur = paid2Value / (typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583);
     const totalPaidInEur = paid1Value + paid2InEur;
     return due1Value - totalPaidInEur;
 }
