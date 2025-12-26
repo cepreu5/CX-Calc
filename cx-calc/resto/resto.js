@@ -155,91 +155,108 @@ function updateFieldIfNotManual(field, newVal, isManualFlag) {
 
 // Обща функция за преизчисляване при промяна на Resto
 function recalculateRestoMixed() {
-    // 1. Вземаме базата (закръглена от calculateTotalResto)
-    const totalRestoEurBase = calculateTotalResto();
-    // totalRestoEurBase > 0 -> Дължим още. < 0 -> Има ресто за връщане.
+    const rate = typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583;
 
-    // 2. Вземаме въведеното в Resto полетата (ако са manual)
-    // Ако поле не е manual, приемаме че е 0 за целите на сметката?
-    // Или по-скоро:
-    // Ако и двете са manual -> Сумираме ги и показваме остатъка... къде?
-    // Ако едното е manual -> Другото поема остатъка.
+    // Определяме водещата валута според активния елемент
+    let useBgnAsMaster = false;
+    if (document.activeElement) {
+        const id = document.activeElement.id;
+        if (id === 'due2' || id === 'paid2' || id === 'resto2') {
+            useBgnAsMaster = true;
+        }
+    }
 
-    let val1 = 0; // EUR
-    let val2 = 0; // BGN -> EUR
+    // Взимаме стойностите
+    const due1Val = parseFloat(due1.value.replace(',', '.')) || 0;
+    const due2Val = parseFloat(due2.value.replace(',', '.')) || 0;
+    const paid1Val = parseFloat(paid1.value.replace(',', '.')) || 0;
+    const paid2Val = parseFloat(paid2.value.replace(',', '.')) || 0;
+
+    let baseBalance = 0; // Negative means remaining change (ресто), Positive means due (дължимо)
+
+    if (useBgnAsMaster) {
+        // Смятаме в ЛЕВА
+        const totalPaidBgn = paid2Val + (paid1Val * rate);
+        baseBalance = due2Val - totalPaidBgn; // в BGN
+    } else {
+        // Смятаме в ЕВРО
+        const totalPaidEur = paid1Val + (paid2Val / rate);
+        baseBalance = due1Val - totalPaidEur; // в EUR
+    }
+
+    // Manual fields logic
+    let manualRestoEur = 0;
+    let manualRestoBgn = 0;
 
     if (isManualResto1) {
-        val1 = parseFloat(resto1.value.replace(',', '.')) || 0;
-        // val1 е в EUR, няма нужда от конвертиране, но е добре да е число
+        manualRestoEur = parseFloat(resto1.value.replace(',', '.')) || 0;
     }
     if (isManualResto2) {
-        let v = parseFloat(resto2.value.replace(',', '.')) || 0;
-        // v e BGN. Конвертираме и закръгляме до 2-рия знак преди вадене
-        val2 = roundToTwo(v / (typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583));
+        manualRestoBgn = parseFloat(resto2.value.replace(',', '.')) || 0;
     }
 
-    let remainingEur;
+    // Calculate final remaining
+    // We need to apply manual adjustments.
+    // If baseBalance is BGN, we convert manuals to BGN to subtract.
+    // If baseBalance is EUR, we convert manuals to EUR.
 
-    // Логика:
-    // Ако сме в режим "Дължимо" (base > 0): Потребителят въвежда колко ПЛАЩА допълнително.
-    // Remaining = Base - (Val1 + Val2).
+    let finalRemaining = 0; // In Master Currency
 
-    // Ако сме в режим "Ресто" (base < 0): Потребителят въвежда колко ВРЪЩА.
-    // Base е -50 (трябва да върнем 50).
-    // Val1 = 10 (върнахме 10).
-    // Remaining = Base + (Val1 + Val2). ( -50 + 10 = -40).
+    if (useBgnAsMaster) {
+        // Base is BGN
+        // Adjust logic:
+        // If Due (Positive): Remaining = Base - (Manual1*Rate + Manual2)
+        // If Change (Negative): Remaining = Base + (Manual1*Rate + Manual2)
+        const totalManualBgn = (manualRestoEur * rate) + manualRestoBgn;
 
-    if (totalRestoEurBase >= 0) {
-        // Дължимо
-        remainingEur = roundToTwo(totalRestoEurBase - (val1 + val2));
+        if (baseBalance >= 0) {
+            finalRemaining = baseBalance - totalManualBgn;
+        } else {
+            finalRemaining = baseBalance + totalManualBgn;
+        }
     } else {
-        // Ресто (negative base)
-        remainingEur = roundToTwo(totalRestoEurBase + (val1 + val2));
+        // Base is EUR
+        const totalManualEur = manualRestoEur + (manualRestoBgn / rate);
+
+        if (baseBalance >= 0) {
+            finalRemaining = baseBalance - totalManualEur;
+        } else {
+            finalRemaining = baseBalance + totalManualEur;
+        }
     }
 
-    // 3. Обновяване на NON-manual полетата
-    // Ако и двете са manual -> нищо не се обновява като стойност, само визуализация.
-    // Ако само едното е manual -> другото поема remainer.
+    finalRemaining = roundToTwo(finalRemaining);
 
-    if (isManualResto1 && !isManualResto2) {
-        // Resto2 е автоматично
-        // То трябва да покаже remaining в BGN
-        // Но Wait, ако remaining е с обратен знак?
-        // Ако трябва да върна 50 (base=-50). Върнал съм 10 (val1=10). Rem=-40.
-        // Resto2 трябва да покаже 40 BGN.
-        const remBgn = roundToTwo(Math.abs(remainingEur) * (typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583));
-        resto2.value = remBgn > 0.005 ? remBgn.toFixed(2) : '';
-        updateRestoVisuals(remainingEur, 'manual_left');
-    }
-    else if (!isManualResto1 && isManualResto2) {
-        // Resto1 е автоматично
-        const remEur = Math.abs(remainingEur); // вече е закръглено
-        resto1.value = remEur > 0.005 ? remEur.toFixed(2) : '';
-        updateRestoVisuals(remainingEur, 'manual_right');
-    }
-    else if (isManualResto1 && isManualResto2) {
-        // И двете са manual.
-        // Показваме статус според remaining.
-        // Какъв режим визуален? Split с 'Върнати' и на двете?
-        // Потребителят искаше "над другото поле да се показва Върнати".
-        // Ако и двете са Върнати... Етикетите?
-        // Може би трябва трети режим 'manual_both'?
-        // Засега да не усложняваме излишно visual функцията, ползваме manual_left (Resto1=Върнати, Resto2=Status).
-        // Но Resto2 е manual! Значи Resto2 е Върнати.
-        updateRestoVisuals(remainingEur, 'manual_both');
-    }
-    else {
-        // Нито едно не е manual -> Автоматичен режим (Default)
-        // Resto1 поема всичко (EUR), Resto2 е конвертирано.
-        // Това се случва при reset или initial.
-        const displayResto1 = Math.abs(totalRestoEurBase);
-        resto1.value = displayResto1 > 0.005 ? displayResto1.toFixed(2) : '';
+    // Update Visuals and Non-Manual Fields
+    let displayEur = 0;
+    let displayBgn = 0;
 
-        const r2 = conveert(displayResto1 > 0.005 ? displayResto1.toFixed(2) : 0, 'eurToBgn');
-        resto2.value = r2;
-
-        updateRestoVisuals(totalRestoEurBase, 'default');
+    if (useBgnAsMaster) {
+        displayBgn = finalRemaining;
+        displayEur = finalRemaining / rate;
+    } else {
+        displayEur = finalRemaining;
+        displayBgn = finalRemaining * rate;
     }
+
+    // Update NON-manual fields
+    if (!isManualResto1) {
+        const absEur = Math.abs(displayEur);
+        resto1.value = absEur > 0.005 ? absEur.toFixed(2) : '';
+    }
+    if (!isManualResto2) {
+        const absBgn = Math.abs(displayBgn);
+        resto2.value = absBgn > 0.005 ? absBgn.toFixed(2) : '';
+    }
+
+    // Update visuals (colors, labels) based on the EUR value (as used in existing updateRestoVisuals)
+    let mode = 'default';
+    if (isManualResto1 && !isManualResto2) mode = 'manual_left';
+    else if (!isManualResto1 && isManualResto2) mode = 'manual_right';
+    else if (isManualResto1 && isManualResto2) mode = 'manual_both'; // Fallback to handle both? Logic in visual func needs check.
+
+    // updateRestoVisuals expects value in EUR to determine Positive/Negative red/green
+    updateRestoVisuals(displayEur, mode);
 }
 
 // Настройка на трета двойка (Ресто)

@@ -73,8 +73,8 @@
 input[type="text"] {
     width: 100%;
     box-sizing: border-box;
-    padding: 7px 25px 7px 5px;
-    font-size: 15px;
+    padding: 2px 25px 2px 5px;
+    font-size: 20px;
     line-height: 1;
     border: 2px solid #e0e0e0;
     border-radius: 6px;
@@ -88,7 +88,6 @@ input[type="text"] {
 input[type="text"]:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    transform: translateY(-2px);
 }
 
 input[type="text"]:hover {
@@ -117,14 +116,14 @@ input[type="text"]:hover {
     background-color: red !important;
     color: #fcfbfb !important;
     font-weight: 600;
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .resto-negative {
     background-color: rgb(2, 163, 2) !important;
     color: #fbfefb !important;
     font-weight: 300;
-    font-size: 12px !important;
+    font-size: 20px !important;
 }
 
 .split-labels {
@@ -139,4 +138,18 @@ input[type="text"]:hover {
 .split-labels .field-label {
     flex: 1;
     margin-bottom: 0;
+}
+
+/* Highlight for Value and Paid group fields when active */
+#due1:focus,
+#due1.active-virtual-focus,
+#due2:focus,
+#due2.active-virtual-focus,
+#paid1:focus,
+#paid1.active-virtual-focus,
+#paid2:focus,
+#paid2.active-virtual-focus {
+    background-color: rgba(201, 255, 5, 0.2);
+    box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.5);
+    border-color: #C9FF05;
 }

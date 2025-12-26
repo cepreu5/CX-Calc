@@ -8,10 +8,15 @@ function handleCalculatorInputForResto(key) {
     // console.log("handleRestoInput called with:", key, "ActiveField:", activeRestoField);
 
     // Backup: ако activeRestoField е изгубен, но имаме елемент с клас active-virtual-focus, го възстановяваме.
+    // Още по-добре: проверяваме document.activeElement
     if (!activeRestoField) {
-        const virtualActive = document.querySelector('.panel input.active-virtual-focus');
-        if (virtualActive) {
-            activeRestoField = virtualActive;
+        if (document.activeElement && document.activeElement.closest('.panel') && document.activeElement.tagName === 'INPUT') {
+            activeRestoField = document.activeElement;
+        } else {
+            const virtualActive = document.querySelector('.panel input.active-virtual-focus');
+            if (virtualActive) {
+                activeRestoField = virtualActive;
+            }
         }
     }
 
@@ -21,12 +26,17 @@ function handleCalculatorInputForResto(key) {
     // или ги обработваме специфично.
 
     // Ако е "C" (Clear) -> изтриваме съдържанието на ВСИЧКИ полета в панела
+    // Ако е "C" (Clear) -> изтриваме съдържанието на ВСИЧКИ полета в панела
     if (key === 'C') {
-        document.querySelectorAll('.panel input[type="text"]').forEach(input => {
+        const inputs = document.querySelectorAll('.panel input[type="text"]');
+        inputs.forEach(input => {
             input.value = '';
             triggerInputEvent(input);
         });
-        return true;
+
+        // ВИНАГИ връщаме false, за да може командата 'C' да продължи към mainAll.js
+        // и да изчисти дисплея на калкулатора. Така бутонът 'C' прави пълно изчистване (Global Clear).
+        return false;
     }
 
     // Ако е "B" (Backspace) -> трием последния символ
@@ -119,14 +129,19 @@ document.querySelectorAll('.panel input[type="text"]').forEach(input => {
 document.addEventListener('click', function (e) {
     // Проверяваме дали кликът е вътре в .calculator-container (който съдържа и панела, и калкулатора)
     const isInsideContainer = e.target.closest('.calculator-container');
+    const isDisplayClick = e.target.id === 'levInput' || e.target.id === 'eurInput' || e.target.closest('.calculator-display');
 
-    // Ако кликът е ИЗВЪН контейнера, тогава деактивираме полето.
-    // (Това позволява кликове върху .ctoverlay, .calculator-img и самия .panel да запазват фокуса)
-    if (!isInsideContainer && !e.target.classList.contains('ctoverlay') && e.target.id !== 'ctoverlay') {
+    // Ако кликът е ИЗВЪН контейнера ИЛИ е дисплей, деактивираме.
+    // (Това позволява кликове върху .ctoverlay, .calculator-img и самия .panel да запазват фокуса, освен ако не е дисплей)
+    if ((!isInsideContainer && !e.target.classList.contains('ctoverlay') && e.target.id !== 'ctoverlay') || isDisplayClick) {
         if (activeRestoField) {
             // Премахваме класа ПРЕДИ да извикаме blur, за да може resto.js да изпълни форматирането
             activeRestoField.classList.remove('active-virtual-focus');
             activeRestoField.dispatchEvent(new Event('blur'));
+        }
+
+        if (document.activeElement && document.activeElement.closest('.panel') && document.activeElement.tagName === 'INPUT') {
+            document.activeElement.blur();
         }
 
         activeRestoField = null;
@@ -139,3 +154,15 @@ document.addEventListener('click', function (e) {
 
 // Трябва да изнесем handle function глобално, за да я вика mainAll.js
 window.handleRestoInput = handleCalculatorInputForResto;
+
+window.clearRestoFocus = function () {
+    if (activeRestoField) {
+        activeRestoField.classList.remove('active-virtual-focus');
+        activeRestoField.dispatchEvent(new Event('blur'));
+    }
+    if (document.activeElement && document.activeElement.closest('.panel') && document.activeElement.tagName === 'INPUT') {
+        document.activeElement.blur();
+    }
+    activeRestoField = null;
+    document.querySelectorAll('.panel input').forEach(i => i.classList.remove('active-virtual-focus'));
+};

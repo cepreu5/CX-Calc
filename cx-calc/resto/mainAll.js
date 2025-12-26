@@ -1087,6 +1087,9 @@ function handleCalculatorInteraction(event, options = {}) {
         const isClickOnEur = event.clientX >= eurRect.left && event.clientX <= eurRect.right &&
             event.clientY >= eurRect.top && event.clientY <= eurRect.bottom;
         if ((isClickOnLev || isClickOnEur)) { //  && (event.ctrlKey || options.allowWithoutCtrl)
+            if (typeof window.clearRestoFocus === 'function') {
+                window.clearRestoFocus();
+            }
             toggleDisplayMode();
             interactionHandled = true;
         }
