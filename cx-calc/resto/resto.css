@@ -1,0 +1,135 @@
+.panel {
+    width: 360px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.field-group {
+    margin-bottom: 12px;
+}
+
+.field-group:last-child {
+    margin-bottom: 0;
+}
+
+.field-label {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-pair {
+    display: flex;
+    gap: 5px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.clear-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ccc;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.clear-btn:hover {
+    background: #999;
+}
+
+.input-wrapper:hover .clear-btn,
+.input-wrapper input:focus~.clear-btn {
+    display: flex;
+}
+
+input[type="text"] {
+    width: 165px;
+    padding: 7px 25px 7px 5px;
+    font-size: 15px;
+    line-height: 1;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    outline: none;
+    transition: all 0.3s ease;
+    background: white;
+    color: #333;
+    text-align: center;
+}
+
+input[type="text"]:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+}
+
+input[type="text"]:hover {
+    border-color: #b0b0b0;
+}
+
+/* Анимация при промяна на стойност */
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+.changed {
+    animation: pulse 0.3s ease;
+}
+
+/* Цветове за Ресто полетата */
+.resto-positive {
+    background-color: red !important;
+    color: #fcfbfb !important;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.resto-negative {
+    background-color: rgb(2, 163, 2) !important;
+    color: #fbfefb !important;
+    font-weight: 300;
+    font-size: 12px;
+}
+
+.split-labels {
+    display: none;
+    gap: 5px;
+}
+
+.split-labels.visible {
+    display: flex;
+}
+
+.split-labels .field-label {
+    flex: 1;
+    margin-bottom: 0;
+}
