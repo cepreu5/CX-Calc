@@ -59,7 +59,12 @@ var MainPointsO = {
     Status: { x: -10, y: 185 },
     StatusSize: { x: 45, y: 15 },
     CurrencyOffset: { x: -40, y: 15 },
-    CurrencyLevOffset: { x: -40, y: 15 }
+    CurrencyLevOffset: { x: -40, y: 15 },
+    Resto: { x: 13, y: -108 },
+    RestoSize: { x: 440, y: 290 },
+    Fields: { x: -210, y: -430 },
+    FieldsSize: { x: 190, y: 60 },
+    FldGaps: { x: 27, y: 34 },
 };
 
 const keyMapR = [ // Right-handed by default
@@ -407,18 +412,31 @@ function getImageVisualSize() {
         console.error("Грешка: Не е намерено изображението.");
         return;
     }
+
+    // Initialize offsets
+    window.imgOffsetX = 0;
+    window.imgOffsetY = 0;
+
+    const rect = calculator.getBoundingClientRect();
+    const elWidth = rect.width;
+    const elHeight = rect.height;
+
     let aspectRatio = calculator.naturalWidth / calculator.naturalHeight;
     if (calculator.style.objectFit === "cover") {
-        imageWidth = containerWidth;
-        imageHeight = containerHeight;
+        imageWidth = elWidth;
+        imageHeight = elHeight;
     } else if (calculator.style.objectFit === "contain") {
-        if (containerWidth / containerHeight > aspectRatio) {
-            imageHeight = containerHeight;
-            imageWidth = Math.round(containerHeight * aspectRatio);
+        if (elWidth / elHeight > aspectRatio) {
+            imageHeight = elHeight;
+            imageWidth = Math.round(elHeight * aspectRatio);
+            // Image is narrower, centered horizontally
+            window.imgOffsetX = (elWidth - imageWidth) / 2;
             console.log("(contain) - Изображението е по-широко от контейнера, използваме височината на контейнера.");
         } else {
-            imageWidth = containerWidth;
-            imageHeight = Math.round(containerWidth / aspectRatio);
+            imageWidth = elWidth;
+            imageHeight = Math.round(elWidth / aspectRatio);
+            // Image is shorter, centered vertically
+            window.imgOffsetY = (elHeight - imageHeight) / 2;
             console.log("(contain) - Изображението е по-високо от контейнера, използваме ширината на контейнера.");
         }
     } else {
@@ -585,17 +603,34 @@ function updateDisplays(userInput, formattedUserInput, keyPressed) {
 }
 
 function toggleDisplayMode() {
-    levMode = !levMode;
-    const newActiveValue = levMode
-        ? displaylv.textContent
-        : display.textContent;
-    userInput = newActiveValue.replace(/\s/g, ''); // премахване на интервали
-    // Ако стойността е цяло число, форматирано с ",00", премахваме десетичната част.
-    if (userInput.endsWith(','.padEnd(DECIMAL_PLACES + 1, '0'))) {
-        userInput = userInput.slice(0, -(DECIMAL_PLACES + 1));
+    // Toggle Resto Panel and Image visibility
+    const restoImage = document.getElementById('restoImage');
+    const panel = document.querySelector('.panel');
+
+    let isVisible = false;
+    if (panel && panel.style.display !== 'none' && panel.style.display !== '') {
+        isVisible = true;
     }
-    console.log("Променен режим - userInput:", userInput);
-    updateDisplays(userInput, userInput.replace(/\*/g, "×").replace(/\//g, "÷"), 'L');
+
+    if (isVisible) {
+        // Hide
+        if (restoImage) restoImage.style.display = 'none';
+        if (panel) panel.style.display = 'none';
+    } else {
+        // Show
+        if (restoImage) {
+            restoImage.style.display = 'block';
+            restoImage.style.pointerEvents = 'auto'; // Block clicks on the image area
+        }
+        if (panel) {
+            panel.style.display = 'flex';
+            panel.style.position = 'absolute';
+            panel.style.pointerEvents = 'none'; // Pass clicks through the transparent panel shell
+        }
+    }
+
+    // Recalculate layout to ensure overlays match any potential shifts
+    setTimeout(calcResize, 10);
 }
 
 function balanceBrackets(str) {
@@ -960,10 +995,23 @@ async function pasteNumber() {
     }
 }
 
+// Нова функция, която възстановява старата функционалност за смяна на дисплеите
+function swapDisplays() {
+    levMode = !levMode;
+    const newActiveValue = levMode
+        ? displaylv.textContent
+        : display.textContent;
+    userInput = newActiveValue.replace(/\s/g, '');
+    if (userInput.endsWith(','.padEnd(DECIMAL_PLACES + 1, '0'))) {
+        userInput = userInput.slice(0, -(DECIMAL_PLACES + 1));
+    }
+    updateDisplays(userInput, userInput.replace(/\*/g, "×").replace(/\//g, "÷"), 'L');
+}
+
 function switchNumber() {
     appendNumber("="); // за да запомним числото от активния дисплей в клипборда
     appendNumber("C"); // изтриваме дисплея
-    appendNumber("L"); // превключваме дисплея
+    swapDisplays();    // превключваме дисплея (стара функционалност)
     pasteNumber(); // поставяме числото от клипборда
 }
 
@@ -2213,14 +2261,18 @@ function calcNewCoordinates() {
     const containerRect = document.getElementById('calculatorContainer').getBoundingClientRect();
     // console.log("Координати на калкулатора L T:", rect.left, rect.top, MainPoints.Display.y);
     // Връщаме координати за оверлея
+    // Връщаме координати за оверлея
+    const offX = window.imgOffsetX || 0;
+    const offY = window.imgOffsetY || 0;
+
     const displayCoords = {
         lv: {
-            x: rect.left + MainPoints.Displaylv.x,
-            y: rect.top + MainPoints.Displaylv.y
+            x: rect.left + offX + MainPoints.Displaylv.x,
+            y: rect.top + offY + MainPoints.Displaylv.y
         },
         eur: {
-            x: rect.left + MainPoints.Display.x,
-            y: rect.top + MainPoints.Display.y
+            x: rect.left + offX + MainPoints.Display.x,
+            y: rect.top + offY + MainPoints.Display.y
         }
     };
     // в  масива за клавишите - новите координати
@@ -2228,8 +2280,8 @@ function calcNewCoordinates() {
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
             keys.push({
-                x: rect.left + MainPoints.Keys.x + col * (MainPoints.KeySize.x + MainPoints.KbdGaps.x),
-                y: rect.top + MainPoints.Keys.y + row * (MainPoints.KeySize.y + MainPoints.KbdGaps.y),
+                x: rect.left + offX + MainPoints.Keys.x + col * (MainPoints.KeySize.x + MainPoints.KbdGaps.x),
+                y: rect.top + offY + MainPoints.Keys.y + row * (MainPoints.KeySize.y + MainPoints.KbdGaps.y),
                 value: getKeyValue(row, col)
             });
         }
@@ -2240,7 +2292,15 @@ function calcNewCoordinates() {
         { label: "Валута", id: "currency", coords: { x: displayCoords.eur.x + MainPoints.CurrencyOffset.x, y: displayCoords.eur.y + MainPoints.CurrencyOffset.y } },
         { label: "Валута Лев", id: "currencyLev", coords: { x: displayCoords.lv.x + MainPoints.CurrencyLevOffset.x, y: displayCoords.lv.y + MainPoints.CurrencyLevOffset.y } }
     ];
-    markers.forEach(({ label, id, coords }) => {
+    if (MainPoints.Resto) {
+        markers.push({
+            label: "Resto Panel",
+            id: "restoImage",
+            coords: { x: Math.round(rect.left + offX + MainPoints.Resto.x), y: Math.round(rect.top + offY + MainPoints.Resto.y) },
+            size: MainPoints.RestoSize ? { x: Math.round(MainPoints.RestoSize.x), y: Math.round(MainPoints.RestoSize.y) } : null
+        });
+    }
+    markers.forEach(({ label, id, coords, size }) => {
         // console.log("Дисплей на калкулатора.");
         const x = parseFloat(coords?.x);
         const y = parseFloat(coords?.y);
@@ -2272,9 +2332,41 @@ function calcNewCoordinates() {
         } else if (id === "currency" || id === "currencyLev") {
             const baseFontSize = 24; // Базов размер на шрифта
             marker.style.fontSize = `${baseFontSize * aspectRatioH}px`;
+        } else if (size) {
+            marker.style.width = `${size.x}px`;
+            marker.style.height = `${size.y}px`;
         }
     });
-    for (let i = 1; i < 5; i++) positionStatusArea(i);
+    // Position Resto Fields
+    if (MainPoints.Fields && MainPoints.FieldsSize && MainPoints.FldGaps) {
+        const fieldIds = [
+            ['due1', 'due2'],
+            ['paid1', 'paid2'],
+            ['resto1', 'resto2']
+        ];
+
+        for (let r = 0; r < fieldIds.length; r++) {
+            for (let c = 0; c < fieldIds[r].length; c++) {
+                const fId = fieldIds[r][c];
+                const inputEl = document.getElementById(fId);
+                if (inputEl) {
+                    const fx = rect.left + offX + MainPoints.Fields.x + c * (MainPoints.FieldsSize.x + MainPoints.FldGaps.x);
+                    const fy = rect.top + offY + MainPoints.Fields.y + r * (MainPoints.FieldsSize.y + MainPoints.FldGaps.y);
+
+                    inputEl.style.position = 'absolute';
+                    inputEl.style.left = `${Math.round(fx - containerRect.left)}px`;
+                    inputEl.style.top = `${Math.round(fy - containerRect.top)}px`;
+                    inputEl.style.width = `${Math.round(MainPoints.FieldsSize.x)}px`;
+                    inputEl.style.height = `${Math.round(MainPoints.FieldsSize.y)}px`;
+
+                    // Hide wrapper/others if necessary by ensuring input is top level or behaves well? 
+                    // We just force the input.
+                }
+            }
+        }
+    }
+
+    for (let i = 1; i < 5; i++) positionStatusArea(i); // already there
     return { keys, displayCoords };
 }
 

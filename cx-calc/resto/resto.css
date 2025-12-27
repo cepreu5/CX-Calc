@@ -1,14 +1,20 @@
 .panel {
-    width: 95%;
-    margin: 0 auto 10px auto;
-    background: #393a38;
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 4px 10px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    box-sizing: border-box;
-    position: relative;
-    z-index: 20;
+    /* Layout reset for absolute positioning of children */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    /* Cover container so interactions pass? No, pointer-events? */
+    /* pointer-events: none; allow clicking inputs? inputs have auto */
+    background: transparent;
+    backdrop-filter: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    border: none;
+    z-index: 10001;
 }
 
 .field-group {
@@ -40,6 +46,56 @@
     position: relative;
     flex: 1;
 }
+
+.clear-bt.panel {
+    top: 50%;
+    /* left: 50%; remove centering logic as it's absolute now */
+    /* transform: translate(-50%, -50%); */
+    width: 100%;
+    /* controlled by JS max-width */
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+    z-index: 10001;
+    /* display: flex; logic handled by JS toggle */
+    /* flex-direction: column; */
+    /* gap: 15px; */
+}
+
+/* Hide structural elements that are replaced by absolute positioning */
+.field-label,
+.clear-btn,
+.split-labels,
+#resto-main-label {
+    display: none !important;
+}
+
+/* Ensure containers are visible but neutral */
+.field-group,
+.input-pair,
+.input-wrapper {
+    display: block !important;
+    position: static;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    width: auto;
+    height: auto;
+    pointer-events: none;
+    /* Let clicks pass through containers? No, inputs need clicks. */
+    /* If container is pointer-events: none, children can be auto. */
+}
+
+input[type="text"] {
+    pointer-events: auto !important;
+    /* Ensure inputs are clickable */
+}
+
+/* Hide labels and buttons specifically */
+/* .field-label, .clear-btn moved up */
 
 .clear-btn {
     position: absolute;
