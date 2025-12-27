@@ -104,10 +104,7 @@ const paid2 = document.getElementById('paid2');
 const resto1 = document.getElementById('resto1');
 const resto2 = document.getElementById('resto2');
 
-const restoMainLabel = document.getElementById('resto-main-label');
-const restoSplitLabels = document.getElementById('resto-split-labels');
-const restoLabelLeft = document.getElementById('resto-label-left');
-const restoLabelRight = document.getElementById('resto-label-right');
+// (Labels elements removed as requested)
 
 // Глобално състояние дали сме в режим "Ръчно въвеждане"
 let manualInputMode = null;
@@ -134,7 +131,12 @@ paid2.addEventListener('input', function (e) {
 
 
 // Функция за изтриване на поле
-function clearField(fieldId) {
+// Функция за изтриване на поле
+function clearField(fieldId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     const field = document.getElementById(fieldId);
     field.value = '';
     field.dispatchEvent(new Event('input', { bubbles: true }));
@@ -333,8 +335,7 @@ function calculateTotalResto() {
     return due1Value - totalPaidInEur;
 }
 
-// Помощна функция за обновяване на цветовете и етикета
-// Помощна функция за обновяване на цветовете и етикета
+// Помощна функция за обновяване на цветовете (bez e-labeli)
 // mode: 'default' | 'manual_left' | 'manual_right'
 function updateRestoVisuals(remainingEur, mode) {
     // 1. Нулиране на класове
@@ -342,23 +343,9 @@ function updateRestoVisuals(remainingEur, mode) {
     resto2.classList.remove('resto-positive', 'resto-negative');
 
     const epsilon = 0.005;
-    let statusLabel = ''; // "Ресто" или "Дължимо"
-
-    // Определяне на правилния етикет според остатъка
-    if (remainingEur > epsilon) {
-        statusLabel = 'Дължимо';
-    } else {
-        statusLabel = 'Ресто';
-    }
 
     // 2. Логика според режима
     if (mode === 'default') {
-        // Скриваме split, показваме main
-        restoSplitLabels.classList.remove('visible');
-        // Връщаме main label
-        restoMainLabel.style.display = 'block';
-        restoMainLabel.textContent = statusLabel;
-
         // Цветове - и двете полета
         if (remainingEur > epsilon) {
             resto1.classList.add('resto-positive');
@@ -369,15 +356,6 @@ function updateRestoVisuals(remainingEur, mode) {
         }
 
     } else if (mode === 'manual_left') {
-        // Показваме split, скриваме main
-        restoMainLabel.style.display = 'none';
-        restoSplitLabels.classList.add('visible');
-
-        // Левият етикет е Върнати, Десният е статусът
-        restoLabelLeft.textContent = 'Върнати';
-        restoLabelRight.textContent = statusLabel;
-
-        // Лявото поле е бяло (стандартно - вече махнахме класовете)
         // Дясното поле си взема цвета
         if (remainingEur > epsilon) {
             resto2.classList.add('resto-positive');
@@ -386,15 +364,6 @@ function updateRestoVisuals(remainingEur, mode) {
         }
 
     } else if (mode === 'manual_right') {
-        // Показваме split, скриваме main
-        restoMainLabel.style.display = 'none';
-        restoSplitLabels.classList.add('visible');
-
-        // Левият е статусът, Десният е Върнати
-        restoLabelLeft.textContent = statusLabel;
-        restoLabelRight.textContent = 'Върнати';
-
-        // Дясното поле е бяло
         // Лявото поле си взема цвета
         if (remainingEur > epsilon) {
             resto1.classList.add('resto-positive');

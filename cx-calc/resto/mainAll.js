@@ -62,9 +62,9 @@ var MainPointsO = {
     CurrencyLevOffset: { x: -40, y: 15 },
     Resto: { x: 13, y: -108 },
     RestoSize: { x: 440, y: 290 },
-    Fields: { x: -210, y: -430 },
+    Fields: { x: 30, y: -76 },
     FieldsSize: { x: 190, y: 60 },
-    FldGaps: { x: 27, y: 34 },
+    FldGaps: { x: 22, y: 34 },
 };
 
 const keyMapR = [ // Right-handed by default
@@ -413,6 +413,23 @@ function getImageVisualSize() {
         return;
     }
 
+    // Reset styles
+    calculator.style.maxHeight = '95%';
+    calculator.style.objectPosition = 'center center';
+
+    // Check for Resto extra height requirement
+    let extraTop = 0;
+    if (typeof MainPointsO !== 'undefined' && MainPointsO.Resto && MainPointsO.Resto.y < 0) {
+        extraTop = Math.abs(MainPointsO.Resto.y);
+        // Calculate max height for calculator image to allow space for Resto
+        const calcNaturalH = calculator.naturalHeight;
+        if (calcNaturalH > 0) {
+            const allowedH = (containerHeight * calcNaturalH) / (calcNaturalH + extraTop) - 20;
+            calculator.style.maxHeight = `${allowedH}px`;
+            calculator.style.objectPosition = 'center bottom';
+        }
+    }
+
     // Initialize offsets
     window.imgOffsetX = 0;
     window.imgOffsetY = 0;
@@ -435,8 +452,14 @@ function getImageVisualSize() {
         } else {
             imageWidth = elWidth;
             imageHeight = Math.round(elWidth / aspectRatio);
-            // Image is shorter, centered vertically
-            window.imgOffsetY = (elHeight - imageHeight) / 2;
+            // Image is shorter.
+            if (extraTop > 0) {
+                // Aligned to bottom due to Resto
+                window.imgOffsetY = elHeight - imageHeight;
+            } else {
+                // Centered vertically
+                window.imgOffsetY = (elHeight - imageHeight) / 2;
+            }
             console.log("(contain) - Изображението е по-високо от контейнера, използваме ширината на контейнера.");
         }
     } else {
@@ -451,13 +474,7 @@ function getImageVisualSize() {
     console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
 
     // --- Set Panel Width logic moved here ---
-    const panel = document.querySelector('.panel');
-    if (panel) {
-        // Use the calculated imageWidth which respects object-fit
-        if (imageWidth > 0) {
-            panel.style.maxWidth = `${imageWidth}px`;
-        }
-    }
+    // NO PANEL ANYMORE
 }
 
 function getKeyValue(row, col) {
@@ -605,27 +622,30 @@ function updateDisplays(userInput, formattedUserInput, keyPressed) {
 function toggleDisplayMode() {
     // Toggle Resto Panel and Image visibility
     const restoImage = document.getElementById('restoImage');
-    const panel = document.querySelector('.panel');
+    const inputsContainer = document.getElementById('restoInputs');
 
     let isVisible = false;
-    if (panel && panel.style.display !== 'none' && panel.style.display !== '') {
+    if (inputsContainer && inputsContainer.style.display !== 'none') {
         isVisible = true;
     }
 
     if (isVisible) {
         // Hide
         if (restoImage) restoImage.style.display = 'none';
-        if (panel) panel.style.display = 'none';
+        if (inputsContainer) inputsContainer.style.display = 'none';
     } else {
         // Show
         if (restoImage) {
             restoImage.style.display = 'block';
             restoImage.style.pointerEvents = 'auto'; // Block clicks on the image area
         }
-        if (panel) {
-            panel.style.display = 'flex';
-            panel.style.position = 'absolute';
-            panel.style.pointerEvents = 'none'; // Pass clicks through the transparent panel shell
+        if (inputsContainer) {
+            inputsContainer.style.display = 'block';
+            // Inputs inside are absolute positioned by calcResize
+            setTimeout(() => {
+                const firstInput = document.getElementById('due1');
+                if (firstInput) firstInput.focus();
+            }, 50);
         }
     }
 
@@ -1138,7 +1158,8 @@ function handleCalculatorInteraction(event, options = {}) {
             if (typeof window.clearRestoFocus === 'function') {
                 window.clearRestoFocus();
             }
-            toggleDisplayMode();
+            userInput = "";
+            swapDisplays();
             interactionHandled = true;
         }
 
@@ -2353,14 +2374,23 @@ function calcNewCoordinates() {
                     const fx = rect.left + offX + MainPoints.Fields.x + c * (MainPoints.FieldsSize.x + MainPoints.FldGaps.x);
                     const fy = rect.top + offY + MainPoints.Fields.y + r * (MainPoints.FieldsSize.y + MainPoints.FldGaps.y);
 
-                    inputEl.style.position = 'absolute';
-                    inputEl.style.left = `${Math.round(fx - containerRect.left)}px`;
-                    inputEl.style.top = `${Math.round(fy - containerRect.top)}px`;
-                    inputEl.style.width = `${Math.round(MainPoints.FieldsSize.x)}px`;
-                    inputEl.style.height = `${Math.round(MainPoints.FieldsSize.y)}px`;
+                    const wrapper = inputEl.closest('.input-wrapper');
+                    const target = wrapper || inputEl;
 
-                    // Hide wrapper/others if necessary by ensuring input is top level or behaves well? 
-                    // We just force the input.
+                    target.style.position = 'absolute';
+                    target.style.left = `${Math.round(fx - containerRect.left)}px`;
+                    target.style.top = `${Math.round(fy - containerRect.top)}px`;
+                    target.style.width = `${Math.round(MainPoints.FieldsSize.x)}px`;
+                    target.style.height = `${Math.round(MainPoints.FieldsSize.y)}px`;
+
+                    if (wrapper) {
+                        // Reset input inline styles if wrapper is handling position
+                        inputEl.style.position = 'relative'; // relative allows 100% logic
+                        inputEl.style.left = '0';
+                        inputEl.style.top = '0';
+                        inputEl.style.width = '100%';
+                        inputEl.style.height = '100%';
+                    }
                 }
             }
         }
@@ -2556,6 +2586,15 @@ function adjustFontSize(element1, element2) {
     fontSize--;
     element1.style.fontSize = fontSize + "px";
     element2.style.fontSize = fontSize + "px";
+
+    // Apply same font size to Resto fields (minus 5px as requested)
+    const restoInputs = document.querySelectorAll('#restoInputs input');
+    if (restoInputs.length > 0) {
+        restoInputs.forEach(input => {
+            input.style.fontSize = Math.max(10, fontSize - 12) + "px";
+        });
+    }
+
     document.body.removeChild(measuringDiv);
 }
 

@@ -1,39 +1,9 @@
-.panel {
-    /* Layout reset for absolute positioning of children */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    /* Cover container so interactions pass? No, pointer-events? */
-    /* pointer-events: none; allow clicking inputs? inputs have auto */
-    background: transparent;
-    backdrop-filter: none;
-    border-radius: 0;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-    border: none;
-    z-index: 10001;
-}
-
 .field-group {
     margin-bottom: 5px;
 }
 
 .field-group:last-child {
     margin-bottom: 2px;
-}
-
-.field-label {
-    text-align: center;
-    font-size: 12px;
-    font-weight: 600;
-    color: #f7f4f4;
-    margin-bottom: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-family: 'Arial', sans-serif;
 }
 
 .input-pair {
@@ -47,78 +17,48 @@
     flex: 1;
 }
 
-.clear-bt.panel {
-    top: 50%;
-    /* left: 50%; remove centering logic as it's absolute now */
-    /* transform: translate(-50%, -50%); */
-    width: 100%;
-    /* controlled by JS max-width */
-    background: transparent;
-    border-radius: 0;
-    padding: 0;
-    box-shadow: none;
-    border: none;
-    z-index: 10001;
-    /* display: flex; logic handled by JS toggle */
-    /* flex-direction: column; */
-    /* gap: 15px; */
-}
-
-/* Hide structural elements that are replaced by absolute positioning */
-.field-label,
-.clear-btn,
-.split-labels,
-#resto-main-label {
-    display: none !important;
-}
-
 /* Ensure containers are visible but neutral */
 .field-group,
 .input-pair,
 .input-wrapper {
-    display: block !important;
-    position: static;
+    /* JS controls position/size */
     margin: 0;
     padding: 0;
     border: none;
     background: transparent;
-    width: auto;
-    height: auto;
     pointer-events: none;
-    /* Let clicks pass through containers? No, inputs need clicks. */
-    /* If container is pointer-events: none, children can be auto. */
+    /* Let clicks pass to input/btn */
+}
+
+.clear-btn {
+    display: block !important;
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    /* Vertically center 'x' */
+    text-align: center;
+    background: rgba(255, 0, 0, 0.3);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    pointer-events: auto !important;
+    z-index: 20;
+    padding: 0;
+}
+
+.clear-btn:hover {
+    background: rgba(255, 0, 0, 0.6);
 }
 
 input[type="text"] {
     pointer-events: auto !important;
     /* Ensure inputs are clickable */
-}
-
-/* Hide labels and buttons specifically */
-/* .field-label, .clear-btn moved up */
-
-.clear-btn {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #666;
-    border: none;
-    cursor: pointer;
-    font-size: 12px;
-    line-height: 1;
-    color: white;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-}
-
-.clear-btn:hover {
-    background: #888;
 }
 
 .input-wrapper:hover .clear-btn,
@@ -129,14 +69,15 @@ input[type="text"] {
 input[type="text"] {
     width: 100%;
     box-sizing: border-box;
-    padding: 2px 25px 2px 5px;
+    padding: 2px 20px 2px 2px;
     font-size: 20px;
     line-height: 1;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
+    /*border: 2px solid #e0e0e0;*/
+    border-radius: 4px;
     outline: none;
     transition: all 0.3s ease;
-    background: #555548;
+    background: transparent;
+    /*#555548*/
     color: #d4d3d3;
     text-align: center;
 }
@@ -167,19 +108,25 @@ input[type="text"]:hover {
     animation: pulse 0.3s ease;
 }
 
+/* Default background for Resto fields (overriding transparent global) */
+#resto1,
+#resto2 {
+    background-color: #555548;
+}
+
 /* Цветове за Ресто полетата */
-.resto-positive {
+#resto1.resto-positive,
+#resto2.resto-positive {
     background-color: red !important;
     color: #fcfbfb !important;
     font-weight: 600;
-    font-size: 20px;
 }
 
-.resto-negative {
+#resto1.resto-negative,
+#resto2.resto-negative {
     background-color: rgb(2, 163, 2) !important;
     color: #fbfefb !important;
-    font-weight: 300;
-    font-size: 20px !important;
+    font-weight: 600;
 }
 
 .split-labels {
@@ -204,7 +151,11 @@ input[type="text"]:hover {
 #paid1:focus,
 #paid1.active-virtual-focus,
 #paid2:focus,
-#paid2.active-virtual-focus {
+#paid2.active-virtual-focus,
+#resto1:focus,
+#resto1.active-virtual-focus,
+#resto2:focus,
+#resto2.active-virtual-focus {
     background-color: rgba(201, 255, 5, 0.2);
     box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.5);
     border-color: #C9FF05;
