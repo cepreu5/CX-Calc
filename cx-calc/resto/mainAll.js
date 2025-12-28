@@ -641,6 +641,20 @@ function toggleDisplayMode() {
         }
         if (inputsContainer) {
             inputsContainer.style.display = 'block';
+
+            // Check if upper display has a valid number and populate due1
+            const upperDisplay = document.getElementById('eurInput');
+            const due1 = document.getElementById('due1');
+            if (upperDisplay && due1) {
+                let val = upperDisplay.textContent.replace(/\s/g, '');
+                // Check for only numbers, comma or dot (no operators, no minus unless implied ok, but user said "only numbers")
+                if (val && /^[\d,.]+$/.test(val)) {
+                    due1.value = val;
+                    // Trigger input event to update calculations
+                    due1.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+
             // Inputs inside are absolute positioned by calcResize
             setTimeout(() => {
                 const firstInput = document.getElementById('due1');
@@ -1094,11 +1108,16 @@ function handleCalculatorInteraction(event, options = {}) {
             if (typeof window.handleRestoInput === 'function' &&
                 !(event.ctrlKey || options.allowWithoutCtrl) && // Only intercept normal clicks, not Ctrl actions
                 window.handleRestoInput(keyValue)) {
-
-                // Key handled by Resto panel. Do nothing else.
+                return;
             }
+
+            // If not handled by Resto, ensure we clear Resto focus
+            if (typeof window.clearRestoFocus === 'function') {
+                window.clearRestoFocus();
+            }
+
             // Обработка на специални клавиши (The original else if chain follows)
-            else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '€') {
+            if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '€') {
                 if (ovFlag) { noOverlay(); ovFlag = false; }
                 settingsModal.style.display = 'flex';
                 modalIsActive = true;

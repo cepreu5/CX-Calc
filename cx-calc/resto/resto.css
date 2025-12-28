@@ -129,6 +129,12 @@ input[type="text"]:hover {
     font-weight: 600;
 }
 
+.resto-manual {
+    background-color: yellow !important;
+    color: black !important;
+    font-weight: 600;
+}
+
 .split-labels {
     display: none;
     gap: 5px;

@@ -34,8 +34,17 @@ function handleCalculatorInputForResto(key) {
             triggerInputEvent(input);
         });
 
+        if (typeof window.resetRestoState === 'function') {
+            window.resetRestoState();
+        }
+
         // ВИНАГИ връщаме false, за да може командата 'C' да продължи към mainAll.js
         // и да изчисти дисплея на калкулатора. Така бутонът 'C' прави пълно изчистване (Global Clear).
+        return false;
+    }
+
+    // Ако е "L" (Switch Display) или "€" (Settings) -> те не са за Resto, пускаме ги към mainAll
+    if (key === 'L' || key === '€') {
         return false;
     }
 
@@ -63,7 +72,7 @@ function handleCalculatorInputForResto(key) {
         return true;
     }
 
-    return false; // Клавишът не е за нас (напр. +, -, =, L и т.н.)
+    return true; // Клавишът не е за нас (напр. +, -, =, L и т.н.)
 }
 
 // Помощна функция за ръчно тригиране на input event,
