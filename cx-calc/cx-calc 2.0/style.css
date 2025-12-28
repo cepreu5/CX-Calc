@@ -207,7 +207,7 @@ body.ready .calculator-container {
     gap: 15px; /* Добавяме разстояние между иконата и текста */
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .modal-header h2 {

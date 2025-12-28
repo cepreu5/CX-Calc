@@ -1,7 +1,7 @@
 {
   "name": "CX-Calc",
   "short_name": "CX-Calc",
-  "description": "CX-Calc - калкулатор за бързо конвертиране от лев в евро и обратно по официалния курс.",
+  "description": "CX-Calc - калкулатор за бързо конвертиране от лев в евро и обратно, както и пресмятане на ресто при смесени плащания.",
   "id": "/cx-calc/?source=pwa",
   "start_url": "/cx-calc/?source=pwa",
   "scope": "/cx-calc/",

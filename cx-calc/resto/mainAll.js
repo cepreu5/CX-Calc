@@ -175,31 +175,9 @@ function saveSettings() {
     console.log("Настройките са запазени. Страницата ще бъде презаредена.");
     location.reload();
     //calcResize ();
-
 }
 
 function populateLayoutSettings() {
-    /*function transpView() {
-        document.getElementById('closeSettingsModalButton').style.display = 'none';
-        document.getElementById('ovBtnSettings').style.display = 'none';
-        document.getElementById('mh1').style.display = 'none';
-        document.getElementById('mh2').style.display = 'none';
-        // document.getElementById('settingsModal').style.backgroundColor = 'transparent';
-        document.getElementById('settingsModal').style.width = '150px';// : 100%;
-        const allowedIds = ['calcLeftOffset', 'calcRightOffset', 'calcBottomOffset'];
-        document.querySelectorAll('#Settings1 *').forEach(el => {
-            const isAllowed = allowedIds.some(id => {
-                const input = document.getElementById(id);
-                return el === input || el.contains(input) || input.contains(el) || el.tagName === 'LABEL' && input && el.htmlFor === id;
-            });
-            if (!isAllowed) {
-                el.style.display = 'none';
-                el.style.pointerEvents = 'none';
-            }
-        });
-        settingsModal.style.opacity = '0.8';
-          setTimeout(calcResize, 200);
-    }*/
     for (const key in MainPointsO) {
         if (MainPointsO.hasOwnProperty(key)) {
             const obj = MainPointsO[key];
@@ -211,9 +189,8 @@ function populateLayoutSettings() {
                         const inputElement = document.getElementById(inputId);
                         if (inputElement) {
                             inputElement.value = obj[prop];
-                        } else {
-                            console.warn(`Input element with ID '${inputId}' not found for MainPointsO.${key}.${prop}`);
                         }
+                        // else { skip silently }
                     }
                 }
             }
@@ -567,19 +544,6 @@ function updateDisplays(userInput, formattedUserInput, keyPressed) {
     // Осветяване на активния дисплей
     activeDisplay.classList.add('active-display');
     passiveDisplay.classList.remove('active-display');
-
-    /*
-    // --- Визуализация на активна валута с bullet ---
-    const currencyLevEl = document.getElementById('currencyLev');
-    const currencyEurEl = document.getElementById('currency');
-    if (levMode) {
-        currencyLevEl.textContent = `• ${CURRENCY_LEV_SYMBOL}`;
-        currencyEurEl.textContent = CURRENCY_SYMBOL;
-    } else {
-        currencyLevEl.textContent = CURRENCY_LEV_SYMBOL;
-        currencyEurEl.textContent = `• ${CURRENCY_SYMBOL}`;
-    } */
-
     let activeDisplayText;
     if (userInput === "") { // Добавена проверка за празен userInput
         activeDisplayText = "";
@@ -654,7 +618,6 @@ function toggleDisplayMode() {
                     due1.dispatchEvent(new Event('input', { bubbles: true }));
                 }
             }
-
             // Inputs inside are absolute positioned by calcResize
             setTimeout(() => {
                 const firstInput = document.getElementById('due1');
@@ -924,48 +887,7 @@ function sanitizeAndEvaluateInput(input, operationType) {
     return parseFloat(result).toFixed(DECIMAL_PLACES).replace('.', ',');
 }
 
-/*
-// детекция за iOS / iPadOS
-const isIOS = (/iP(hone|od|ad)/.test(navigator.platform))
-         || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-         || /iPhone|iPad|iPod/.test(navigator.userAgent);
-
-// За отстраняване на грешки
-console.log('isIOS:', isIOS, 'platform:', navigator.platform, 'ua:', navigator.userAgent);
-
-function goFullscreenEmulated() {
-    // добавя клас, който фиксира layout и скрива скрол
-    document.documentElement.classList.add('fullscreen-emulated');
-    document.body.classList.add('fullscreen-emulated');
-    // малко забавяне за да разрешим repaint преди скрол
-    setTimeout(() => {
-        try {
-            window.scrollTo(0, 1); // опит за скриване на address bar
-        } catch (e) {
-            console.warn('scrollTo failed', e);
-        }
-    }, 50);
-}
-
-function exitFullscreenEmulated() {
-    // Премахваме емулативния fullscreen: връщаме overflow и класа
-    document.documentElement.classList.remove('fullscreen-emulated');
-    document.body.classList.remove('fullscreen-emulated');
-
-    // Възстановяваме възможността за скрол и опитваме да позиционираме страницата в началото
-    document.body.style.overflow = '';
-    document.documentElement.style.overflow = '';
-    try {
-        window.scrollTo(0, 0);
-    } catch (e) {
-        alert('scrollTo failed on exit');
-    }
-}*/
-
 function goFullscreen() {
-    //if (isIOS) {
-    //    goFullscreenEmulated();
-    //} else {
     const el = document.documentElement;
     if (el.requestFullscreen) {
         el.requestFullscreen();
@@ -974,15 +896,9 @@ function goFullscreen() {
     } else if (el.msRequestFullscreen) {
         el.msRequestFullscreen();
     }
-    //}
 }
 
-
-
 function exitFullscreen() {
-    //if (isIOS) {
-    //    exitFullscreenEmulated();
-    //} else {
     if (document.exitFullscreen) {
         document.exitFullscreen();
     } else if (document.webkitExitFullscreen) {
@@ -990,7 +906,6 @@ function exitFullscreen() {
     } else if (document.msExitFullscreen) {
         document.msExitFullscreen();
     }
-    // }
 }
 
 function toggleFullscreen() {
@@ -1225,11 +1140,6 @@ document.addEventListener("click", function (event) {
     // updateDebugInfo();
 });
 
-/*document.addEventListener("contextmenu", function(event) {
-    event.preventDefault(); // Блокира контекстното меню (важно за десктоп и Android)
-    handleCalculatorInteraction(event, { allowWithoutCtrl: true });
-});*/
-
 document.addEventListener("contextmenu", function (event) {
     event.preventDefault(); // Винаги блокираме менюто
     // Ако задържането вече е обработено от setTimeout, не правим нищо
@@ -1269,65 +1179,6 @@ element.addEventListener('touchmove', () => {
     // Ако пръстът се премести, отменяме таймера
     clearTimeout(pressTimer);
 });
-
-/*function updateDebugInfo() {
-    const debugDiv = document.getElementById('debug-dev');
-    if (debugDiv) {
-        // Вземаме и парсваме настройките
-        const settingsString = localStorage.getItem('CXCalc_appSettings') || '{}';
-        const settingsObject = JSON.parse(settingsString);
-
-        // Форматираме ги в HTML низ
-        const formattedSettings = Object.entries(settingsObject)
-            .map(([key, value]) => `&nbsp;&nbsp;${key}: ${JSON.stringify(value)}`)
-            .join('<br>');
-
-        // Актуализираме съдържанието на debug div-а
-        debugDiv.innerHTML = `
-            modalIsActive: ${modalIsActive}<br>
-            tipsEnabled: ${tipsEnabled}<br>
-            showWarning: ${showWarning}<br>
-            CXCalc_appSettings:<br>
-            ${formattedSettings}
-        `;
-    }
-}*/
-
-/* let pressTimer;
-const element = document.getElementById('calculator');
-const longPressThreshold = 500; // milliseconds
-var touchProcessed = false; // Флаг за обработка на дълго натискане
- 
-document.addEventListener("click", function(event) {
-    handleCalculatorInteraction(event);
-    // updateDebugInfo();
-});
-
-document.addEventListener("contextmenu", function(event) {
-    event.preventDefault(); // блокира контекстното меню
-    if (touchProcessed) return; // ако вече е обработено не правим нищо
-    handleCalculatorInteraction(event, { allowWithoutCtrl: true });
-});
-
-element.addEventListener('touchstart', (e) => {
-    e.preventDefault(); // Предотвратява default поведението на браузъра (като приближаване на екрана).
-    touchProcessed = false;
-    pressTimer = setTimeout(() => {
-        // Изпълнява се, ако продължителността на натискане е над прага
-        handleCalculatorInteraction(e, { allowWithoutCtrl: true });
-        touchProcessed = true;
-        console.log('Long press detected!');
-    }, longPressThreshold);
-});
- 
-element.addEventListener('touchend', () => {
-    clearTimeout(pressTimer);
-});
-
-element.addEventListener('touchmove', () => {
-    // Ако пръстът се премести, отменяме таймера
-    clearTimeout(pressTimer);
-});*/
 
 document.getElementById('saveSettings').addEventListener('click', function (e) {
     saveSettings();
@@ -1469,16 +1320,14 @@ window.addEventListener("load", function () {
         const iosPrompt = document.getElementById('ios-install-prompt');
         const dismissIosBtn = document.getElementById('dismiss-ios-prompt');
         const declineIosBtn = document.getElementById('decline-ios-install');
-        const countdownSpan = document.getElementById('countdownSpan');
+        // const countdownSpan = document.getElementById('countdownSpan');
 
 
         if (iosPrompt && dismissIosBtn && declineIosBtn) {
             installPromptWasShown = true; // Set flag
-            setupDismissablePrompt(iosPrompt, dismissIosBtn, declineIosBtn, countdownSpan);
+            setupDismissablePrompt(iosPrompt, dismissIosBtn, declineIosBtn); // , countdownSpan
         }
     }
-    // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
-    // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
     // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
     // Използваме леко закъснение и симулираме resize, за да сме сигурни, че всичко е наместено.
     setTimeout(() => {
@@ -1755,12 +1604,12 @@ if ('serviceWorker' in navigator) {
 
 let deferredPrompt;
 
-function setupDismissablePrompt(promptElement, dismissButton, declineButton, countdownSpan, countdownSeconds = 20) {
+function setupDismissablePrompt(promptElement, dismissButton, declineButton, countdownSeconds = 20) { // countdownSpan, 
     promptElement.style.display = 'flex';
     let countdown = countdownSeconds;
-    if (countdownSpan) {
-        countdownSpan.textContent = ` (${countdown})`;
-    }
+    // if (countdownSpan) {
+    //    countdownSpan.textContent = ` (${countdown})`;
+    // }
 
     let interval;
     let installHandler; // Declare installHandler here to make it accessible in cleanup
@@ -1809,13 +1658,11 @@ function setupDismissablePrompt(promptElement, dismissButton, declineButton, cou
         const installButton = document.getElementById('install');
         installButton.addEventListener('click', installHandler, { once: true });
     }
-
-
     interval = setInterval(() => {
         countdown--;
-        if (countdownSpan) {
-            countdownSpan.textContent = ` (${String(countdown).padStart(2, '0')})`;
-        }
+        //if (countdownSpan) {
+        //     countdownSpan.textContent = ` (${String(countdown).padStart(2, '0')})`;
+        // }
         if (countdown <= 0) {
             cleanup();
         }
@@ -1830,10 +1677,10 @@ if (localStorage.getItem('CXCalc_pwaInstallDeclined') !== 'true') {
         const installButton = document.getElementById('install');
         const dismissButton = document.getElementById('dismiss-install'); // New ID
         const declineButton = document.getElementById('decline-install'); // New ID
-        const countdownSpan = document.getElementById('install-countdown');
+        // const countdownSpan = document.getElementById('install-countdown');
 
         installPromptWasShown = true; // Set flag
-        setupDismissablePrompt(installBar, dismissButton, declineButton, countdownSpan); // Correct parameters
+        setupDismissablePrompt(installBar, dismissButton, declineButton); // Correct parameters --> , countdownSpan
     });
 }
 
@@ -2643,7 +2490,7 @@ const allTips = [
     },
     {
         id: 'tip-display-switch',
-        text: 'Клик върху някой от дисплеите превключва активния дисплей.<br><img src="Switch.png"> е със същото действие.',
+        text: 'Клик върху някой от дисплеите превключва активния дисплей.',
         target: 'display', // A generic target for the display area
     },
     {
@@ -2655,6 +2502,11 @@ const allTips = [
         id: 'tip-paste',
         text: 'Резултатът от пресмятанията се запомня автоматично в клипборда, така че може лесно да го поставите в други приложения.',
         target: 'display', // A generic target for the display area
+    },
+    {
+        id: 'tip-resto',
+        text: 'Включва модул <b>Ресто</b>, предназначен за пресмятане на рестото при смесено плащане в лева и евро.',
+        target: 'L',
     }
 ];
 
@@ -2698,7 +2550,6 @@ function getTargetCoordinates(target) {
     return null;
 }
 
-
 /**
  * Initializes the tips system by loading saved states from localStorage.
  */
@@ -2706,8 +2557,6 @@ function initTips() {
     tips = allTips;
     console.log('Tips system initialized.');
 }
-
-
 
 /**
  * Creates and displays a single tip pop-up on the screen.
@@ -2845,6 +2694,7 @@ function showTips() {
     };
     showNextTip();
 }
+
 // --- Offset Wheel Scroller Logic ---
 document.addEventListener('DOMContentLoaded', () => {
     const offsetWrappers = document.querySelectorAll('.offset-input-wrapper');
