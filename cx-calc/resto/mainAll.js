@@ -2504,14 +2504,14 @@ const allTips = [
         target: 'display', // A generic target for the display area
     },
     {
-        id: 'tip-resto',
-        text: 'Включва модул <b>Ресто</b>, предназначен за пресмятане на рестото при смесено плащане в лева и евро.',
-        target: 'L',
-    },
-    {
         id: 'tip-video',
         text: '<a href="https://youtu.be/N_L_HIseMb4" target="_blank">Кликнете този линк и гледайте кратко видео за основните функции на калкулатора.</a>',
-        target: '6',
+        target: 'display',
+    },
+    {
+        id: 'tip-resto',
+        text: 'Включва модул <b>Ресто</b>, предназначен за пресмятане на рестото при смесено плащане в лева и евро.<br><br><a href="https://youtu.be/LlRVxlngkGY" target="_blank">Последвайте линка за кратко представяне на модула.</a>',
+        target: 'L',
     }
 ];
 
