@@ -63,7 +63,6 @@ body.ready {
     /* ще бъде изчислен автоматично от left/right */
     max-width: none;
     display: block;
-    cursor: pointer;
     /*transition: left 160ms ease, right 160ms ease, bottom 160ms ease; */
 }
 
