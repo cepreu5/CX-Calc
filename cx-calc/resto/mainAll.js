@@ -60,8 +60,8 @@ var MainPointsO = {
     StatusSize: { x: 45, y: 15 },
     CurrencyOffset: { x: -40, y: 15 },
     CurrencyLevOffset: { x: -40, y: 15 },
-    Resto: { x: 13, y: -108 },
-    RestoSize: { x: 440, y: 290 },
+    Resto: { x: 11, y: -108 },
+    RestoSize: { x: 459, y: 288 },
     Fields: { x: 30, y: -76 },
     FieldsSize: { x: 190, y: 60 },
     FldGaps: { x: 22, y: 34 },
@@ -2507,6 +2507,11 @@ const allTips = [
         id: 'tip-resto',
         text: 'Включва модул <b>Ресто</b>, предназначен за пресмятане на рестото при смесено плащане в лева и евро.',
         target: 'L',
+    },
+    {
+        id: 'tip-video',
+        text: '<a href="https://youtu.be/N_L_HIseMb4" target="_blank">Кликнете този линк и гледайте кратко видео за основните функции на калкулатора.</a>',
+        target: '6',
     }
 ];
 
