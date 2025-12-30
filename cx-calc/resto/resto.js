@@ -372,7 +372,10 @@ function recalculateRestoMixed() {
 
     if (useBgnAsMaster) {
         // Смятаме в ЛЕВА
-        const totalPaidBgn = paid2Val + (paid1Val * rate);
+        // Use visual value from input (due2Val) as requested
+        // And round the converted paid1 to simulate "visual" BGN payment to avoid precision issues
+        const paid1Bgn = roundToTwo(paid1Val * rate);
+        const totalPaidBgn = paid2Val + paid1Bgn;
         baseBalance = due2Val - totalPaidBgn; // в BGN
     } else {
         // Смятаме в ЕВРО
