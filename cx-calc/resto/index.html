@@ -648,6 +648,32 @@
     </script>
 
     <script src="mainAll.js"></script>
+
+    <!--style>
+        /* Overrides for Ko-fi Widget Position */
+        .floating-chat-kofi-popup-iframe-notice {
+            bottom: 5px !important;
+            left: 5px !important;
+        }
+
+        /* Alternative targeting if class changes */
+        div[id^="kofi-widget-overlay"] {
+            bottom: 5px !important;
+            left: 5px !important;
+        }
+    </style-->
+
+    <iframe id='kofiframe' src='' style='display:none !important;' height='32'></iframe>
+    <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+    <script>
+        // Initialize Ko-fi Floating Widget
+        kofiWidgetOverlay.draw('multinotes', {
+            'type': 'floating-chat',
+            'floating-chat.donateButton.text': '',
+            'floating-chat.donateButton.background-color': 'transparent',
+            'floating-chat.donateButton.text-color': '#fff'
+        });
+    </script>
 </body>
 
 </html>
