@@ -31,7 +31,7 @@ let installPromptWasShown = false; // New global variable
 // Променливи за Web Audio API за по-бърз звук
 let audioContext;
 let clickBuffer = null;
-var handMode = 'right'; // 'left' or 'right'
+var handMode = 'standard'; // 'left' or 'right'
 var standardKeyboard = false;
 
 const MAX_HISTORY_ITEMS = 30;
@@ -104,11 +104,11 @@ const defaultSettings = {
     calcLeftOffset: 0,
     calcRightOffset: 0,
     initialDisplay: 'lev', // 'eur' или 'lev'
-    handMode: 'right', // 'left' or 'right'
-    standardKeyboard: false,
+    handMode: 'standard', // 'left' or 'right'
+    standardKeyboard: true,
     tipsEnabled: true, // Показване на подсказки при стартиране
     pwaInstallDeclined: false,
-    calculatorSkin: 'Calculator0.png', // Скин по подразбиране
+    calculatorSkin: 'CalculatorS.png', // Скин по подразбиране
     decimalPlaces: 2 // Брой десетични знаци
 };
 
@@ -295,8 +295,11 @@ function populateLayoutSettings() {
     // Показваме веднага версията от localStorage. Това е единственото четене при зареждане.
     const currentVersion = localStorage.getItem('CXCalc_appVersion');
     if (helpFooterInfo) {
-        const versionText = currentVersion || 'N/A';
-        helpFooterInfo.innerHTML = `Версия ${versionText} &bull; Контакт: ${emailLink}`;
+        if (currentVersion) {
+            helpFooterInfo.innerHTML = `Версия ${currentVersion} &bull; Контакт: ${emailLink}`;
+        } else {
+            helpFooterInfo.innerHTML = `Контакт: ${emailLink}`;
+        }
     }
 }
 
@@ -319,6 +322,8 @@ function loadSettings() {
     // Задаваме активния дисплей при стартиране според запазената стойност
     levMode = (settings.initialDisplay === 'lev');
     handMode = settings.handMode;
+    // Ensure consistency: if handMode is standard, force standardKeyboard to true
+    if (handMode === 'standard') settings.standardKeyboard = true;
     standardKeyboard = settings.standardKeyboard;
 
     if (standardKeyboard) {
@@ -2529,7 +2534,7 @@ const allTips = [
     },
     {
         id: 'tip-resto',
-        text: 'Включва модул <b>Ресто</b>, предназначен за пресмятане на рестото при смесено плащане в лева и евро.<br><br><a href="https://youtu.be/LlRVxlngkGY" target="_blank">Последвайте линка за кратко представяне на модула.</a>',
+        text: 'Включва модул <b>Ресто</b>, предназначен за пресмятане на рестото при смесено плащане в лева и евро. Ако на дисплея на калкулатора има число, то се попълва автоматично в <b>Ресто</b>.<br><br><a href="https://youtu.be/LlRVxlngkGY" target="_blank">Последвайте линка за кратко представяне на модула.</a>',
         target: 'L',
     },
 ];
@@ -2853,7 +2858,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ------------ Resto ------------------------
 
-// Глобална променлива за следене на активното поле в Resto
+/* / Глобална променлива за следене на активното поле в Resto
 let activeRestoField = null;
 
 // Функция, която се вика от mainAll.js при натискане на клавиш от калкулатора
@@ -3496,3 +3501,4 @@ document.querySelectorAll('input[type="text"]').forEach(input => {
         }
     });
 });
+*/
