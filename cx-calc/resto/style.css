@@ -736,3 +736,174 @@ body.ready .calculator-container {
     position: relative;
     flex: 1;
 }
+
+/* Ensure containers are visible but neutral */
+.field-group,
+.input-pair,
+.input-wrapper {
+    /* JS controls position/size */
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    pointer-events: none;
+    /* Let clicks pass to input/btn */
+}
+
+.clear-btn {
+    display: block !important;
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    /* Vertically center 'x' */
+    text-align: center;
+    background: rgba(255, 0, 0, 0.3);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    pointer-events: auto !important;
+    z-index: 20;
+    padding: 0;
+}
+
+.clear-btn:hover {
+    background: rgba(255, 0, 0, 0.6);
+}
+
+input[type="text"],
+input[type="radio"],
+input[type="checkbox"],
+label {
+    pointer-events: auto !important;
+    cursor: pointer;
+    /* Ensure inputs are clickable */
+}
+
+.input-wrapper:hover .clear-btn,
+.input-wrapper input:focus~.clear-btn {
+    display: flex;
+}
+
+input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 2px 20px 2px 2px;
+    font-size: 20px;
+    line-height: 1;
+    /*border: 2px solid #e0e0e0;*/
+    border-radius: 4px;
+    outline: none;
+    transition: all 0.3s ease;
+    background: transparent;
+    /*#555548*/
+    color: #d4d3d3;
+    text-align: center;
+}
+
+input[type="text"]:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+input[type="text"]:hover {
+    border-color: #b0b0b0;
+}
+
+/* Анимация при промяна на стойност */
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+.changed {
+    animation: pulse 0.3s ease;
+}
+
+/* Default background for Resto fields (overriding transparent global) */
+#resto1,
+#resto2 {
+    background-color: #555548;
+}
+
+/* Цветове за Ресто полетата */
+#resto1.resto-positive,
+#resto2.resto-positive {
+    background-color: red !important;
+    color: #fcfbfb !important;
+    font-weight: 600;
+}
+
+#resto1.resto-negative,
+#resto2.resto-negative {
+    background-color: rgb(2, 163, 2) !important;
+    color: #fbfefb !important;
+    font-weight: 600;
+}
+
+.resto-manual {
+    background-color: yellow !important;
+    color: black !important;
+    font-weight: 600;
+}
+
+.split-labels {
+    display: none;
+    gap: 5px;
+}
+
+.split-labels.visible {
+    display: flex;
+}
+
+.split-labels .field-label {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* Highlight for Value and Paid group fields when active */
+#due1:focus,
+#due1.active-virtual-focus,
+#due2:focus,
+#due2.active-virtual-focus,
+#paid1:focus,
+#paid1.active-virtual-focus,
+#paid2:focus,
+#paid2.active-virtual-focus,
+#resto1:focus,
+#resto1.active-virtual-focus,
+#resto2:focus,
+#resto2.active-virtual-focus {
+    background-color: rgba(201, 255, 5, 0.2);
+    box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.5);
+    border-color: #C9FF05;
+}
+
+/* Override pointer-events for inputs inside containers that might have pointer-events: none */
+.input-wrapper input,
+.input-pair input,
+.input-pair label,
+.settings-modal-content input,
+.settings-modal-content label,
+#restoInputs input,
+#restoInputs label {
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+/* Ensure clear buttons are clickable */
+.clear-btn {
+    pointer-events: auto !important;
+}

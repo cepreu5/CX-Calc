@@ -265,8 +265,10 @@ function populateLayoutSettings() {
     if (initialDisplayEur && initialDisplayLev) {
         if (levMode) {
             initialDisplayLev.checked = true;
+            initialDisplayEur.checked = false;
         } else {
             initialDisplayEur.checked = true;
+            initialDisplayLev.checked = false;
         }
     }
 
@@ -275,6 +277,11 @@ function populateLayoutSettings() {
     const handModeLeft = document.getElementById('handModeLeft');
     const standardKeyboardRadio = document.getElementById('standardKeyboard');
     if (handModeRight && handModeLeft && standardKeyboardRadio) {
+        // Reset all first
+        handModeRight.checked = false;
+        handModeLeft.checked = false;
+        standardKeyboardRadio.checked = false;
+
         if (standardKeyboard) {
             standardKeyboardRadio.checked = true;
         } else if (handMode === 'left') {
@@ -1415,6 +1422,80 @@ document.addEventListener('DOMContentLoaded', () => {
             appendNumber(keyMap[key]);
         } else if ("0123456789+-*/".includes(key)) {
             appendNumber(key);
+        }
+    });
+
+    // --- Fix for Settings using Checkboxes as Radios (Robust Mobile Support) ---
+    function setupRadioEmulation(groupName) {
+        const checkboxes = Array.from(document.querySelectorAll(`input[name="${groupName}"]`));
+
+        checkboxes.forEach(cb => {
+            // Function to handle the radio-like logic
+            const activate = (target) => {
+                if (!target.checked) {
+                    // If user tried to uncheck, force it back to true (must have one active)
+                    target.checked = true;
+                } else {
+                    // It was unchecked, so now it is checked. Uncheck others.
+                    checkboxes.forEach(other => {
+                        if (other !== target) other.checked = false;
+                    });
+                }
+            };
+
+            cb.addEventListener('click', function (e) {
+                e.stopPropagation();
+                // If it is a checkbox, the 'click' event happens AFTER state change.
+                // So if it was unchecked, now it is checked.
+                // If it was checked, now it is unchecked (we want to revert this).
+
+                // Correction:
+                // If the user clicked an unchecked box -> Browser checks it. 'checked' is true. We uncheck others.
+                // If the user clicked a checked box -> Browser unchecks it. 'checked' is false. We force it true.
+                activate(this);
+            });
+
+            cb.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+
+            // Handle label click explicitly for mobile resiliency
+            const label = cb.closest('label');
+            if (label) {
+                label.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    // If the click hit the input directly, the input listener handles it.
+                    // But if it hit the text, the browser may or may not toggle the input.
+                    // We check the input state. If it wasn't toggled yet (or if event order is tricky),
+                    // we can just force the logic.
+                    // Safer approach: Let the input 'click' handle it if it fires.
+                    // But for devices where label click doesn't fire input click:
+                    if (e.target !== cb) {
+                        // Manually toggle
+                        if (cb.checked) {
+                            // It was already checked. Keep it checked.
+                        } else {
+                            cb.checked = true;
+                            checkboxes.forEach(other => {
+                                if (other !== cb) other.checked = false;
+                            });
+                        }
+                    }
+                });
+                label.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+            }
+        });
+    }
+
+    setupRadioEmulation('initialDisplay');
+    setupRadioEmulation('handMode');
+
+    // Also handle other checkboxes/inputs to stop propagation
+    document.querySelectorAll('.settings-modal-content input:not([name="initialDisplay"]):not([name="handMode"])').forEach(inp => {
+        inp.addEventListener('click', e => e.stopPropagation());
+        inp.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+        const lbl = inp.closest('label');
+        if (lbl) {
+            lbl.addEventListener('click', e => e.stopPropagation());
+            lbl.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
         }
     });
 
@@ -2858,7 +2939,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ------------ Resto ------------------------
 
-/* / Глобална променлива за следене на активното поле в Resto
+// Глобална променлива за следене на активното поле в Resto
 let activeRestoField = null;
 
 // Функция, която се вика от mainAll.js при натискане на клавиш от калкулатора
@@ -3501,4 +3582,3 @@ document.querySelectorAll('input[type="text"]').forEach(input => {
         }
     });
 });
-*/
