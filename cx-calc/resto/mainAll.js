@@ -851,11 +851,11 @@ function handleStatusZones(event, isCtrlRequired) {
                     if (isCtrlRequired) {
                         memoryShow(4); // Смяна на скин
                     } else {
-                        const helpModal = document.getElementById('helpModal');
                         if (helpModal) {
                             helpModal.classList.remove('show-content');
                             helpModal.style.display = 'flex';
                             modalIsActive = true;
+                            updateRestoInputState(true);
                             setTimeout(() => {
                                 if (helpModal.style.display === 'flex') {
                                     helpModal.classList.add('show-content');
@@ -1036,6 +1036,7 @@ function handleCalculatorInteraction(event, options = {}) {
                 if (ovFlag) { noOverlay(); ovFlag = false; }
                 settingsModal.style.display = 'flex';
                 modalIsActive = true;
+                updateRestoInputState(true);
                 populateLayoutSettings();
             } else if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === 'B') {
                 clearAllMemory();
@@ -1183,6 +1184,7 @@ element.addEventListener('touchmove', () => {
 document.getElementById('saveSettings').addEventListener('click', function (e) {
     saveSettings();
     settingsModal.style.display = 'none'; // Close modal after saving
+    updateRestoInputState(false);
     setTimeout(() => {
         modalIsActive = false;
     }, 0);
@@ -1193,6 +1195,7 @@ document.getElementById('saveSettings').addEventListener('click', function (e) {
 document.getElementById('closeSettingsModalButton').addEventListener('click', function (e) {
     settingsModal.style.display = 'none'; // Close modal without saving
     resetLayoutSettingsView();
+    updateRestoInputState(false);
     setTimeout(() => {
         modalIsActive = false;
     }, 0);
@@ -1254,10 +1257,12 @@ window.addEventListener("load", function () {
                 // Спираме разпространението на клика, за да не задейства бутони под модала.
                 if (event) event.stopPropagation();
                 warning.style.display = 'none';
+                updateRestoInputState(false);
                 modalIsActive = false;
             };
 
             warning.style.display = 'flex'; // Показваме модала
+            updateRestoInputState(true);
             modalIsActive = true;
             document.getElementById('exchangeRateChangeBtn').onclick = function (event) {
                 if (event) event.stopPropagation();
@@ -1356,6 +1361,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (event.target.id === 'settingsModal') {
                 resetLayoutSettingsView();
             }
+            updateRestoInputState(false);
             // Деактивираме флага за модален прозорец
             modalIsActive = false;
         }
@@ -1370,11 +1376,13 @@ document.addEventListener('DOMContentLoaded', () => {
             historyModal.style.display = 'none';
             helpModal.style.display = 'none';
             settingsModal.style.display = 'none';
+            updateRestoInputState(false);
             modalIsActive = false;
             return;
         }
         // Блокираме другите клавиши, ако има отворен модален прозорец
         if (modalIsActive) {
+            updateRestoInputState(true);
             return;
         }
 
@@ -1435,6 +1443,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             e.preventDefault();
             settingsModal.style.display = 'none';
+            updateRestoInputState(false);
             modalIsActive = false;
             resetLayoutSettingsView();
             if (typeof showTips === 'function') {
@@ -1486,6 +1495,7 @@ document.addEventListener('DOMContentLoaded', () => {
             userInput = valueToLoad.replace(/\\s/g, '');
             updateDisplays(userInput, userInput, 'L');
             historyModal.style.display = 'none';
+            updateRestoInputState(false);
             modalIsActive = false;
         }
     })
@@ -1551,6 +1561,7 @@ function showOv() {
         ovFlag = false;
     }
     settingsModal.style.display = 'none';
+    updateRestoInputState(false);
     setTimeout(() => {
         modalIsActive = false;
     }, 0);
@@ -1568,6 +1579,7 @@ if (closeHelpModalButtonTop) {
 
 function closeHelpModal(e) {
     helpModal.style.display = 'none';
+    updateRestoInputState(false);
     setTimeout(() => {
         modalIsActive = false;
     }, 0);
@@ -2365,6 +2377,7 @@ function historyOpen() {
     updateHistoryList();
     historyModal.style.display = 'flex';
     modalIsActive = true;
+    updateRestoInputState(true);
 };
 
 // Clear History button
@@ -2375,6 +2388,7 @@ if (clearHistoryButton) {
 if (closeHistoryModalButton) {
     closeHistoryModalButton.addEventListener('click', (e) => {
         historyModal.style.display = 'none';
+        updateRestoInputState(false);
         // Забавяне на изключването с 1 tick (0 ms timeout)
         setTimeout(() => {
             modalIsActive = false;
@@ -3003,6 +3017,23 @@ document.addEventListener('click', function (e) {
         document.querySelectorAll('#restoInputs input').forEach(i => i.classList.remove('active-virtual-focus'));
     }
 });
+
+function updateRestoInputState(isModalOpen) {
+    const restoInputs = document.getElementById('restoInputs');
+    const restoImage = document.getElementById('restoImage');
+    if (!restoInputs || !restoImage) return;
+
+    if (isModalOpen) {
+        restoInputs.style.display = 'none';
+    } else {
+        // Only show if it was supposedly active.
+        // We rely on restoImage display as the source of truth for "Resto Feature Enabled"
+        const isRestoActive = restoImage.style.display !== 'none' && restoImage.style.display !== '';
+        if (isRestoActive) {
+            restoInputs.style.display = 'block';
+        }
+    }
+}
 
 // Трябва да изнесем handle function глобално, за да я вика mainAll.js
 window.handleRestoInput = handleCalculatorInputForResto;
