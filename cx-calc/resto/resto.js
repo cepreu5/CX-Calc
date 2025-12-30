@@ -470,32 +470,31 @@ function recalculateRestoMixed() {
     updateRestoVisuals(displayEur, mode);
 
     // --- CHECK LOGIC ---
-    // Log verification info to console
-    const checkPaidBgn = paid2Val + roundToTwo(paid1Val * rate);
-    const checkRestoBgn = (displayBgn < 0) ? Math.abs(displayBgn) : -displayBgn; // if displayBgn is negative (change), it means returned.
-    // Wait, displayBgn is "Remaining".
-    // If Remaining is positive (due), then Paid+Remaining = TotalDue.
-    // If Remaining is negative (change), then Paid - Change = TotalDue.
+    // Universal Strict Check (BGN based) - verifying visual consistency
 
-    // Let's verify: Paid + Remaining = Due
-    // Using BGN:
-    // We used: baseBalance = Due - Paid. => BaseBalance + Paid = Due.
+    const p1Bgn = roundToTwo(paid1Val * rate);
+    const p2Bgn = paid2Val;
 
-    const totalPaidBgnCalc = paid2Val + (paid1Val * rate);
-    const totalPaidEurCalc = paid1Val + (paid2Val / rate);
+    // We use the BGN value that is (or would be) displayed in resto2
+    // Even if calculating in EUR, we check if the visual BGN result makes sense.
+    // displayBgn might be unrounded (if from EUR calculation), so we round it.
+    const rBgn = roundToTwo(displayBgn);
 
-    // Convert everything to BGN for check
-    const totalDueBgnCheck = due1Val * rate;
-    const currentBalanceBgn = displayBgn;
+    // Calculate Total Visual Payment + Resto
+    const totalCheckBgn = roundToTwo(p1Bgn + p2Bgn + rBgn);
 
-    console.log(`[Resto Check] Paid(EUR)=${paid1Val}, Paid(BGN)=${paid2Val}`);
-    console.log(`[Resto Check] Resto(EUR)=${displayEur.toFixed(4)}, Resto(BGN)=${displayBgn.toFixed(4)}`);
-    // Ideally: Paid_BGN_Equiv + Resto_BGN = Due_BGN_Equiv ?
-    // Check: (Paid1*Rate + Paid2) + Remaining = Due1*Rate
-    const checkSum = (paid1Val * rate + paid2Val) + displayBgn;
-    const diff = checkSum - (due1Val * rate);
-    console.log(`[Resto Verify] Paid+Remaining (BGN) = ${checkSum.toFixed(4)} vs Due (BGN) = ${(due1Val * rate).toFixed(4)}. Diff: ${diff.toFixed(6)}`);
+    // Calculate Target Due (Visual BGN)
+    // If we have EUR input (due1), visual due is rounded conversion.
+    // If not, it is due2Val.
+    let targetDueBgn = due2Val;
+    if (due1Val > 0) targetDueBgn = roundToTwo(due1Val * rate);
+
+    const diff = parseFloat((totalCheckBgn - targetDueBgn).toFixed(6));
+
+    console.log(`[Resto Check] Paid1(${p1Bgn.toFixed(2)}) + Paid2(${p2Bgn.toFixed(2)}) + Resto(${rBgn.toFixed(2)}) = ${totalCheckBgn.toFixed(2)}`);
+    console.log(`[Resto Check] Target Due = ${targetDueBgn.toFixed(2)}. Diff: ${diff}`);
 }
+
 
 // Настройка на трета двойка (Ресто)
 // Настройка на трета двойка (Ресто)
