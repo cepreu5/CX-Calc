@@ -347,14 +347,31 @@ function updateFieldIfNotManual(field, newVal, isManualFlag) {
 function recalculateRestoMixed() {
     const rate = typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583;
 
-    // Определяме водещата валута според активния елемент
+    // Определяме водещата валута според активния елемент или activeRestoField
     let useBgnAsMaster = false;
-    if (document.activeElement) {
-        const id = document.activeElement.id;
-        if (id === 'due2' || id === 'paid2' || id === 'resto2') {
+    let focusSource = 'none';
+
+    let currentFocus = document.activeElement;
+    // Check if activeElement is one of ours
+    if (!currentFocus || !currentFocus.id || !['due1', 'due2', 'paid1', 'paid2', 'resto1', 'resto2'].includes(currentFocus.id)) {
+        // Fallback to activeRestoField
+        if (activeRestoField && ['due1', 'due2', 'paid1', 'paid2', 'resto1', 'resto2'].includes(activeRestoField.id)) {
+            currentFocus = activeRestoField;
+            focusSource = 'activeRestoField';
+        }
+    } else {
+        focusSource = 'activeElement';
+    }
+
+    if (currentFocus && currentFocus.id) {
+        if (['due2', 'paid2', 'resto2'].includes(currentFocus.id)) {
             useBgnAsMaster = true;
         }
     }
+
+    // Ако не сме успели да определим фокус, но имаме въведено Paid2 > 0 и няма Paid1,
+    // или ако въвеждаме в Paid2, предполагаме BGN.
+    // Но по-горе логиката за fallback трябва да го покрие.
 
     // Взимаме стойностите
     const due1Val = parseFloat(due1.value.replace(',', '.')) || 0;
@@ -467,19 +484,6 @@ function recalculateRestoMixed() {
 
     // updateRestoVisuals expects value in EUR to determine Positive/Negative red/green
     updateRestoVisuals(displayEur, mode);
-
-    // --- CHECK LOGIC ---
-    // Debug Logging for "The 0.33 Mystery"
-    if (useBgnAsMaster) {
-        const p1InLeva = roundToTwo(paid1Val * rate);
-        const startDue = due2Val;
-        const intermediate = roundToTwo(startDue - p1InLeva);
-        const calculatedFinal = roundToTwo(intermediate - paid2Val);
-
-        console.log(`[RestoLogic] Due2(${startDue}) - Paid1BGN(rounded ${p1InLeva}) = Intermediate(${intermediate})`);
-        console.log(`[RestoLogic] Intermediate(${intermediate}) - Paid2(${paid2Val}) = Final(${calculatedFinal})`);
-        console.log(`[RestoLogic] Actual displayBgn: ${displayBgn}`);
-    }
 }
 
 
