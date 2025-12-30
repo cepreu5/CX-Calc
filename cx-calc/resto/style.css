@@ -197,8 +197,8 @@ body.ready .calculator-container {
     /* шрифт Arial */
     position: fixed;
     /* Stay in place */
-    z-index: 3;
-    /* Sit on top, по-висок от statusArea */
+    z-index: 11000;
+    /* Sit on top, по-висок от всичко */
     left: 0;
     top: 0;
     width: 100%;
