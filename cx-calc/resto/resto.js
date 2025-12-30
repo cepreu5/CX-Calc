@@ -371,24 +371,23 @@ function recalculateRestoMixed() {
     let baseBalance = 0; // Negative means remaining change (ресто), Positive means due (дължимо)
 
     if (useBgnAsMaster) {
-        // Смятаме в ЛЕВА - СТРИКТНО с 2 знака
+        // Смятаме в ЛЕВА - Стриктно последователно по визуализация
+
+        // 1. Взимаме визуалното Дължимо (Лева), както е на екрана.
+        // Потребителят иска да ползваме due2Val (107.57), а не да преизчисляваме от due1.
         let startDueBgn = due2Val;
 
-        // Ако имаме въведено EUR (paid1), преизчисляваме базата
-        // за да е синхронизирана с курса, но ЗАКРЪГЛЕНА до 2 знака.
-        if (paid1Val > 0) {
-            startDueBgn = roundToTwo(due1Val * rate);
-        }
-
+        // 2. Взимаме визуалното Платено (Евро) конвертирано и закръглено
         const paid1Bgn = roundToTwo(paid1Val * rate);
 
-        // Междинно: колко остава да се плати след като дадем еврото?
-        // Това е еквивалент на "due2 - paid1(converted)"
-        // Използваме междинно закръгляне, за да сме сигурни в резултата.
-        const remainingAfterEur = roundToTwo(startDueBgn - paid1Bgn);
+        // 3. Смятаме остатък ПРЕДИ второто плащане 
+        // (това е "изчислената стойност за resto2" преди намесата на paid2)
+        // Закръгляме и тук, за да фиксираме сумата "29.34"
+        const intermediateResto = roundToTwo(startDueBgn - paid1Bgn);
 
-        // Сега вадим и това, което е дадено в лева
-        baseBalance = roundToTwo(remainingAfterEur - paid2Val);
+        // 4. Вадим второто плащане
+        // 29.34 - 29.00 = 0.34
+        baseBalance = roundToTwo(intermediateResto - paid2Val);
     } else {
         // Смятаме в ЕВРО
         const totalPaidEur = paid1Val + (paid2Val / rate);
@@ -470,29 +469,17 @@ function recalculateRestoMixed() {
     updateRestoVisuals(displayEur, mode);
 
     // --- CHECK LOGIC ---
-    // Universal Strict Check (BGN based) - verifying visual consistency
+    // Debug Logging for "The 0.33 Mystery"
+    if (useBgnAsMaster) {
+        const p1InLeva = roundToTwo(paid1Val * rate);
+        const startDue = due2Val;
+        const intermediate = roundToTwo(startDue - p1InLeva);
+        const calculatedFinal = roundToTwo(intermediate - paid2Val);
 
-    const p1Bgn = roundToTwo(paid1Val * rate);
-    const p2Bgn = paid2Val;
-
-    // We use the BGN value that is (or would be) displayed in resto2
-    // Even if calculating in EUR, we check if the visual BGN result makes sense.
-    // displayBgn might be unrounded (if from EUR calculation), so we round it.
-    const rBgn = roundToTwo(displayBgn);
-
-    // Calculate Total Visual Payment + Resto
-    const totalCheckBgn = roundToTwo(p1Bgn + p2Bgn + rBgn);
-
-    // Calculate Target Due (Visual BGN)
-    // If we have EUR input (due1), visual due is rounded conversion.
-    // If not, it is due2Val.
-    let targetDueBgn = due2Val;
-    if (due1Val > 0) targetDueBgn = roundToTwo(due1Val * rate);
-
-    const diff = parseFloat((totalCheckBgn - targetDueBgn).toFixed(6));
-
-    console.log(`[Resto Check] Paid1(${p1Bgn.toFixed(2)}) + Paid2(${p2Bgn.toFixed(2)}) + Resto(${rBgn.toFixed(2)}) = ${totalCheckBgn.toFixed(2)}`);
-    console.log(`[Resto Check] Target Due = ${targetDueBgn.toFixed(2)}. Diff: ${diff}`);
+        console.log(`[RestoLogic] Due2(${startDue}) - Paid1BGN(rounded ${p1InLeva}) = Intermediate(${intermediate})`);
+        console.log(`[RestoLogic] Intermediate(${intermediate}) - Paid2(${paid2Val}) = Final(${calculatedFinal})`);
+        console.log(`[RestoLogic] Actual displayBgn: ${displayBgn}`);
+    }
 }
 
 
