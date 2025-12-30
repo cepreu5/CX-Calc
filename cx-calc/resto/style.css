@@ -778,8 +778,10 @@ body.ready .calculator-container {
 
 input[type="text"],
 input[type="radio"],
-input[type="checkbox"] {
+input[type="checkbox"],
+label {
     pointer-events: auto !important;
+    cursor: pointer;
     /* Ensure inputs are clickable */
 }
 
