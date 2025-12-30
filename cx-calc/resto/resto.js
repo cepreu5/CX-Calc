@@ -371,25 +371,24 @@ function recalculateRestoMixed() {
     let baseBalance = 0; // Negative means remaining change (ресто), Positive means due (дължимо)
 
     if (useBgnAsMaster) {
-        // Смятаме в ЛЕВА
-        // АКО имаме смесено плащане (имаме стойност в paid1), 
-        // тогава трябва да сме сигурни, че вадим от правилната "база".
-        // Проблемът е, че due2Val е закръглено.
-        // Ако paid1Val > 0, логиката е: "Дължа X лв (базирано на курс), давам Y евро (което е Z лв) + W лв".
-
+        // Смятаме в ЛЕВА - СТРИКТНО с 2 знака
         let startDueBgn = due2Val;
 
-        // Ако имаме въведено EUR (paid1), тогава "истинското" дължимо в лева
-        // идва от превалутирането на due1, защото плащаме част в евро.
-        // Но за да е консистентно с екрана, ползваме roundToTwo.
+        // Ако имаме въведено EUR (paid1), преизчисляваме базата
+        // за да е синхронизирана с курса, но ЗАКРЪГЛЕНА до 2 знака.
         if (paid1Val > 0) {
             startDueBgn = roundToTwo(due1Val * rate);
         }
 
         const paid1Bgn = roundToTwo(paid1Val * rate);
-        const totalPaidBgn = paid2Val + paid1Bgn;
 
-        baseBalance = startDueBgn - totalPaidBgn; // в BGN
+        // Междинно: колко остава да се плати след като дадем еврото?
+        // Това е еквивалент на "due2 - paid1(converted)"
+        // Използваме междинно закръгляне, за да сме сигурни в резултата.
+        const remainingAfterEur = roundToTwo(startDueBgn - paid1Bgn);
+
+        // Сега вадим и това, което е дадено в лева
+        baseBalance = roundToTwo(remainingAfterEur - paid2Val);
     } else {
         // Смятаме в ЕВРО
         const totalPaidEur = paid1Val + (paid2Val / rate);
@@ -469,6 +468,33 @@ function recalculateRestoMixed() {
 
     // updateRestoVisuals expects value in EUR to determine Positive/Negative red/green
     updateRestoVisuals(displayEur, mode);
+
+    // --- CHECK LOGIC ---
+    // Log verification info to console
+    const checkPaidBgn = paid2Val + roundToTwo(paid1Val * rate);
+    const checkRestoBgn = (displayBgn < 0) ? Math.abs(displayBgn) : -displayBgn; // if displayBgn is negative (change), it means returned.
+    // Wait, displayBgn is "Remaining".
+    // If Remaining is positive (due), then Paid+Remaining = TotalDue.
+    // If Remaining is negative (change), then Paid - Change = TotalDue.
+
+    // Let's verify: Paid + Remaining = Due
+    // Using BGN:
+    // We used: baseBalance = Due - Paid. => BaseBalance + Paid = Due.
+
+    const totalPaidBgnCalc = paid2Val + (paid1Val * rate);
+    const totalPaidEurCalc = paid1Val + (paid2Val / rate);
+
+    // Convert everything to BGN for check
+    const totalDueBgnCheck = due1Val * rate;
+    const currentBalanceBgn = displayBgn;
+
+    console.log(`[Resto Check] Paid(EUR)=${paid1Val}, Paid(BGN)=${paid2Val}`);
+    console.log(`[Resto Check] Resto(EUR)=${displayEur.toFixed(4)}, Resto(BGN)=${displayBgn.toFixed(4)}`);
+    // Ideally: Paid_BGN_Equiv + Resto_BGN = Due_BGN_Equiv ?
+    // Check: (Paid1*Rate + Paid2) + Remaining = Due1*Rate
+    const checkSum = (paid1Val * rate + paid2Val) + displayBgn;
+    const diff = checkSum - (due1Val * rate);
+    console.log(`[Resto Verify] Paid+Remaining (BGN) = ${checkSum.toFixed(4)} vs Due (BGN) = ${(due1Val * rate).toFixed(4)}. Diff: ${diff.toFixed(6)}`);
 }
 
 // Настройка на трета двойка (Ресто)
