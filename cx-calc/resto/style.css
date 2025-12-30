@@ -776,7 +776,9 @@ body.ready .calculator-container {
     background: rgba(255, 0, 0, 0.6);
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="radio"],
+input[type="checkbox"] {
     pointer-events: auto !important;
     /* Ensure inputs are clickable */
 }

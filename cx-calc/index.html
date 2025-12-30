@@ -116,7 +116,7 @@
         justify-content: space-between;
         gap: 15px;
     ">
-        <span style="flex-grow: 1; text-align: center;">За да работите без връзка с интернет, натиснете
+        <span style="flex-grow: 1; text-align: left;">За да инсталирате приложе-<br>нието, натиснете
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round"
                 style="display: inline-block; vertical-align: middle; margin-bottom: 3px;">
@@ -124,7 +124,7 @@
                 <polyline points="16 6 12 2 8 6"></polyline>
                 <line x1="12" y1="2" x2="12" y2="15"></line>
             </svg>
-            и изберете "Добави към началния екран"<span id="countdownSpan"> (20)</span>
+            и изберете "Добави към началния екран".<!-- span id="countdownSpan"> (20)</span>-->
         </span>
         <div style="display: flex; align-items: center; gap: 15px; flex-shrink: 0;">
             <button id="decline-ios-install"
@@ -178,6 +178,48 @@
         <div id="statusArea2" class="statusArea"></div>
         <div id="statusArea3" class="statusArea"></div>
         <div id="statusArea4" class="statusArea"></div>
+        <div style="position: relative; z-index: 20; text-align: center; margin-top: -5px; line-height: 0;">
+            <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+            <script
+                type='text/javascript'>kofiwidget2.init('Почерпете програмиста с едно кафе', 'transparent', 'O5O81RA2VZ'); kofiwidget2.draw();</script>
+            <style>
+                /* Compact Ko-fi Widget Overrides */
+                .btn-container {
+                    margin: 0 !important;
+                }
+
+                a.kofi-button {
+                    box-shadow: none !important;
+                    min-width: auto !important;
+                    padding: 0 !important;
+                    line-height: normal !important;
+                    /* Restore line-height for text */
+                    display: inline-flex !important;
+                    /* Use flex to align image and text */
+                    align-items: center !important;
+                    gap: 5px !important;
+                    text-decoration: none !important;
+                }
+
+                img.kofiimg {
+                    height: 30px !important;
+                    width: auto !important;
+                    display: inline-block !important;
+                    /* Restore inline behavior */
+                    padding: 0 !important;
+                    margin-bottom: 2px !important;
+                    /* Slight tweak for optical alignment */
+                }
+
+                span.kofitext {
+                    color: #555 !important;
+                    font-family: sans-serif !important;
+                    letter-spacing: normal !important;
+                    font-size: 14px !important;
+                    display: inline-block !important;
+                }
+            </style>
+        </div>
     </div>
 
     <div id="historyModal" class="modal">
@@ -648,6 +690,32 @@
     </script>
 
     <script src="mainnAll.js"></script>
+
+    <!--style>
+        /* Overrides for Ko-fi Widget Position */
+        .floating-chat-kofi-popup-iframe-notice {
+            bottom: 5px !important;
+            left: 5px !important;
+        }
+
+        /* Alternative targeting if class changes */
+        div[id^="kofi-widget-overlay"] {
+            bottom: 5px !important;
+            left: 5px !important;
+        }
+    </style-->
+
+    <!--iframe id='kofiframe' src='' style='display:none !important;' height='22'></iframe>
+    <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+    <script>
+        // Initialize Ko-fi Floating Widget
+        kofiWidgetOverlay.draw('cxcalc', {
+            'type': 'floating-chat',
+            'floating-chat.donateButton.text': '',
+            'floating-chat.donateButton.background-color': 'red',
+            'floating-chat.donateButton.text-color': '#fff'
+        });
+    </script-->
 </body>
 
 </html>

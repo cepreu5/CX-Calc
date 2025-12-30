@@ -2479,6 +2479,11 @@ function resizeFont() {
 // 1. Data structure for all available tips
 const allTips = [
     {
+        id: 'tip-install',
+        text: 'Ако искате да инсталирате приложението, може да го направите от бутона <b>Инсталиране</b>, който се появява при първо стартиране.',
+        target: 'display',
+    },
+    {
         id: 'tip-help',
         text: 'Показва подробна помощна информация за разширените функции на калкулатора. Задръжте го, за да се покажат помощни обозначения върху бутоните (на компютър: Ctrl+Клик).',
         target: 'statusArea4',
@@ -2512,7 +2517,7 @@ const allTips = [
         id: 'tip-resto',
         text: 'Включва модул <b>Ресто</b>, предназначен за пресмятане на рестото при смесено плащане в лева и евро.<br><br><a href="https://youtu.be/LlRVxlngkGY" target="_blank">Последвайте линка за кратко представяне на модула.</a>',
         target: 'L',
-    }
+    },
 ];
 
 // This will hold the final tip data with show states
