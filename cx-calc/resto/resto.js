@@ -372,11 +372,24 @@ function recalculateRestoMixed() {
 
     if (useBgnAsMaster) {
         // Смятаме в ЛЕВА
-        // Use visual value from input (due2Val) as requested
-        // And round the converted paid1 to simulate "visual" BGN payment to avoid precision issues
+        // АКО имаме смесено плащане (имаме стойност в paid1), 
+        // тогава трябва да сме сигурни, че вадим от правилната "база".
+        // Проблемът е, че due2Val е закръглено.
+        // Ако paid1Val > 0, логиката е: "Дължа X лв (базирано на курс), давам Y евро (което е Z лв) + W лв".
+
+        let startDueBgn = due2Val;
+
+        // Ако имаме въведено EUR (paid1), тогава "истинското" дължимо в лева
+        // идва от превалутирането на due1, защото плащаме част в евро.
+        // Но за да е консистентно с екрана, ползваме roundToTwo.
+        if (paid1Val > 0) {
+            startDueBgn = roundToTwo(due1Val * rate);
+        }
+
         const paid1Bgn = roundToTwo(paid1Val * rate);
         const totalPaidBgn = paid2Val + paid1Bgn;
-        baseBalance = due2Val - totalPaidBgn; // в BGN
+
+        baseBalance = startDueBgn - totalPaidBgn; // в BGN
     } else {
         // Смятаме в ЕВРО
         const totalPaidEur = paid1Val + (paid2Val / rate);
