@@ -146,7 +146,6 @@ function saveSettings() {
         }
     }
     localStorage.setItem('CXCalc_MainPointsO', JSON.stringify(MainPointsO));
-
     // 2. Събираме и записваме останалите настройки в appSettings
     const currentSettings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
     // Събираме и записваме останалите настройки в appSettings
@@ -213,6 +212,7 @@ function populateLayoutSettings() {
             setTimeout(calcResize, 200);
             // transpView();
         });
+
     }
     const calcLeftOffsetInput = document.getElementById('calcLeftOffset_hidden');
     if (calcLeftOffsetInput) {
@@ -226,6 +226,7 @@ function populateLayoutSettings() {
             setTimeout(calcResize, 200);
             // transpView();
         });
+
     }
     const calcRightOffsetInput = document.getElementById('calcRightOffset_hidden');
     if (calcRightOffsetInput) {
@@ -238,6 +239,7 @@ function populateLayoutSettings() {
             setTimeout(calcResize, 200);
             // transpView();
         });
+
     }
     // Попълни currencySymbolInput
     const currencySymbolInput = document.getElementById('currencySymbolInput');
@@ -332,19 +334,16 @@ function loadSettings() {
     // Ensure consistency: if handMode is standard, force standardKeyboard to true
     if (handMode === 'standard') settings.standardKeyboard = true;
     standardKeyboard = settings.standardKeyboard;
-
     if (standardKeyboard) {
         keyMap = keyMapS;
     } else {
         keyMap = handMode === 'left' ? keyMapL : keyMapR;
     }
-
     // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
     const savedMem = JSON.parse(localStorage.getItem('CXCalc_CalcMem'));
     if (savedMem && Array.isArray(savedMem)) {
         Mem = savedMem;
     } // Ако няма запазена памет, използваме първоначално декларираната празна Mem.
-
     // Задаваме облика на калкулатора според запазената настройка
     if (calculator && settings.calculatorSkin) {
         let skin = settings.calculatorSkin;
@@ -357,7 +356,6 @@ function loadSettings() {
         }
         calculator.src = skin;
     }
-
     // Прилага визуални настройки, които са нужни веднага при зареждане
     document.documentElement.style.setProperty('--calc-bottom-offset', `${calcBottom}px`);
     document.documentElement.style.setProperty('--calc-left-offset', `${calcLeft}px`);
@@ -401,11 +399,9 @@ function getImageVisualSize() {
         console.error("Грешка: Не е намерено изображението.");
         return;
     }
-
     // Reset styles
     calculator.style.maxHeight = '95%';
     calculator.style.objectPosition = 'center center';
-
     // Check for Resto extra height requirement
     let extraTop = 0;
     if (typeof MainPointsO !== 'undefined' && MainPointsO.Resto && MainPointsO.Resto.y < 0) {
@@ -418,15 +414,12 @@ function getImageVisualSize() {
             calculator.style.objectPosition = 'center bottom';
         }
     }
-
     // Initialize offsets
     window.imgOffsetX = 0;
     window.imgOffsetY = 0;
-
     const rect = calculator.getBoundingClientRect();
     const elWidth = rect.width;
     const elHeight = rect.height;
-
     let aspectRatio = calculator.naturalWidth / calculator.naturalHeight;
     if (calculator.style.objectFit === "cover") {
         imageWidth = elWidth;
@@ -460,8 +453,7 @@ function getImageVisualSize() {
     // Заменяме window.innerWidth с containerWidth
     aspectRatioW = imageWidth / imageWidthO; // aspectRatioW е съотношението на ширината на изображението към оригиналната ширина
     aspectRatioH = imageHeight / imageHeightO; // aspectRatioH е съотношението на височината на изображението към оригиналната височина
-    console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
-
+    // console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
     // --- Set Panel Width logic moved here ---
     // NO PANEL ANYMORE
 }
@@ -635,6 +627,7 @@ function toggleDisplayMode() {
                 const firstInput = document.getElementById('due1');
                 if (firstInput) firstInput.focus();
             }, 50);
+
         }
     }
 
@@ -1027,7 +1020,6 @@ function handleCalculatorInteraction(event, options = {}) {
         if (isWithinKeyBounds(event, key, keyWidth, keyHeight)) {
             interactionHandled = true;
             const keyValue = key.value;
-
             // --- Resto Input Interception ---
             // If the user has focused a resto field, try to send the calculator key there.
             // If handleRestoInput returns true, it means it handled the key (digit, C, Backspace),
@@ -1037,12 +1029,10 @@ function handleCalculatorInteraction(event, options = {}) {
                 window.handleRestoInput(keyValue)) {
                 return;
             }
-
             // If not handled by Resto, ensure we clear Resto focus
             if (typeof window.clearRestoFocus === 'function') {
                 window.clearRestoFocus();
             }
-
             // Обработка на специални клавиши (The original else if chain follows)
             if ((event.ctrlKey || options.allowWithoutCtrl) && keyValue === '€') {
                 if (ovFlag) { noOverlay(); ovFlag = false; }
@@ -1087,6 +1077,7 @@ function handleCalculatorInteraction(event, options = {}) {
             }
         }
     });
+
     // Обработка на статус зони
     if (handleStatusZones(event, event.ctrlKey || options.allowWithoutCtrl)) {
         interactionHandled = true;
@@ -1105,6 +1096,7 @@ function handleCalculatorInteraction(event, options = {}) {
             if (typeof window.clearRestoFocus === 'function') {
                 window.clearRestoFocus();
             }
+
             userInput = "";
             swapDisplays();
             interactionHandled = true;
@@ -1142,13 +1134,11 @@ document.addEventListener("click", function (event) {
         event.stopPropagation();
         return;
     }
-
     // --- Fix for Resto Panel Focus ---
     // If the click is inside the resto panel or an input field, do nothing (let the browser handle focus)
     if (event.target.closest('.panel') || event.target.tagName === 'INPUT') {
         return;
     }
-
     handleCalculatorInteraction(event);
     // updateDebugInfo();
 });
@@ -1170,11 +1160,9 @@ element.addEventListener('touchstart', (e) => {
     pressTimer = setTimeout(() => {
         // Установяваме, че действието е задържане
         isLongPress = true;
-
         // Тъй като 'e' е TouchEvent, трябва да подадем правилните координати
         const touch = e.touches[0] || e.changedTouches[0];
         const fakeEvent = { clientX: touch.clientX, clientY: touch.clientY, ctrlKey: true }; // Симулираме Ctrl+Click
-
         handleCalculatorInteraction(fakeEvent, { allowWithoutCtrl: true });
         console.log('Long press detected!');
     }, longPressThreshold);
@@ -1200,6 +1188,7 @@ document.getElementById('saveSettings').addEventListener('click', function (e) {
     setTimeout(() => {
         modalIsActive = false;
     }, 0);
+
     e.stopPropagation();
     e.preventDefault();
 });
@@ -1231,7 +1220,6 @@ window.addEventListener("load", function () {
             // което гарантира коректни размери, независимо от скина.
             getImageSize();
             getImageVisualSize();
-
             scaleMainPoints(aspectRatioW, aspectRatioH);
             const layout = calcNewCoordinates();
             keys = layout.keys;
@@ -1285,6 +1273,7 @@ window.addEventListener("load", function () {
                 localStorage.setItem('CXCalc_appSettings', JSON.stringify(settings));
                 location.reload(); // Презареждането ще скрие модала
             };
+
             document.getElementById('exchangeRateConfirmBtn').onclick = function (event) {
                 closeWarning(event);
             };
@@ -1301,6 +1290,7 @@ window.addEventListener("load", function () {
                 }, 200); // 200ms delay
             }
         }
+
         // --- END OF TIPS INTEGRATION ---
 
         // Визуализираме заредената памет
@@ -1322,6 +1312,7 @@ window.addEventListener("load", function () {
         loadingOverlay.style.opacity = '0';
         setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500); // Премахваме го след анимацията
     }
+
     isFullyLoaded = true;
     console.log("Calculator is fully loaded and ready for interaction.");
     storeCurrentFileSizes();
@@ -1351,6 +1342,7 @@ window.addEventListener("load", function () {
         calcResize();
         window.dispatchEvent(new Event('resize'));
     }, 100);
+
     appendNumber("C");
 });
 
@@ -1365,10 +1357,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Това предотвратява "пробиването" на клика до елементите под модала (напр. бутоните на калкулатора),
             // след като модалът бъде скрит.
             event.stopPropagation();
-
             // Скриваме модалния прозорец
             if (event.target.id !== 'settingsModal') event.target.style.display = 'none';
-
             // Ако е бил прозорецът за настройки, връщаме го в начален изглед
             if (event.target.id === 'settingsModal') {
                 resetLayoutSettingsView();
@@ -1397,7 +1387,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateRestoInputState(true);
             return;
         }
-
         // --- Fix for Resto Panel Typing ---
         // Ако потребителят пише в текстово поле, не задействаме калкулатора
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
@@ -1424,11 +1413,9 @@ document.addEventListener('DOMContentLoaded', () => {
             appendNumber(key);
         }
     });
-
     // --- Fix for Settings using Checkboxes as Radios (Robust Mobile Support) ---
     function setupRadioEmulation(groupName) {
         const checkboxes = Array.from(document.querySelectorAll(`input[name="${groupName}"]`));
-
         checkboxes.forEach(cb => {
             // Function to handle the radio-like logic
             const activate = (target) => {
@@ -1442,21 +1429,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             };
-
             cb.addEventListener('click', function (e) {
                 e.stopPropagation();
                 // If it is a checkbox, the 'click' event happens AFTER state change.
                 // So if it was unchecked, now it is checked.
                 // If it was checked, now it is unchecked (we want to revert this).
-
                 // Correction:
                 // If the user clicked an unchecked box -> Browser checks it. 'checked' is true. We uncheck others.
                 // If the user clicked a checked box -> Browser unchecks it. 'checked' is false. We force it true.
                 activate(this);
             });
-
             cb.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
-
             // Handle label click explicitly for mobile resiliency
             const label = cb.closest('label');
             if (label) {
@@ -1484,10 +1467,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
     setupRadioEmulation('initialDisplay');
     setupRadioEmulation('handMode');
-
     // Also handle other checkboxes/inputs to stop propagation
     document.querySelectorAll('.settings-modal-content input:not([name="initialDisplay"]):not([name="handMode"])').forEach(inp => {
         inp.addEventListener('click', e => e.stopPropagation());
@@ -1498,14 +1479,45 @@ document.addEventListener('DOMContentLoaded', () => {
             lbl.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
         }
     });
-
-    // Добавяме слушател за бутона за проверка на версия
+    // Explicit fix for Sound Checkbox (toggle manually)
+    const soundCb = document.getElementById('soundEffectsCheckbox');
+    if (soundCb) {
+        soundCb.addEventListener('click', function (e) {
+            e.stopPropagation();
+            // Manually toggle if native behavior failed (or enforce it)
+            // Note: In click event, the native toggle might have happened.
+            // But if users report it's stuck, we can force a re-render or handle logic.
+            // Testing shows native toggle might be prevented.
+            // We can't easily detect if native toggle happened without checking state BEFORE click... which is hard.
+            // But we can usually trust the current state in the handler IS the new state.
+            // If it's NOT changing visually, maybe we need to force it.
+            // However, since the user says it "does not allow to put a check mark", 
+            // it means it stays unchecked (or checked).
+            // Let's force the sound logic update immediately.
+            // Force save setting immediately to be safe
+            // soundEffectsEnabled = this.checked; 
+            // But we usually save on "Save".
+        });
+        soundCb.addEventListener('touchstart', function (e) {
+            e.stopPropagation();
+        }, { passive: true });
+        // Wrap it in a label logic if there is a linked label?
+        // It has no ID-linked label. 
+        // Let's add a "force toggle" click listener to the container div or the text label?
+        // The text label is previous sibling.
+        const soundLabel = soundCb.parentElement.previousElementSibling;
+        if (soundLabel && soundLabel.tagName === 'LABEL') {
+            soundLabel.addEventListener('click', function (e) {
+                e.stopPropagation();
+                soundCb.checked = !soundCb.checked;
+            });
+            soundLabel.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+        }
+    }
     const checkVersionBtn = document.getElementById('checkVersionBtn');
     if (checkVersionBtn) checkVersionBtn.addEventListener('click', checkForUpdates);
-
     const resetBtn = document.getElementById('resetBtn');
     if (resetBtn) resetBtn.addEventListener('click', resetCalc);
-
     const fldSettingsBtn = document.getElementById('fldSettings');
     if (fldSettingsBtn) {
         fldSettingsBtn.addEventListener('click', (e) => {
@@ -1521,7 +1533,6 @@ document.addEventListener('DOMContentLoaded', () => {
             /// setTimeout(calcResize, 200);
         });
     }
-
     // --- Слушатели за бутоните за управление на подсказките ---
     const resetTipsButton = document.getElementById('resetTipsButton');
     if (resetTipsButton) {
@@ -1538,7 +1549,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
     historyList.addEventListener('click', (event) => {
         event.stopPropagation();
         event.preventDefault();
@@ -1585,12 +1595,10 @@ document.addEventListener('DOMContentLoaded', () => {
             modalIsActive = false;
         }
     })
-
     loadHistory();
     // calcResize ();
     // Initial font size adjustment for both fields based on their (potentially empty) content
     adjustFontSize(levInput, eurInput);
-
 });
 
 function calcResize() {
@@ -1651,6 +1659,7 @@ function showOv() {
     setTimeout(() => {
         modalIsActive = false;
     }, 0);
+
     //e.stopPropagation();
     //e.preventDefault();
 }
@@ -1682,11 +1691,9 @@ if ('serviceWorker' in navigator) {
                 if (event.data?.type === 'NEW_VERSION_AVAILABLE') {
                     const currentVersion = localStorage.getItem('CXCalc_appVersion');
                     const newVersion = event.data.version;
-
                     if (newVersion && newVersion !== currentVersion) {
                         console.log('Налична е нова версия:', newVersion);
                         localStorage.setItem('CXCalc_appVersion', newVersion);
-
                         // Only show notification and reload if it's an actual update, not the first install
                         if (currentVersion) {
                             showNotification('Налична е нова версия. Презареждане...', 'success', 4000, true);
@@ -1695,6 +1702,7 @@ if ('serviceWorker' in navigator) {
                 }
             });
         })
+
         .catch(err => {
             console.error('Грешка при регистрация на Service Worker:', err);
         });
@@ -1708,10 +1716,8 @@ function setupDismissablePrompt(promptElement, dismissButton, declineButton, cou
     // if (countdownSpan) {
     //    countdownSpan.textContent = ` (${countdown})`;
     // }
-
     let interval;
     let installHandler; // Declare installHandler here to make it accessible in cleanup
-
     const cleanup = () => {
         clearInterval(interval);
         promptElement.style.display = 'none';
@@ -1725,16 +1731,13 @@ function setupDismissablePrompt(promptElement, dismissButton, declineButton, cou
             installButton.removeEventListener('click', installHandler);
         }
     };
-
     const dismissHandler = () => {
         cleanup();
     };
-
     const declineHandler = () => {
         localStorage.setItem('CXCalc_pwaInstallDeclined', 'true');
         cleanup();
     };
-
     // This handler is specific to the 'beforeinstallprompt' event
     installHandler = () => {
         if (deferredPrompt) {
@@ -1745,12 +1748,10 @@ function setupDismissablePrompt(promptElement, dismissButton, declineButton, cou
         }
         cleanup();
     };
-
     dismissButton.addEventListener('click', dismissHandler, { once: true });
     if (declineButton) {
         declineButton.addEventListener('click', declineHandler, { once: true });
     }
-
     // Special handling for the main install prompt
     if (promptElement.id === 'install-bar') {
         const installButton = document.getElementById('install');
@@ -1776,10 +1777,10 @@ if (localStorage.getItem('CXCalc_pwaInstallDeclined') !== 'true') {
         const dismissButton = document.getElementById('dismiss-install'); // New ID
         const declineButton = document.getElementById('decline-install'); // New ID
         // const countdownSpan = document.getElementById('install-countdown');
-
         installPromptWasShown = true; // Set flag
         setupDismissablePrompt(installBar, dismissButton, declineButton); // Correct parameters --> , countdownSpan
     });
+
 }
 
 function showNotification(message, type = 'info', duration = 3000, isReloading = false) {
@@ -1787,18 +1788,15 @@ function showNotification(message, type = 'info', duration = 3000, isReloading =
     if (existingNotice) {
         document.body.removeChild(existingNotice);
     }
-
     const notice = document.createElement('div');
     notice.className = 'custom-notification';
     notice.textContent = message;
-
     const colors = {
         info: '#0078d4',    // Синьо
         success: '#107c10', // Зелено
         error: '#d13438'    // Червено
     };
     notice.style.background = colors[type] || colors.info;
-
     Object.assign(notice.style, {
         position: 'fixed',
         top: '10px',
@@ -1817,9 +1815,7 @@ function showNotification(message, type = 'info', duration = 3000, isReloading =
         textAlign: 'center'
     });
     document.body.appendChild(notice);
-
     setTimeout(() => { notice.style.opacity = '1'; }, 10);
-
     setTimeout(() => {
         notice.style.opacity = '0';
         setTimeout(() => {
@@ -1913,7 +1909,6 @@ function checkForUpdates() {
             // Save the new sizes right away
             localStorage.setItem('CXCalc_fileSizes', JSON.stringify(serverSizes));
             console.log('Updated stored file sizes:', serverSizes);
-
             registration.update().then(() => {
                 if (registration.installing) {
                     console.log('SW: Намерен е нов service worker, инсталира се...');
@@ -1957,6 +1952,7 @@ function checkForUpdates() {
             if (btnTextSpan) btnTextSpan.textContent = originalText;
             checkVersionBtn.disabled = false;
         }, 3000);
+
     }
 }
 
@@ -1992,6 +1988,7 @@ function memoryAdd(targetSlot, operation = "+") {
             setTimeout(() => {
                 updateMemoryStatusDisplay(targetSlot, false); // Връща оригиналния фон след х секунди
             }, 300);
+
             break;
         case "-":
             Mem[targetSlot] -= value;
@@ -2000,6 +1997,7 @@ function memoryAdd(targetSlot, operation = "+") {
             setTimeout(() => {
                 updateMemoryStatusDisplay(targetSlot, false); // Връща оригиналния фон след х секунди
             }, 300);
+
             break;
         case "0":
             Mem[targetSlot] = 0;
@@ -2062,6 +2060,7 @@ function tempShow(Str, len = 1) {
         display.style.backgroundColor = originalEurBgColor;
         adjustFontSize(displaylv, display); // <--- ADD THIS LINE
     }, len * 1000);
+
 }
 
 //memoryShow: Временно показва стойността от даден слот на паметта в горния дисплей, без да го променя
@@ -2069,7 +2068,6 @@ function memoryShow(slot, callback) { // Добавен е 'callback'
     if (slot == 4) {
         const calculatorEl = document.getElementById("calculator");
         let baseSkin, altSkin;
-
         if (standardKeyboard) {
             baseSkin = "CalculatorS.png";
             altSkin = "CalculatorAS.png";
@@ -2081,7 +2079,6 @@ function memoryShow(slot, callback) { // Добавен е 'callback'
                 altSkin = "CalculatorAL.png";
             }
         }
-
         const newSkin = calculatorEl.src.includes(altSkin) ? baseSkin : altSkin;
         // Запазваме оригиналния onload, за да го възстановим
         if (!originalOnloadHandler) {
@@ -2233,6 +2230,7 @@ function placeKeys(keys, displayCoords) {
         keyElement.style.zIndex = "9999";
         container.appendChild(keyElement);
     });
+
     // Позициониране на статус областите
     for (let i = 1; i < 5; i++) positionStatusArea(i, true);
 }
@@ -2249,7 +2247,6 @@ function calcNewCoordinates() {
     // Връщаме координати за оверлея
     const offX = window.imgOffsetX || 0;
     const offY = window.imgOffsetY || 0;
-
     const displayCoords = {
         lv: {
             x: rect.left + offX + MainPoints.Displaylv.x,
@@ -2298,7 +2295,6 @@ function calcNewCoordinates() {
             console.warn(`⚠️ Елемент с id '${id}' не е намерен.`);
             return;
         }
-
         marker.title = label;
         marker.style.position = "absolute";
         marker.style.left = `${x - containerRect.left}px`;
@@ -2329,7 +2325,6 @@ function calcNewCoordinates() {
             ['paid1', 'paid2'],
             ['resto1', 'resto2']
         ];
-
         for (let r = 0; r < fieldIds.length; r++) {
             for (let c = 0; c < fieldIds[r].length; c++) {
                 const fId = fieldIds[r][c];
@@ -2337,16 +2332,13 @@ function calcNewCoordinates() {
                 if (inputEl) {
                     const fx = rect.left + offX + MainPoints.Fields.x + c * (MainPoints.FieldsSize.x + MainPoints.FldGaps.x);
                     const fy = rect.top + offY + MainPoints.Fields.y + r * (MainPoints.FieldsSize.y + MainPoints.FldGaps.y);
-
                     const wrapper = inputEl.closest('.input-wrapper');
                     const target = wrapper || inputEl;
-
                     target.style.position = 'absolute';
                     target.style.left = `${Math.round(fx - containerRect.left)}px`;
                     target.style.top = `${Math.round(fy - containerRect.top)}px`;
                     target.style.width = `${Math.round(MainPoints.FieldsSize.x)}px`;
                     target.style.height = `${Math.round(MainPoints.FieldsSize.y)}px`;
-
                     if (wrapper) {
                         // Reset input inline styles if wrapper is handling position
                         inputEl.style.position = 'relative'; // relative allows 100% logic
@@ -2359,7 +2351,6 @@ function calcNewCoordinates() {
             }
         }
     }
-
     for (let i = 1; i < 5; i++) positionStatusArea(i); // already there
     return { keys, displayCoords };
 }
@@ -2404,6 +2395,7 @@ function formatExpression(expression) {
         const num2 = groupByThree(raw2, false);
         return `${num1} ${operator} ${num2}`;
     });
+
 }
 
 function updateHistoryList() {
@@ -2414,11 +2406,9 @@ function updateHistoryList() {
         historyList.appendChild(li);
         return;
     }
-
     history.forEach(record => {
         const li = document.createElement('li');
         li.style.cursor = 'pointer';
-
         let fullText = '';
         if (/[+\-*/×÷]/.test(record.operation)) {
             fullText = `${formatExpression(record.operation)} &rarr; ${record.result}`;
@@ -2426,7 +2416,6 @@ function updateHistoryList() {
             const operationNumber = parseFloat(record.operation.replace(',', '.'));
             const resultNumberRaw = record.result.split('=')[0].replace(/\s/g, '').replace(CURRENCY_LEV_SYMBOL, '').replace(',', '.');
             const resultNumber = parseFloat(resultNumberRaw);
-
             if (Math.abs(operationNumber - resultNumber) > 0.001 && !isNaN(operationNumber)) {
                 fullText = `${groupByThree(record.operation, false)} &rarr; ${record.result}`;
             } else {
@@ -2434,7 +2423,6 @@ function updateHistoryList() {
             }
         }
         li.innerHTML = fullText;
-
         // Store values in data attributes for robust retrieval
         if (record.result.includes(CURRENCY_LEV_SYMBOL) && record.result.includes(CURRENCY_SYMBOL)) {
             const parts = record.result.split('=');
@@ -2446,7 +2434,6 @@ function updateHistoryList() {
             li.dataset.lev = singleValue;
             li.dataset.eur = singleValue;
         }
-
         historyList.appendChild(li);
     });
 }
@@ -2482,6 +2469,7 @@ if (closeHistoryModalButton) {
         e.stopPropagation();
         e.preventDefault();
     });
+
 }
 
 // fontcalc.js ------------------------
@@ -2559,6 +2547,7 @@ function adjustFontSize(element1, element2) {
         restoInputs.forEach(input => {
             input.style.fontSize = Math.max(10, fontSize - 12) + "px";
         });
+
     }
 
     document.body.removeChild(measuringDiv);
@@ -2640,7 +2629,6 @@ function getTargetCoordinates(target) {
             height: keyDimensions.keyHeight
         };
     }
-
     // 2. Check for special string identifiers which map to DOM elements
     let element = null;
     if (target === 'display') {
@@ -2650,11 +2638,9 @@ function getTargetCoordinates(target) {
         // Assume the target is a direct DOM element ID
         element = document.getElementById(target);
     }
-
     if (element) {
         return element.getBoundingClientRect();
     }
-
     // 3. If no target is found, warn and return null
     console.warn(`Could not find a valid target for tip: ${target}`);
     return null;
@@ -2673,6 +2659,7 @@ function initTips() {
  * @param {object} tip The tip object to display.
  * @param {function} [onClose] Optional callback to execute when the tip is closed to show the next tip.
  */
+
 function createTipElement(tip, onClose) {
     const targetCoords = getTargetCoordinates(tip.target);
     if (!targetCoords) {
@@ -2756,11 +2743,13 @@ function createTipElement(tip, onClose) {
     tipElement.querySelector('.tip-next-btn').addEventListener('click', (event) => {
         closeTip(event); // Continue tutorial
     });
+
 }
 
 /**
  * Main function to control the display of the tips tutorial.
  */
+
 function showTips() {
     // NEW: Check if an install prompt is visible and wait for it to disappear
     const installBar = document.getElementById('install-bar');
@@ -2785,7 +2774,6 @@ function showTips() {
             memoryShow(4); // Връщаме скина, без callback
             tutorialSkinSwitch = false;
         }
-
         // Disable tips for subsequent runs and save
         const settings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
         settings.tipsEnabled = false;
@@ -2812,22 +2800,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const arrowUp = document.querySelector('.wheel-arrow-up');
     const arrowDown = document.querySelector('.wheel-arrow-down');
     const wheelContainer = document.querySelector('.wheel-container');
-
     if (!wheelSpinner) return;
-
     let activeInputWrapper = document.querySelector('.offset-input-wrapper.active-offset');
     let activeInput = activeInputWrapper ? document.getElementById(activeInputWrapper.dataset.inputId) : null;
     let hiddenInput = activeInput ? document.getElementById(activeInput.id + '_hidden') : null;
-
     const numberHeight = 40; // Corresponds to .wheel-number height in CSS
     const visibleNumbers = 7; // Should be an odd number
-
     function populateWheel(centerValue) {
         if (!wheelSpinner) return;
         wheelSpinner.innerHTML = '';
         const fragment = document.createDocumentFragment();
         const centerIndex = Math.floor(visibleNumbers / 2);
-
         for (let i = 0; i < visibleNumbers; i++) {
             const offset = (i - centerIndex) * 5; // Step of 5
             const num = Math.round(centerValue / 5) * 5 + offset;
@@ -2840,15 +2823,11 @@ document.addEventListener('DOMContentLoaded', () => {
             fragment.appendChild(numberEl);
         }
         wheelSpinner.appendChild(fragment);
-
         wheelSpinner.style.transition = 'none';
         wheelSpinner.style.transform = `translateY(-${centerIndex * numberHeight}px)`;
-
         void wheelSpinner.offsetHeight;
-
         wheelSpinner.style.transition = 'transform 0.2s ease-out';
     }
-
     function setActiveInput(wrapper) {
         if (activeInputWrapper) {
             activeInputWrapper.classList.remove('active-offset');
@@ -2861,25 +2840,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentValue = parseInt(hiddenInput.value, 10);
         populateWheel(currentValue);
     }
-
     function updateValue(change) {
         if (!activeInput || !hiddenInput) return;
-
         let currentValue = parseInt(hiddenInput.value, 10);
         const min = -500;
         const max = 500;
-
         let newValue = currentValue + change;
         if (newValue < min) newValue = min;
         if (newValue > max) newValue = max;
-
         if (newValue !== currentValue) {
             const centerIndex = Math.floor(visibleNumbers / 2);
             const initialY = -(centerIndex * numberHeight);
             const direction = change > 0 ? -1 : 1;
-
             wheelSpinner.style.transform = `translateY(${initialY + direction * numberHeight}px)`;
-
             setTimeout(() => {
                 populateWheel(newValue);
                 activeInput.value = newValue;
@@ -2888,14 +2861,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 200);
         }
     }
-
     offsetWrappers.forEach(wrapper => {
         wrapper.addEventListener('click', () => setActiveInput(wrapper));
     });
-
     if (arrowUp) arrowUp.addEventListener('click', () => updateValue(5));
     if (arrowDown) arrowDown.addEventListener('click', () => updateValue(-5));
-
     document.addEventListener('keydown', (e) => {
         if (settingsModal.style.display !== 'none' && document.getElementById('offsetWheel')) {
             if (e.key === 'ArrowUp') {
@@ -2907,19 +2877,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
     let touchStartY = 0;
     let touchDeltaY = 0;
-
     if (wheelContainer) {
         wheelContainer.addEventListener('touchstart', (e) => {
             touchStartY = e.touches[0].clientY;
         }, { passive: true });
-
         wheelContainer.addEventListener('touchmove', (e) => {
             touchDeltaY = e.touches[0].clientY - touchStartY;
         }, { passive: true });
-
         wheelContainer.addEventListener('touchend', () => {
             if (Math.abs(touchDeltaY) > 20) { // Threshold
                 if (touchDeltaY > 0) {
@@ -2931,7 +2897,6 @@ document.addEventListener('DOMContentLoaded', () => {
             touchDeltaY = 0; // Reset
         });
     }
-
     if (activeInputWrapper) {
         setActiveInput(activeInputWrapper);
     }
@@ -2946,7 +2911,6 @@ let activeRestoField = null;
 // Връща true, ако е обработила входа (т.е. има активно поле), и false иначе.
 function handleCalculatorInputForResto(key) {
     // console.log("handleRestoInput called with:", key, "ActiveField:", activeRestoField);
-
     // Backup: ако activeRestoField е изгубен, но имаме елемент с клас active-virtual-focus, го възстановяваме.
     // Още по-добре: проверяваме document.activeElement
     if (!activeRestoField) {
@@ -2960,17 +2924,13 @@ function handleCalculatorInputForResto(key) {
             }
         }
     }
-
     // Проверка за видимост на панел Resto
     const restoContainer = document.getElementById('restoInputs');
     const isRestoVisible = restoContainer && restoContainer.style.display !== 'none';
-
     // Ако няма активно поле и панелът НЕ е видим или ключът НЕ е 'C', излизаме
     if (!activeRestoField && !(isRestoVisible && key === 'C')) return false;
-
     // Игнорираме някои специални клавиши, които може да нямат смисъл тук
     // или ги обработваме специфично.
-
     // Ако е "C" (Clear) -> изтриваме съдържанието на ВСИЧКИ полета в панела
     if (key === 'C') {
         const inputs = document.querySelectorAll('#restoInputs input[type="text"]');
@@ -2978,11 +2938,9 @@ function handleCalculatorInputForResto(key) {
             input.value = '';
             triggerInputEvent(input);
         });
-
         if (typeof window.resetRestoState === 'function') {
             window.resetRestoState();
         }
-
         // Фокусираме първото поле (Дължимо/Due1)
         const due1 = document.getElementById('due1');
         if (due1) {
@@ -2990,24 +2948,20 @@ function handleCalculatorInputForResto(key) {
                 due1.focus();
             }, 10);
         }
-
         // ВИНАГИ връщаме false, за да може командата 'C' да продължи към mainAll.js
         // и да изчисти дисплея на калкулатора. Така бутонът 'C' прави пълно изчистване (Global Clear).
         return false;
     }
-
     // Ако е "L" (Switch Display) или "€" (Settings) -> те не са за Resto, пускаме ги към mainAll
     if (key === 'L' || key === '€') {
         return false;
     }
-
     // Ако е "B" (Backspace) -> трием последния символ
     if (key === 'B' || key === 'Delete' || key === 'Backspace') {
         activeRestoField.value = activeRestoField.value.slice(0, -1);
         triggerInputEvent(activeRestoField);
         return true;
     }
-
     // Ако е цифра или запетая -> добавяме я
     // Проверка за валидни символи: 0-9, ",".  Точката я правим на запетая.
     if (/^[0-9]$/.test(key)) {
@@ -3015,7 +2969,6 @@ function handleCalculatorInputForResto(key) {
         triggerInputEvent(activeRestoField);
         return true;
     }
-
     if (key === ',' || key === '.') {
         // Проверка дали вече няма запетая (във validateInput сигурно има, но за UX е добре и тук)
         if (!activeRestoField.value.includes(',')) {
@@ -3024,7 +2977,6 @@ function handleCalculatorInputForResto(key) {
         }
         return true;
     }
-
     return true; // Клавишът не е за нас (напр. +, -, =, L и т.н.)
 }
 
@@ -3033,7 +2985,6 @@ function handleCalculatorInputForResto(key) {
 function triggerInputEvent(field) {
     field.dispatchEvent(new Event('input', { bubbles: true }));
 }
-
 
 // Закачаме focus/blur listeners, за да знаем кое е активното поле
 // Note: We need to ensure DOM is ready or just execute.
@@ -3050,19 +3001,15 @@ const attachRestoListeners = () => {
                     otherInput.dispatchEvent(new Event('blur')); // Форматираме предишното
                 }
             });
-
             activeRestoField = this;
-
             // Опит за предотвратяване на появата на софтуерната клавиатура на мобилни устройства
             // 'readonly' hack: правим го readonly за кратко, но това спира писането.
             // inputmode='none' е по-модерният начин.
             this.setAttribute('inputmode', 'none');
-
             // Добавяме класа и на текущото (въпреки че по-долу имаше global logic,
             // по-добре да е тук за сигурност)
             this.classList.add('active-virtual-focus');
         });
-
         input.addEventListener('blur', function () {
             // Слагаме малко закъснение, за да видим дали фокусът не отива просто в друг input
             setTimeout(() => {
@@ -3085,7 +3032,6 @@ document.addEventListener('click', function (e) {
     // Проверяваме дали кликът е вътре в .calculator-container (който съдържа и панела, и калкулатора)
     const isInsideContainer = e.target.closest('.calculator-container');
     const isDisplayClick = e.target.id === 'levInput' || e.target.id === 'eurInput' || e.target.closest('.calculator-display');
-
     // Ако кликът е ИЗВЪН контейнера ИЛИ е дисплей, деактивираме.
     // (Това позволява кликове върху .ctoverlay, .calculator-img и самия .panel да запазват фокуса, освен ако не е дисплей)
     if ((!isInsideContainer && !e.target.classList.contains('ctoverlay') && e.target.id !== 'ctoverlay') || isDisplayClick) {
@@ -3093,11 +3039,9 @@ document.addEventListener('click', function (e) {
             activeRestoField.classList.remove('active-virtual-focus');
             activeRestoField.dispatchEvent(new Event('blur'));
         }
-
         if (document.activeElement && document.activeElement.tagName === 'INPUT' && document.activeElement.closest('#restoInputs')) {
             document.activeElement.blur();
         }
-
         activeRestoField = null;
         // Махаме visual active state от всички
         document.querySelectorAll('#restoInputs input').forEach(i => i.classList.remove('active-virtual-focus'));
@@ -3146,7 +3090,6 @@ function roundToTwo(num) {
 // direction: 'eurToBgn' или 'bgnToEur'
 function conveert(value, direction) {
     if (!value || value === "") return "";
-
     // Използваме глобалните функции от mainAll.js за еднаквост
     if (direction === 'eurToBgn') {
         // EUR -> BGN (convertFromEurToLev)
@@ -3173,10 +3116,8 @@ function conveert(value, direction) {
 // Функция за валидиране и филтриране на въведените символи
 function validateInput(input) {
     let value = input.value;
-
     // Разрешени символи: цифри, +, -, точка, запетая
     let filtered = value.replace(/[^\d+\-.,]/g, '');
-
     // Проверка за повече от една точка или запетая
     let decimalCount = (filtered.match(/[.,]/g) || []).length;
     if (decimalCount > 1) {
@@ -3184,7 +3125,6 @@ function validateInput(input) {
         let lastDecimalIndex = Math.max(filtered.lastIndexOf('.'), filtered.lastIndexOf(','));
         filtered = filtered.slice(0, lastDecimalIndex) + filtered.slice(lastDecimalIndex + 1);
     }
-
     // Ограничаваме до 2 десетични знака
     let parts = filtered.split(/[.,]/);
     if (parts.length > 1 && parts[1].length > 2) {
@@ -3192,12 +3132,10 @@ function validateInput(input) {
         let decimalSeparator = filtered.includes(',') ? ',' : '.';
         filtered = parts[0] + decimalSeparator + parts[1].substring(0, 2);
     }
-
     // Ако стойността е променена, актуализираме полето
     if (value !== filtered) {
         input.value = filtered;
     }
-
     return filtered;
 }
 
@@ -3235,6 +3173,7 @@ due2.addEventListener('input', function (e) {
     if (typeof calculateResto === 'function') {
         calculateResto();
     }
+
 });
 
 // Настройка на втора двойка (Платено) с динамично изчисляване на разлика
@@ -3253,7 +3192,6 @@ let manualInputMode = null;
 function calculateResto() {
     // Нулираме ръчния режим, защото промяна в Платено/Дължимо рестартира логиката
     resetRestoManuals();
-
     // Извикваме общата логика - тя ще си види че flags са false и ще мине в Default
     recalculateRestoMixed();
 }
@@ -3267,7 +3205,6 @@ paid2.addEventListener('input', function (e) {
     validateInput(this);
     calculateResto();
 });
-
 
 // Функция за изтриване на поле
 // Функция за изтриване на поле
@@ -3303,11 +3240,9 @@ function updateFieldIfNotManual(field, newVal, isManualFlag) {
 // Обща функция за преизчисляване при промяна на Resto
 function recalculateRestoMixed() {
     const rate = typeof EXCHANGE_RATE !== 'undefined' ? EXCHANGE_RATE : 1.95583;
-
     // Определяме водещата валута според активния елемент или activeRestoField
     let useBgnAsMaster = false;
     let focusSource = 'none';
-
     let currentFocus = document.activeElement;
     // Check if activeElement is one of ours
     if (!currentFocus || !currentFocus.id || !['due1', 'due2', 'paid1', 'paid2', 'resto1', 'resto2'].includes(currentFocus.id)) {
@@ -3319,46 +3254,36 @@ function recalculateRestoMixed() {
     } else {
         focusSource = 'activeElement';
     }
-
     if (currentFocus && currentFocus.id) {
         if (['due2', 'paid2', 'resto2'].includes(currentFocus.id)) {
             useBgnAsMaster = true;
         }
     }
-
     // Ако не сме успели да определим фокус, но имаме въведено Paid2 > 0 и няма Paid1,
     // или ако въвеждаме в Paid2, предполагаме BGN.
     // Но по-горе логиката за fallback трябва да го покрие.
-
     // Взимаме стойностите
     const due1Val = parseFloat(due1.value.replace(',', '.')) || 0;
     const due2Val = parseFloat(due2.value.replace(',', '.')) || 0;
     const paid1Val = parseFloat(paid1.value.replace(',', '.')) || 0;
     const paid2Val = parseFloat(paid2.value.replace(',', '.')) || 0;
-
     // FIX: Ако paid1 e 0 (изтрито), смятаме по due2 - paid2 (BGN master),
     // за да избегнем грешки от превалутиране при визуализацията на BGN рестото.
     if (paid1Val === 0) {
         useBgnAsMaster = true;
     }
-
     let baseBalance = 0; // Negative means remaining change (ресто), Positive means due (дължимо)
-
     if (useBgnAsMaster) {
         // Смятаме в ЛЕВА - Стриктно последователно по визуализация
-
         // 1. Взимаме визуалното Дължимо (Лева), както е на екрана.
         // Потребителят иска да ползваме due2Val (107.57), а не да преизчисляваме от due1.
         let startDueBgn = due2Val;
-
         // 2. Взимаме визуалното Платено (Евро) конвертирано и закръглено
         const paid1Bgn = roundToTwo(paid1Val * rate);
-
         // 3. Смятаме остатък ПРЕДИ второто плащане 
         // (това е "изчислената стойност за resto2" преди намесата на paid2)
         // Закръгляме и тук, за да фиксираме сумата "29.34"
         const intermediateResto = roundToTwo(startDueBgn - paid1Bgn);
-
         // 4. Вадим второто плащане
         // 29.34 - 29.00 = 0.34
         baseBalance = roundToTwo(intermediateResto - paid2Val);
@@ -3367,32 +3292,26 @@ function recalculateRestoMixed() {
         const totalPaidEur = paid1Val + (paid2Val / rate);
         baseBalance = due1Val - totalPaidEur; // в EUR
     }
-
     // Manual fields logic
     let manualRestoEur = 0;
     let manualRestoBgn = 0;
-
     if (isManualResto1) {
         manualRestoEur = parseFloat(resto1.value.replace(',', '.')) || 0;
     }
     if (isManualResto2) {
         manualRestoBgn = parseFloat(resto2.value.replace(',', '.')) || 0;
     }
-
     // Calculate final remaining
     // We need to apply manual adjustments.
     // If baseBalance is BGN, we convert manuals to BGN to subtract.
     // If baseBalance is EUR, we convert manuals to EUR.
-
     let finalRemaining = 0; // In Master Currency
-
     if (useBgnAsMaster) {
         // Base is BGN
         // Adjust logic:
         // If Due (Positive): Remaining = Base - (Manual1*Rate + Manual2)
         // If Change (Negative): Remaining = Base + (Manual1*Rate + Manual2)
         const totalManualBgn = (manualRestoEur * rate) + manualRestoBgn;
-
         if (baseBalance >= 0) {
             finalRemaining = baseBalance - totalManualBgn;
         } else {
@@ -3401,20 +3320,16 @@ function recalculateRestoMixed() {
     } else {
         // Base is EUR
         const totalManualEur = manualRestoEur + (manualRestoBgn / rate);
-
         if (baseBalance >= 0) {
             finalRemaining = baseBalance - totalManualEur;
         } else {
             finalRemaining = baseBalance + totalManualEur;
         }
     }
-
     finalRemaining = roundToTwo(finalRemaining);
-
     // Update Visuals and Non-Manual Fields
     let displayEur = 0;
     let displayBgn = 0;
-
     if (useBgnAsMaster) {
         displayBgn = finalRemaining;
         displayEur = finalRemaining / rate;
@@ -3422,7 +3337,6 @@ function recalculateRestoMixed() {
         displayEur = finalRemaining;
         displayBgn = finalRemaining * rate;
     }
-
     // Update NON-manual fields
     if (!isManualResto1) {
         const absEur = Math.abs(displayEur);
@@ -3432,31 +3346,26 @@ function recalculateRestoMixed() {
         const absBgn = Math.abs(displayBgn);
         resto2.value = absBgn > 0.005 ? absBgn.toFixed(2).replace('.', ',') : '';
     }
-
     // Update visuals (colors, labels) based on the EUR value (as used in existing updateRestoVisuals)
     let mode = 'default';
     if (isManualResto1 && !isManualResto2) mode = 'manual_left';
     else if (!isManualResto1 && isManualResto2) mode = 'manual_right';
     else if (isManualResto1 && isManualResto2) mode = 'manual_both'; // Fallback to handle both? Logic in visual func needs check.
-
     // updateRestoVisuals expects value in EUR to determine Positive/Negative red/green
     updateRestoVisuals(displayEur, mode);
 }
-
 
 // Настройка на трета двойка (Ресто)
 // Настройка на трета двойка (Ресто)
 resto1.addEventListener('focus', function (e) {
     const totalBase = calculateTotalResto();
     const isGreen = totalBase < -0.005;
-
     // Разрешаваме редакция само ако има ресто за връщане (зелено)
     // ИЛИ ако вече сме в ръчен режим (за да можем да редактираме)
     if (!isGreen && !isManualResto1) {
         this.blur();
         return;
     }
-
     // Ако полето не е било ръчно, го правим ръчно и го ЧИСТИМ 
     if (!isManualResto1) {
         isManualResto1 = true;
@@ -3478,13 +3387,11 @@ resto1.addEventListener('input', function (e) {
 resto2.addEventListener('focus', function (e) {
     const totalBase = calculateTotalResto();
     const isGreen = totalBase < -0.005;
-
     // Разрешаваме редакция само ако има ресто (зелено) или сме в режим редакция
     if (!isGreen && !isManualResto2) {
         this.blur();
         return;
     }
-
     if (!isManualResto2) {
         isManualResto2 = true;
         isManualResto1 = false; // Reset other field to calculated
@@ -3524,9 +3431,7 @@ function updateRestoVisuals(remainingEur, mode) {
     // 1. Нулиране на класове
     resto1.classList.remove('resto-positive', 'resto-negative', 'resto-manual');
     resto2.classList.remove('resto-positive', 'resto-negative', 'resto-manual');
-
     const epsilon = 0.005;
-
     // 2. Логика според режима
     if (mode === 'default') {
         // Цветове - и двете полета
@@ -3537,7 +3442,6 @@ function updateRestoVisuals(remainingEur, mode) {
             resto1.classList.add('resto-negative');
             resto2.classList.add('resto-negative');
         }
-
     } else if (mode === 'manual_left') {
         // Лявото поле е ръчно (жълто)
         resto1.classList.add('resto-manual');
@@ -3547,7 +3451,6 @@ function updateRestoVisuals(remainingEur, mode) {
         } else if (remainingEur < -epsilon) {
             resto2.classList.add('resto-negative');
         }
-
     } else if (mode === 'manual_right') {
         // Дясното поле е ръчно (жълто)
         resto2.classList.add('resto-manual');
@@ -3566,10 +3469,8 @@ document.querySelectorAll('input[type="text"]').forEach(input => {
         // Ако полето все още е "виртуално активно" (т.е. работим с калкулатора),
         // не го форматираме веднага. Ще го форматираме, когато активността падне.
         if (this.classList.contains('active-virtual-focus')) return;
-
         let val = this.value.replace(',', '.');
         if (val === '') return;
-
         let num = parseFloat(val);
         if (!isNaN(num)) {
             // Ако е 0 или много близко до 0 -> изчистваме
@@ -3582,3 +3483,4 @@ document.querySelectorAll('input[type="text"]').forEach(input => {
         }
     });
 });
+
