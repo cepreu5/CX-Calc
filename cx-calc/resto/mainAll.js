@@ -1,4 +1,5 @@
 // terser mainAll.js --compress --mangle --toplevel --output mainnAll.js
+// terser mainAll.js  --compress arrows=true,booleans=true,collapse_vars=true,comparisons=true,dead_code=true,drop_console=true,hoist_funs=true,if_return=true,passes=3 --mangle --toplevel --ecma 2020 --module --format wrap_iife=true -c pure_funcs=["console.log"] --output mainnAll.js
 const filesToCheck = [
     'index.html',
     'mainnAll.js',
@@ -60,8 +61,8 @@ var MainPointsO = {
     StatusSize: { x: 45, y: 15 },
     CurrencyOffset: { x: -40, y: 15 },
     CurrencyLevOffset: { x: -40, y: 15 },
-    Resto: { x: 11, y: -108 },
-    RestoSize: { x: 459, y: 288 },
+    Resto: { x: 0, y: -108 },
+    RestoSize: { x: 469, y: 288 },
     Fields: { x: 30, y: -76 },
     FieldsSize: { x: 190, y: 60 },
     FldGaps: { x: 22, y: 34 },
@@ -378,6 +379,17 @@ function loadSettings() {
             }
         }
         console.log("Заредени и допълнени MainPointsO от loadSettings():");
+    } else {
+        // Ако няма запазени MainPointsO в localStorage, инициализираме
+        // MainPoints от MainPointsO с числови стойности, за да предотвратим
+        // NaN стойности при първоначално изобразяване преди скалиране.
+        for (const key in MainPointsO) {
+            const p = MainPointsO[key];
+            if (p && typeof p.x === 'number' && typeof p.y === 'number') {
+                MainPoints[key] = { x: p.x, y: p.y };
+            }
+        }
+        console.log('MainPoints инициализиран от MainPointsO (fallback) при първо зареждане.');
     }
 }
 
@@ -1336,12 +1348,40 @@ window.addEventListener("load", function () {
             setupDismissablePrompt(iosPrompt, dismissIosBtn, declineIosBtn); // , countdownSpan
         }
     }
-    // Задаваме началното състояние на дисплеите, СЛЕД като настройките са заредени.
-    // Използваме леко закъснение и симулираме resize, за да сме сигурни, че всичко е наместено.
-    setTimeout(() => {
-        calcResize();
-        window.dispatchEvent(new Event('resize'));
-    }, 100);
+    // Задаваме началното състояние на дисплеите, след като настройките са заредени.
+    // Извикваме `calcResize` само след като изображението действително е заредено,
+    // за да избегнем NaN при липсващи naturalWidth/naturalHeight.
+    (function triggerResizeWhenImageReady() {
+        const run = () => {
+            try {
+                calcResize();
+                window.dispatchEvent(new Event('resize'));
+            } catch (e) {
+                console.warn('Error running calcResize after image ready:', e);
+            }
+        };
+
+        if (calculator && (calculator.complete || (typeof imageWidthO === 'number' && imageWidthO > 0))) {
+            // Image already loaded or sizes are known
+            run();
+            return;
+        }
+
+        if (calculator) {
+            // Wait for the image load event, but also install a fallback timeout
+            calculator.addEventListener('load', run, { once: true });
+            // Fallback: if load doesn't fire within 2s, attempt once to avoid hanging
+            setTimeout(() => {
+                if (!imageWidthO || imageWidthO === 0) {
+                    // fallback timeout reached; force a single calcResize attempt
+                    run();
+                }
+            }, 2000);
+        } else {
+            // If calculator element is not yet present, retry shortly
+            setTimeout(triggerResizeWhenImageReady, 100);
+        }
+    })();
 
     appendNumber("C");
 });
@@ -1602,7 +1642,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function calcResize() {
+    // Ensure we have the original image size first
+    getImageSize();
     getImageVisualSize();
+    // If original image dimensions are not yet available, retry shortly
+    if (!imageWidthO || !imageHeightO || !isFinite(imageWidthO) || !isFinite(imageHeightO)) {
+        // original image size not ready; retrying shortly (silent)
+        setTimeout(calcResize, 100);
+        return;
+    }
     scaleMainPoints(aspectRatioW, aspectRatioH);
     const layout = calcNewCoordinates();
     keys = layout.keys;
@@ -2284,10 +2332,12 @@ function calcNewCoordinates() {
     }
     markers.forEach(({ label, id, coords, size }) => {
         // console.log("Дисплей на калкулатора.");
-        const x = parseFloat(coords?.x);
-        const y = parseFloat(coords?.y);
-        if (isNaN(x) || isNaN(y)) {
-            console.warn(`⚠️ ${label} получи невалидни координати:`, coords);
+        const rawX = coords?.x;
+        const rawY = coords?.y;
+        const x = Number(rawX);
+        const y = Number(rawY);
+        if (!isFinite(x) || !isFinite(y)) {
+            console.warn(`⚠️ ${label} получи невалидни координати:`, coords, { rawX, rawY, MainPoints, rectLeft: rect.left, offX, offY });
             return;
         }
         const marker = document.getElementById(id);
