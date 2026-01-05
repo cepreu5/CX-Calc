@@ -418,10 +418,15 @@ function getImageVisualSize() {
     let extraTop = 0;
     if (typeof MainPointsO !== 'undefined' && MainPointsO.Resto && MainPointsO.Resto.y < 0) {
         extraTop = Math.abs(MainPointsO.Resto.y);
+        // Reserve space for Resto: use at least 100px reserve (actual overlap),
+        // or larger if configured via MainPointsO.Resto.y
+        const RESTO_MIN_EXTRA = 100;
+        const reservedHeight = Math.max(RESTO_MIN_EXTRA, extraTop);
+        const containerAvailableHeight = Math.max(0, containerHeight - reservedHeight);
         // Calculate max height for calculator image to allow space for Resto
         const calcNaturalH = calculator.naturalHeight;
         if (calcNaturalH > 0) {
-            const allowedH = (containerHeight * calcNaturalH) / (calcNaturalH + extraTop) - 20;
+            const allowedH = (containerAvailableHeight * calcNaturalH) / (calcNaturalH + extraTop) - 20;
             calculator.style.maxHeight = `${allowedH}px`;
             calculator.style.objectPosition = 'center bottom';
         }
@@ -465,7 +470,7 @@ function getImageVisualSize() {
     // Заменяме window.innerWidth с containerWidth
     aspectRatioW = imageWidth / imageWidthO; // aspectRatioW е съотношението на ширината на изображението към оригиналната ширина
     aspectRatioH = imageHeight / imageHeightO; // aspectRatioH е съотношението на височината на изображението към оригиналната височина
-    // console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
+    console.log("aspectRatioW = ", aspectRatioW, "   aspectRatioH = ", aspectRatioH);
     // --- Set Panel Width logic moved here ---
     // NO PANEL ANYMORE
 }
