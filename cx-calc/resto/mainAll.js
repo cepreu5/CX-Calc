@@ -2254,7 +2254,8 @@ function memoryShow(slot, callback) { // Добавен е 'callback'
 
 function memoryRecall(slot) {
     // Guard clause: не променяме, ако паметта е празна или ако потребителят вече е въвел число
-    if (Mem[slot] === undefined || Mem[slot] === 0 || (userInput !== "" && !(/[+\-*/×÷]$/.test(userInput)))) {
+    // Позволяваме извикване след оператори (+, -, *, /) или след отворена скоба (
+    if (Mem[slot] === undefined || Mem[slot] === 0 || (userInput !== "" && !(/[+\-*/×÷(]$/.test(userInput)))) {
         return;
     }
     const valueStr = Mem[slot].toString().replace('.', ',');
