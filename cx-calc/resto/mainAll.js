@@ -148,7 +148,10 @@ function saveSettings() {
     }
     localStorage.setItem('CXCalc_MainPointsO', JSON.stringify(MainPointsO));
     // 2. Събираме и записваме останалите настройки в appSettings
-    const currentSettings = JSON.parse(localStorage.getItem('CXCalc_appSettings')) || defaultSettings;
+    // Safely load current settings, merging with defaults
+    const savedSettings = localStorage.getItem('CXCalc_appSettings');
+    const currentSettings = savedSettings ? { ...defaultSettings, ...JSON.parse(savedSettings) } : { ...defaultSettings };
+
     // Събираме и записваме останалите настройки в appSettings
     const newAppSettings = {
         exchangeRate: parseFloat(document.getElementById('exchangeRateInput').value) || defaultSettings.exchangeRate,
@@ -162,14 +165,37 @@ function saveSettings() {
         initialDisplay: document.getElementById('initialDisplayLev').checked ? 'lev' : 'eur',
         handMode: document.getElementById('handModeLeft').checked ? 'left' : (document.getElementById('standardKeyboard').checked ? 'standard' : 'right'),
         standardKeyboard: document.getElementById('standardKeyboard').checked,
-        pwaInstallDeclined: currentSettings.pwaInstallDeclined || defaultSettings.pwaInstallDeclined,
+        pwaInstallDeclined: currentSettings.pwaInstallDeclined,
         calculatorSkin: document.getElementById('standardKeyboard').checked
             ? 'CalculatorS.png'
             : (currentSettings.calculatorSkin.includes('S.png') ? 'Calculator0.png' : currentSettings.calculatorSkin), // Запазваме текущия скин
         decimalPlaces: parseInt(document.getElementById('decimalPlacesInput').value, 10) || defaultSettings.decimalPlaces,
         tipsEnabled: false
     };
+
+    // Debug logging - save to localStorage before reload
+    const debugInfo = {
+        timestamp: new Date().toISOString(),
+        beforeSave: currentSettings,
+        toSave: newAppSettings
+    };
+
+    console.log("=== SAVING SETTINGS ===");
+    console.log("New settings to save:", newAppSettings);
+    console.log("Current settings before save:", currentSettings);
+
     localStorage.setItem('CXCalc_appSettings', JSON.stringify(newAppSettings));
+
+    // Verify save
+    const verifySettings = JSON.parse(localStorage.getItem('CXCalc_appSettings'));
+    debugInfo.afterSave = verifySettings;
+
+    console.log("Verified saved settings:", verifySettings);
+    console.log("=== SAVE COMPLETE ===");
+
+    // Store debug info for inspection after reload
+    localStorage.setItem('CXCalc_DEBUG_lastSave', JSON.stringify(debugInfo));
+
     // --- ПРИЛАГАНЕ НА ПРОМЕНИТЕ ---
     // 3. Презареждаме страницата, за да се приложат всички промени консистентно
     console.log("Настройките са запазени. Страницата ще бъде презаредена.");
@@ -315,9 +341,18 @@ function populateLayoutSettings() {
 
 function loadSettings() {
     const savedSettings = JSON.parse(localStorage.getItem('CXCalc_appSettings'));
+
+    // Debug logging
+    console.log("=== LOADING SETTINGS ===");
+    console.log("Saved settings from localStorage:", savedSettings);
+    console.log("Default settings:", defaultSettings);
+
     // Слива запазените настройки с тези по подразбиране, за да се гарантира, че всички ключове съществуват.
     // Запазените стойности имат предимство.
     const settings = { ...defaultSettings, ...savedSettings };
+
+    console.log("Merged settings:", settings);
+
     // Прилага настройките към глобалните променливи на приложението
     EXCHANGE_RATE = settings.exchangeRate;
     CURRENCY_SYMBOL = settings.currencySymbol;
@@ -340,6 +375,10 @@ function loadSettings() {
     } else {
         keyMap = handMode === 'left' ? keyMapL : keyMapR;
     }
+
+    console.log("Applied settings - levMode:", levMode, "handMode:", handMode, "standardKeyboard:", standardKeyboard);
+    console.log("=== LOAD COMPLETE ===");
+
     // Зареждаме паметта отделно от 'CalcMem', тъй като тя се управлява от status.js
     const savedMem = JSON.parse(localStorage.getItem('CXCalc_CalcMem'));
     if (savedMem && Array.isArray(savedMem)) {
@@ -391,7 +430,48 @@ function loadSettings() {
         }
         console.log('MainPoints инициализиран от MainPointsO (fallback) при първо зареждане.');
     }
+
+    // Check for debug info from previous save
+    const debugInfo = localStorage.getItem('CXCalc_DEBUG_lastSave');
+    if (debugInfo) {
+        try {
+            const parsed = JSON.parse(debugInfo);
+            console.log("=== DEBUG INFO FROM LAST SAVE ===");
+            console.log("Timestamp:", parsed.timestamp);
+            console.log("Before save:", parsed.beforeSave);
+            console.log("Attempted to save:", parsed.toSave);
+            console.log("After save (verified):", parsed.afterSave);
+            console.log("Current loaded settings:", settings);
+            console.log("=== END DEBUG INFO ===");
+
+            // Clear debug info after displaying
+            localStorage.removeItem('CXCalc_DEBUG_lastSave');
+        } catch (e) {
+            console.error("Error parsing debug info:", e);
+        }
+    }
 }
+
+// Global debug function - can be called from console: window.debugSettings()
+window.debugSettings = function () {
+    const saved = localStorage.getItem('CXCalc_appSettings');
+    const parsed = saved ? JSON.parse(saved) : null;
+
+    console.log("=== CURRENT SETTINGS DEBUG ===");
+    console.log("localStorage raw:", saved);
+    console.log("localStorage parsed:", parsed);
+    console.log("Current global values:");
+    console.log("  levMode:", levMode);
+    console.log("  handMode:", handMode);
+    console.log("  standardKeyboard:", standardKeyboard);
+    console.log("  EXCHANGE_RATE:", EXCHANGE_RATE);
+    console.log("  DECIMAL_PLACES:", DECIMAL_PLACES);
+    console.log("  soundEffectsEnabled:", soundEffectsEnabled);
+    console.log("  showRateWarningEnabled:", showRateWarningEnabled);
+    console.log("=== END DEBUG ===");
+
+    return parsed;
+};
 
 function getImageSize() {
     if (calculator) {
@@ -786,11 +866,11 @@ function controlActions(key) {
         fullscrFlag = !fullscrFlag;
     } else if (key.value === '*') {
         console.log("Before %: ", userInput);
-        userInput = userInput.replace(',', '.');
+        userInput = userInput.replace(/,/g, '.');
         userInput = eval(userInput);
         userInput = (parseFloat(userInput) / 100)
             .toFixed(DECIMAL_PLACES)
-            .replace('.', ',');
+            .replace(/\./g, ',');
         appendNumber("=");
         // console.log("Ctrl+%: ", userInput);
     } else if (key.value === '-') {
@@ -800,12 +880,12 @@ function controlActions(key) {
         } else {
             userInput = "-" + userInput;    // добавя "-"
         }
-        userInput = userInput.replace(',', '.');
+        userInput = userInput.replace(/,/g, '.');
         if ((/[+\-*/]$/.test(userInput))) return;
         userInput = eval(userInput);
         userInput = (parseFloat(userInput))
             .toFixed(DECIMAL_PLACES)
-            .replace('.', ',');
+            .replace(/\./g, ',');
         appendNumber("=");
     }
 }
@@ -898,7 +978,7 @@ function handleStatusZones(event, isCtrlRequired) {
 
 function sanitizeAndEvaluateInput(input, operationType) {
     if ((/[+\-*/]$/.test(input))) return null;
-    input = input.replace(',', '.');
+    input = input.replace(/,/g, '.');
     let result = eval(input);
     if (operationType === 'percent') {
         result = result / 100;
@@ -906,7 +986,7 @@ function sanitizeAndEvaluateInput(input, operationType) {
         result = input.startsWith('-') ? input.slice(1) : '-' + input;
         result = eval(result); // отново evaluate след добавяне/премахване
     }
-    return parseFloat(result).toFixed(DECIMAL_PLACES).replace('.', ',');
+    return parseFloat(result).toFixed(DECIMAL_PLACES).replace(/\./g, ',');
 }
 
 function goFullscreen() {
